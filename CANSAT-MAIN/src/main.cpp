@@ -1,50 +1,15 @@
-/***************************************************
-  This is an example for the SHTC3 Humidity & Temp Sensor
-
-  Designed specifically to work with the SHTC3 sensor from Adafruit
-  ----> https://www.adafruit.com/products/4636
-
-  These sensors use I2C to communicate, 2 pins are required to
-  interface
- ****************************************************/
-
-#include "Adafruit_SHTC3.h"
-#include <SPI.h>
-
-Adafruit_SHTC3 shtc3 = Adafruit_SHTC3();
+#include <Arduino.h>
+#include "core/cansat.h"
 
 void setup()
 {
-    Serial.begin(115200);
-
-    while (!Serial)
-        delay(10); // will pause Zero, Leonardo, etc until serial console opens
-
-    Serial.println("SHTC3 test");
-    Wire1.setSCL(19);
-    Wire1.setSDA(18);
-
-    if (!shtc3.begin(&Wire1))
-    {
-        Serial.println("Couldn't find SHTC3");
-        while (1)
-            delay(1);
-    }
-    Serial.println("Found SHTC3 sensor");
+    Cansat cansat;
+    cansat.start_states();
 }
 
 void loop()
 {
-    sensors_event_t humidity, temp;
-
-    shtc3.getEvent(&humidity, &temp); // populate temp and humidity objects with fresh data
-
-    Serial.print("Temperature: ");
-    Serial.print(temp.temperature);
-    Serial.println(" degrees C");
-    Serial.print("Humidity: ");
-    Serial.print(humidity.relative_humidity);
-    Serial.println("% rH");
-
-    delay(1000);
+    // not used for this programm
 }
+
+// if you want to configure the cansat go to INCLUDE/config.h
