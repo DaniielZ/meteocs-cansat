@@ -37,7 +37,9 @@
 // and copyright notices in any redistribution of this code
 // **********************************************************************************
 #include <SPIFlash.h> //get it here: https://github.com/LowPowerLab/SPIFlash
-
+#include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
 #define SERIAL_BAUD 115200
 char input = 0;
 long lastPeriod = -1;
@@ -49,14 +51,40 @@ long lastPeriod = -1;
 //                             0xEF30 for windbond 4mbit flash
 //                             0xEF40 for windbond 64mbit flash
 //////////////////////////////////////////
-uint16_t expectedDeviceID = 0xEF30;
-SPIFlash flash(SS_FLASHMEM, expectedDeviceID);
+uint16_t expectedJdecID = 0x1F;
+uint8_t spi_cs = 13;
+uint8_t spi_tx = 11;
+uint8_t spi_rx = 12;
+uint8_t spi_sck = 10;
+SPIFlash flash(spi_cs, expectedJdecID);
+
+void Blink(int DELAY_MS, byte loops)
+{
+    pinMode(LED_BUILTIN, OUTPUT);
+    while (loops--)
+    {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(DELAY_MS);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(DELAY_MS);
+    }
+}
 
 void setup()
 {
-    Serial.begin(SERIAL_BAUD);
-    Serial.print("Start...");
 
+    Serial.begin(SERIAL_BAUD);
+    while (!Serial)
+    {
+        delay(1000);
+    }
+
+    Serial.print("Start1...");
+    delay(100);
+    SPI1.setRX(spi_rx);
+    SPI1.setTX(spi_tx);
+    SPI1.setSCK(spi_sck);
+    SPI1.setCS(spi_cs);
     if (flash.initialize())
     {
         Serial.println("Init OK!");
@@ -65,7 +93,7 @@ void setup()
     else
     {
         Serial.print("Init FAIL, expectedDeviceID(0x");
-        Serial.print(expectedDeviceID, HEX);
+        Serial.print(expectedJdecID, HEX);
         Serial.print(") mismatched the read value: 0x");
         Serial.println(flash.readDeviceId(), HEX);
     }
@@ -150,17 +178,5 @@ void loop()
         lastPeriod++;
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, lastPeriod % 2);
-    }
-}
-
-void Blink(int DELAY_MS, byte loops)
-{
-    pinMode(LED_BUILTIN, OUTPUT);
-    while (loops--)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(DELAY_MS);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(DELAY_MS);
     }
 }
