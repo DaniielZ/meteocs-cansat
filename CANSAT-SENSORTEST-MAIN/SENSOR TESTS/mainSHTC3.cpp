@@ -8,6 +8,9 @@
   interface
  ****************************************************/
 
+//WORKING
+
+
 #include "Adafruit_SHTC3.h"
 #include <SPI.h>
 
