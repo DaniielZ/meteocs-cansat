@@ -1,55 +1,45 @@
-/**
- * The sketch parses UBX messages from u-blox NEO-8M and outputs ready GPS data to a serial port in a CSV format.
- *
- * u-blox NEO-8M - Arduino Mega
- * VCC - 5V
- * RX - TX3
- * TX - RX3
- * GND - GND
- */
-
 #include <Arduino.h>
-#include <UbxGpsNavPvt8.h>
-#include "Wire.h"
+#include <SPI.h>
+// gps
+#include <TinyGPS++.h>
+#include <SoftwareSerial.h>
+#include <string.h>
+#include <Wire.h>
+// The TinyGPS++ object
+TinyGPSPlus gps;
 
-#define COMPUTER_BAUDRATE 115200
-#define GPS_BAUDRATE 9600
+uint8_t GPS_RX = 0;
+uint8_t GPS_TX = 1;
+static const uint32_t GPS_BAUD = 9600;
 
-#define DATETIME_FORMAT "%04d.%02d.%02d %02d:%02d:%02d"
-#define DATETIME_LENGTH 20
-
-UbxGpsNavPvt8<HardwareSerial> gps(Serial1);
-
-char datetime[DATETIME_LENGTH];
+SoftwareSerial ss(GPS_RX, GPS_TX);
 
 void setup()
 {
-    Serial.begin(COMPUTER_BAUDRATE);
-    Serial1.setRX(0);
-    Serial1.setTX(1);
-    gps.begin(GPS_BAUDRATE);
+    Serial.begin(115200);
+    delay(500);
+    while (!Serial)
+    {
+        delay(1000);
+    }
+    ss.begin(GPS_BAUD);
+    Serial.println("GPS initialized1!");
 }
 
 void loop()
 {
-    if (gps.ready())
+    while (ss.available() > 0)
     {
-        snprintf(datetime, DATETIME_LENGTH, DATETIME_FORMAT, gps.year, gps.month, gps.day, gps.hour, gps.min, gps.sec);
-
-        Serial.print(datetime);
-        Serial.print(',');
-        Serial.print(gps.lon / 10000000.0, 7);
-        Serial.print(',');
-        Serial.print(gps.lat / 10000000.0, 7);
-        Serial.print(',');
-        Serial.print(gps.height / 1000.0, 3);
-        Serial.print(',');
-        Serial.print(gps.gSpeed * 0.0036, 5);
-        Serial.print(',');
-        Serial.print(gps.headMot / 100000.0, 5);
-        Serial.print(',');
-        Serial.print(gps.fixType);
-        Serial.print(',');
-        Serial.println(gps.numSV);
+        char ss_result = ss.read();
+        gps.encode((char)ss_result);
+        Serial.print(ss_result);
+        if (gps.location.isValid())
+        {
+            Serial.println(gps.location.lat(), 6);
+            Serial.println(gps.location.lat(), 6);
+            Serial.println(gps.time.value());
+        }
     }
+    delay(100);
+    Serial.println(" ");
 }
