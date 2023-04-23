@@ -8,6 +8,12 @@
 #include "sensors/sensor_manager.h"
 
 #include <Arduino.h>
+#include <SPIFlash.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_BusIO_Register.h>
+#include <Adafruit_Sensor.h>
+#include <LoRa.h>
 
 class Cansat
 {

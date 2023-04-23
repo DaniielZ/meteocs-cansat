@@ -1,9 +1,9 @@
 #include <Adafruit_LIS2MDL.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
-//TESTED
-
-
+// TESTED
+uint8_t LIS2MDL_SCL = 21;
+uint8_t LIS2MDL_SDA = 20;
 /* Assign a unique ID to this sensor at the same time */
 Adafruit_LIS2MDL lis2mdl = Adafruit_LIS2MDL(12345);
 

@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "core/cansat.h"
 
 void setup()
