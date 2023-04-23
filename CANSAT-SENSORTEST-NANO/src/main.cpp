@@ -30,16 +30,18 @@ void loop()
 {
     while (ss.available() > 0)
     {
-        char ss_result = ss.read();
-        gps.encode((char)ss_result);
-        Serial.print(ss_result);
-        if (gps.location.isValid())
+        gps.encode(ss.read());
+        if (gps.location.isUpdated())
         {
-            Serial.println(gps.location.lat(), 6);
-            Serial.println(gps.location.lat(), 6);
-            Serial.println(gps.time.value());
+            // Number of satellites in use (u32)
+            Serial.print("Number os satellites in use = ");
+            Serial.println(gps.satellites.value());
+            // Latitude in degrees (double)
+            Serial.print("Latitude= ");
+            Serial.print(gps.location.lat(), 6);
+            // Longitude in degrees (double)
+            Serial.print(" Longitude= ");
+            Serial.println(gps.location.lng(), 6);
         }
     }
-    delay(100);
-    Serial.println(" ");
 }
