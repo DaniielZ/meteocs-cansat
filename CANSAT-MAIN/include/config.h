@@ -35,12 +35,12 @@ public:
     int LORA_CODING_RATE = 6;
     long LORA_SIGNAL_BW = 62.5E3;
 
-    // BARO WIRE1
+    // BARO WIRE1 || CONFLICT WITH SHTC3
     int MS5611_SCL = 27;
     int MS5611_SDA = 26;
     int MS5611_ADDRESS = 0x77;
 
-    // HUMIDITY WIRE1
+    // HUMIDITY WIRE1 || CONFLICT WITH MS611 bet koda fixos
     int SHTC3_SCL = 19;
     int SHTC3_SDA = 18;
 

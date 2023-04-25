@@ -11,7 +11,8 @@ class Log
 
 public:
     void init(Cansat &cansat);
-    void info();
-    void error();
-    void data();
+    void info(char msg[]);
+    void error(Cansat &cansat, char msg[]);
+    void data(Cansat &cansat);
+    bool read(Cansat &cansat, String &msg);
 };
