@@ -51,4 +51,15 @@ public:
     int BUZZER_SHORT_BEEP = 50;
     int BUZZER_SHORT_PAUSE = 50;
     int BUZZER_ERROR_BEEPS = 20;
+
+    // Ejection
+    int SERVO_PWM = 22; // TBD
+    // Parachute
+    int MOSFET = 0; // TBD
+
+    // Photo resistor
+    int PHOTO_ADC = 28;
+
+    String ARM_MSG = "arm_confirm";
+    String DATA_SEND_MSG = "data_send";
 };

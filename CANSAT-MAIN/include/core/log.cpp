@@ -68,11 +68,11 @@ void Log::error(Cansat &cansat, char msg[])
     // play error sound
     cansat.sound.error(cansat);
 }
-void Log::data(Cansat &cansat)
+void Log::data(Cansat &cansat, bool log_to_flash = true)
 {
-    // logs data to flash
     // prints data
     // sends data over lora if can be sent
+    // logs data to flash if apropriate state
 }
 bool Log::read(Cansat &cansat, String &msg)
 {
