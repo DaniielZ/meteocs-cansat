@@ -4,17 +4,17 @@ class Sensor_manager
 {
     // SENSOR OBJECTS AND Comunication
     // GPS UART0
-    TinyGPSPlus gps;
-    SoftwareSerial gps_serial;
+    TinyGPSPlus _gps;
+    SoftwareSerial _gps_serial;
     // MAGNETO WIRE0
-    TwoWire magneto_wire;
-    Adafruit_LIS2MDL magneto;
+    TwoWire _magneto_wire;
+    Adafruit_LIS2MDL _magneto;
     // BARO WIRE1
-    TwoWire baro_wire;
-    MS5611 baro;
+    TwoWire _baro_wire;
+    MS5611 _baro;
     // HUMIDITY WIRE1
-    TwoWire humidity_wire;
-    Adafruit_SHTC3 humidity;
+    TwoWire _humidity_wire;
+    Adafruit_SHTC3 _humidity;
     void read_gps();
     void read_magneto();
     void read_baro();
@@ -28,8 +28,10 @@ public:
         double gps_lat;
         double gps_height;
         int gps_sattelites;
+        // magnetic vector values are in micro-Tesla (uT)) */
         float mag[3];
         float pressure; //
+        float temperature;
         float humidity; // %
     };
     Sensor_data data;

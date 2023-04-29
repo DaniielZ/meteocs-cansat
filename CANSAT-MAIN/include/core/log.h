@@ -4,10 +4,12 @@
 class Cansat;
 class Log
 {
-    SPIClassRP2040 SPI_LORA;
-    LoRaClass LoRaMain;
-    SPIClassRP2040 SPI_FLASH;
-    SPIFlash flash;
+    SPIClassRP2040 _spi_lora;
+    LoRaClass _lora;
+    SPIClassRP2040 _spi_flash;
+    SPIFlash _flash;
+    void init_flash(Cansat &cansat);
+    void init_lora(Cansat &cansat);
 
 public:
     void init(Cansat &cansat);
