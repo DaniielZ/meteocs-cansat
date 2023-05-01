@@ -1,7 +1,8 @@
 #pragma once
-#include "core/cansat.h"
 #include <SPI.h>
 #include <LoRa.h>
+#include <LittleFS.h>
+#include <Sensor.
 
 class Cansat;
 class Log
