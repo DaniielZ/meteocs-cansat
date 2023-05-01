@@ -3,7 +3,7 @@
 void setup()
 {
     Cansat cansat;
-    cansat.start_states();
+    cansat.start_states(cansat);
 }
 
 void loop()

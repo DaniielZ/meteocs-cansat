@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 class Config
 {
 public:
@@ -6,14 +7,15 @@ public:
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = true;
 
-    // flash SPI1
-    int FLASH_CS = 13;
-    int FLASH_RX = 12;
-    int FLASH_TX = 11;
-    int FLASH_SCK = 10;
-    int FLASH_WP = 9;
-    int FLASH_HOLD = 8;
-    int FLASH_JDEC = 0x1F85;
+    // USING INTERNAL MEMORY INSTED !!!!!
+    // // flash SPI1
+    // int FLASH_CS = 13;
+    // int FLASH_RX = 12;
+    // int FLASH_TX = 11;
+    // int FLASH_SCK = 10;
+    // int FLASH_WP = 9;
+    // int FLASH_HOLD = 8;
+    // int FLASH_JDEC = 0x1F85;
 
     // GPS UART0
     int GPS_RX = 0;
@@ -53,13 +55,24 @@ public:
     int BUZZER_ERROR_BEEPS = 20;
 
     // Ejection
-    int SERVO_PWM = 22; // TBD
+    int SERVO_PWM = 22;
+    int SERVO_START_POS = 0;
+    int SERVO_END_POS = 180;
     // Parachute
     int MOSFET = 0; // TBD
 
     // Photo resistor
     int PHOTO_ADC = 28;
+    // Cansat is landed parameters
+    float ALTITUDE_STD = 5;       // m
+    int ALTITUDE_STD_TIME = 3000; // ms
 
+    // Sea level Hpa for barometer height
+    float SEA_LEVEL_HPA = 1013.25; // CHNAGE BEFORE FLIGHT;
+
+    // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
+
+    String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

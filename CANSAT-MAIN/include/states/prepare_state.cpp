@@ -3,8 +3,10 @@ void prepare_state(Cansat &cansat)
 {
     cansat.log.init(cansat);
     cansat.sensors.init(cansat);
+    cansat.ejection_servo.attach(cansat.config.SERVO_PWM); // setup ejection servo
+    cansat.ejection_servo.write(cansat.config.SERVO_START_POS);
     cansat.log.info("init done, waiting for arm");
-    //
+
     while (true)
     {
         // check for further commands
@@ -14,9 +16,10 @@ void prepare_state(Cansat &cansat)
         // check send data check
         if (incoming_msg == cansat.config.DATA_SEND_MSG)
         {
-            cansat.sensors.read_data();
+            cansat.sensors.read_data(cansat);
             cansat.log.data(cansat);
         }
+        // check if should arm
         else if (incoming_msg == cansat.config.ARM_MSG)
         {
             cansat.log.info("Arming singal recieved");

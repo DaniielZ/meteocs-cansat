@@ -55,10 +55,11 @@ void Sensor_manager::read_magneto()
     data.mag[1] = event.magnetic.y;
     data.mag[2] = event.magnetic.z;
 }
-void Sensor_manager::read_baro()
+void Sensor_manager::read_baro(Cansat &cansat)
 {
     _baro.read(); // note no error checking => "optimistic".
     data.pressure = _baro.getPressure();
+    data.baro_height = get_altitude(data.pressure, cansat.config.SEA_LEVEL_HPA);
     data.temperature = _baro.getTemperature();
 }
 void Sensor_manager::read_humidity()
@@ -68,10 +69,18 @@ void Sensor_manager::read_humidity()
     data.humidity = humidity.relative_humidity;
 }
 
-void Sensor_manager::read_data()
+void Sensor_manager::read_data(Cansat &cansat)
 {
     read_gps();
     read_magneto();
-    read_baro();
+    read_baro(cansat);
     read_humidity();
+}
+
+float get_altitude(float pressure_Pa, float sea_level_hPa)
+{
+    float altitude;
+    pressure_Pa /= 100;
+    altitude = 44330 * (1.0 - pow(pressure_Pa / sea_level_hPa, 0.1903));
+    return altitude;
 }

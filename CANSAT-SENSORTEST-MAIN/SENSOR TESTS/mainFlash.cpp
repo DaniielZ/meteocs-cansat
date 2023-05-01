@@ -1,129 +1,109 @@
-#include <Arduino.h>
-#include <SPIFlash.h>
-#include <SPI.h>
-// TESTED
+/*
+ *  Raspberry Pi Pico (or generic rp2040)
+ *  LittleFS get info, read dir and show all file uploaded
+ *  add a data folder to use with Pico LittleFS Data Upload
+ *  by Mischianti Renzo <https://www.mischianti.org>
+ *
+ *  https://www.mischianti.org
+ *
+ */
 
-uint8_t SPIFLASH_CS = 13;
-uint8_t SPIFLASH_RX = 12;
-uint8_t SPIFLASH_TX = 11;
-uint8_t SPIFLASH_SCK = 10;
-uint8_t SPIFLASH_WP = 9;
-uint8_t SPIFLASH_HOLD = 8;
+#include "Arduino.h"
+#include "LittleFS.h"
 
-uint16_t JDEC = 0x1F85;
-
-SPIFlash flash(SPIFLASH_CS, JDEC);
-
-char input = 0;
-long lastPeriod = -1;
+void printDirectory(File dir, int numTabs = 6);
 
 void setup()
 {
     Serial.begin(115200);
+
     while (!Serial)
     {
         delay(100);
     }
-    Serial.print("Init started!");
 
-    SPI1.setTX(SPIFLASH_TX);
-    SPI1.setRX(SPIFLASH_RX);
-    SPI1.setCS(SPIFLASH_CS);
-    SPI1.setSCK(SPIFLASH_SCK);
-
-    gpio_pull_up(SPIFLASH_WP);
-    gpio_pull_up(SPIFLASH_HOLD);
-
-    if (flash.initialize())
+    Serial.println(F("Inizializing FS..."));
+    if (LittleFS.begin())
     {
-        Serial.println("Init OK!");
+        Serial.println(F("done."));
     }
     else
     {
-        Serial.print("Init FAIL, expectedDeviceID(0x");
-        Serial.print(JDEC, HEX);
-        Serial.print(") mismatched the read value: 0x");
-        Serial.println(flash.readDeviceId(), HEX);
+        Serial.println(F("fail."));
     }
 
-    Serial.println("\n************************");
-    Serial.println("Available operations:");
-    Serial.println("'c' - read flash chip's deviceID 10 times to ensure chip is present");
-    Serial.println("'d' - dump first 256 bytes on the chip");
-    Serial.println("'e' - erase entire flash chip");
-    Serial.println("'i' - read deviceID");
-    Serial.println("************************\n");
+    // To format all space in LittleFS
+    // LittleFS.format()
+
+    // Get all information of your LittleFS
+    FSInfo *info;
+    LittleFS.info(*info);
+
+    unsigned int totalBytes = info->totalBytes;
+    unsigned int usedBytes = info->usedBytes;
+    unsigned int freeBytes = totalBytes - usedBytes;
+
+    unsigned int maxPath = info->maxPathLength;
+
+    Serial.println("File sistem info.");
+
+    Serial.print("Total space:      ");
+    Serial.print(totalBytes);
+    Serial.println("byte");
+
+    Serial.print("Total space used: ");
+    Serial.print(usedBytes);
+    Serial.println("byte");
+
+    Serial.print("Total space free: ");
+    Serial.print(freeBytes);
+    Serial.println("byte");
+
+    Serial.print("Max path lenght: ");
+    Serial.print(maxPath);
+    Serial.println("");
+
+    Serial.println();
+
+    // Open dir folder
+    File dir = LittleFS.open("/", "r");
+    // Cycle all the content
+    printDirectory(dir);
 }
 
 void loop()
 {
-    // Handle serial input (to allow basic DEBUGGING of FLASH chip)
-    // ie: display first 256 bytes in FLASH, erase chip, write bytes at first 10 positions, etc
-    if (Serial.available() > 0)
+}
+
+void printDirectory(File dir, int numTabs)
+{
+    while (true)
     {
-        input = Serial.read();
-        if (input == 'd') // d=dump flash area
-        {
-            Serial.println("Flash content:");
-            int counter = 0;
 
-            while (counter <= 256)
-            {
-                Serial.print(flash.readByte(counter++), HEX);
-                Serial.print('.');
-            }
-
-            Serial.println();
-        }
-        else if (input == 'c')
+        File entry = dir.openNextFile();
+        if (!entry)
         {
-            Serial.print("Checking chip is present ... ");
-            uint16_t deviceID = 0;
-            for (uint8_t i = 0; i < 10; i++)
-            {
-                uint16_t idNow = flash.readDeviceId();
-                if (idNow == 0 || idNow == 0xffff || (i > 0 && idNow != deviceID))
-                {
-                    deviceID = 0;
-                    break;
-                }
-                deviceID = idNow;
-            }
-            if (deviceID != 0)
-            {
-                Serial.print("OK, deviceID=0x");
-                Serial.println(deviceID, HEX);
-            }
-            else
-                Serial.println("FAIL, deviceID is inconsistent or 0x0000/0xffff");
+            // no more files
+            break;
         }
-        else if (input == 'e')
+        for (uint8_t i = 0; i < numTabs; i++)
         {
-            Serial.print("Erasing Flash chip ... ");
-            flash.chipErase();
-            while (flash.busy())
-                ;
-            Serial.println("DONE");
+            Serial.print('\t');
         }
-        else if (input == 'i')
+        Serial.print(entry.name());
+        if (entry.isDirectory())
         {
-            Serial.print("DeviceID: ");
-            Serial.println(flash.readDeviceId(), HEX);
+            Serial.println("/");
+            printDirectory(entry, numTabs + 1);
         }
-        else if (input >= 48 && input <= 57) // 0-9
+        else
         {
-            Serial.print("\nWriteByte(");
-            Serial.print(input);
-            Serial.print(")");
-            flash.writeByte(input - 48, millis() % 2 ? 0xaa : 0xbb);
+            // files have sizes, directories do not
+            Serial.print("\t\t");
+            Serial.print(entry.size(), DEC);
+            Serial.print("\t");
+            Serial.println("byte");
         }
-    }
-
-    // Periodically blink the onboard LED while listening for serial commands
-    if ((int)(millis() / 500) > lastPeriod)
-    {
-        lastPeriod++;
-        pinMode(LED_BUILTIN, OUTPUT);
-        digitalWrite(LED_BUILTIN, lastPeriod % 2);
+        entry.close();
     }
 }

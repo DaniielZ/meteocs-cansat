@@ -4,6 +4,7 @@ bool is_falling()
 {
     // IDK man not gud
     // my proposal is being dependant on gps becausese baro wont work on drone(mybe).
+    return false;
 }
 
 void ascent_state(Cansat &cansat)
