@@ -26,6 +26,7 @@ class Sensor_manager
     void read_magneto();
     void read_baro(Config &config);
     void read_humidity();
+    void read_acc();
 
 public:
     struct Sensor_data

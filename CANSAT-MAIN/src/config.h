@@ -70,6 +70,17 @@ public:
     // Sea level Hpa for barometer height
     float SEA_LEVEL_HPA = 1013.25; // CHNAGE BEFORE FLIGHT;
 
+    // hard data rate limiter
+    int SLEEP = 100; // ms
+
+    // detection parameters
+    unsigned long FALLING_TIME_SPAN = 1000;
+    float FALING_TRESHOLD_ACC_MIN = 0;
+    float FALING_TRESHOLD_ACC_MAX = 2;
+
+    unsigned long LANDING_TIME_SPAN = 10000;
+    float LANDING_TRESHOLD_ACC_MIN = 8;
+    float LANDING_TRESHOLD_ACC_MAX = 11;
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";

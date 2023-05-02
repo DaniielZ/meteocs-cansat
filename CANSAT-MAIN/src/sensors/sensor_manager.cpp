@@ -80,6 +80,9 @@ void Sensor_manager::read_humidity()
     data.humidity = humidity.relative_humidity;
 }
 
+void Sensor_manager::read_acc()
+{
+}
 void Sensor_manager::read_data(Config &config)
 {
     read_gps();

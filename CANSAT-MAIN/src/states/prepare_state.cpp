@@ -32,6 +32,6 @@ void prepare_state(Cansat &cansat)
             cansat.log.info((char *)noise_msg.c_str());
         }
 
-        delay(100);
+        delay(cansat.config.SLEEP);
     }
 }
