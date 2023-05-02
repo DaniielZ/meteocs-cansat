@@ -4,9 +4,9 @@ void landed_state(Cansat &cansat)
     cansat.log.info("landed_state");
     while (true)
     {
-        cansat.sensors.read_data();
-        cansat.log.data(cansat);
-        cansat.sound.locate(cansat);
+        cansat.sensors.read_data(cansat.config);
+        cansat.log.data(cansat.sensors.data, false);
+        cansat.sound.locate(cansat.config);
         delay(100);
     }
 }

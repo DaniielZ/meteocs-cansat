@@ -1,5 +1,4 @@
 #pragma once
-#include "core/cansat.h"
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
@@ -7,24 +6,25 @@
 #include <Adafruit_SHTC3.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_LIS2MDL.h>
+#include "config.h"
 class Sensor_manager
 {
     // SENSOR OBJECTS AND Comunication
     // GPS UART0
     TinyGPSPlus _gps;
-    SoftwareSerial _gps_serial();
+    SoftwareSerial *_gps_serial;
     // MAGNETO WIRE0s
-    TwoWire _magneto_wire();
+    TwoWire *_magneto_wire;
     Adafruit_LIS2MDL _magneto;
     // BARO WIRE1
-    TwoWire _baro_wire();
+    TwoWire *_baro_wire;
     MS5611 _baro;
     // HUMIDITY WIRE1
-    TwoWire _humidity_wire();
+    TwoWire *_humidity_wire;
     Adafruit_SHTC3 _humidity;
     void read_gps();
     void read_magneto();
-    void read_baro(Cansat &cansat);
+    void read_baro(Config &config);
     void read_humidity();
 
 public:
@@ -47,6 +47,6 @@ public:
     };
     String header = "gps_lng, gps_lat, gps_height, gps_count, mag_x, mag_y, mag_z, acc_x, acc_y, acc_z, baro_height, baro, temp, humid, light, time";
     Sensor_data data;
-    void init(Cansat &cansat);
-    void read_data(Cansat &cansat);
+    String init(Config &config);
+    void read_data(Config &config);
 };

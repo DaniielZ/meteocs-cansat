@@ -1,11 +1,14 @@
 #include "core/log.h"
+// #include "config.h"
+// #include "sensors/sensor_manager.h"
+#include <LittleFS.h>
 
-void Log::init_lora(Cansat &cansat)
+void Log::init_lora(Config &config)
 {
-    _spi_lora = SPIClassRP2040(spi0, cansat.config.LORA_RX, cansat.config.LORA_CS, cansat.config.LORA_SCK, cansat.config.LORA_TX);
-    _lora.setPins(cansat.config.LORA_CS);
-    _lora.setSPI(_spi_lora);
-    if (!_lora.begin(cansat.config.LORA_FREQUENCY))
+    _spi_lora = new SPIClassRP2040(spi0, config.LORA_RX, config.LORA_CS, config.LORA_SCK, config.LORA_TX);
+    _lora.setPins(config.LORA_CS);
+    _lora.setSPI(*_spi_lora);
+    if (!_lora.begin(config.LORA_FREQUENCY))
     {
         Serial.println("Starting LoRa failed!");
         while (1)
@@ -13,13 +16,13 @@ void Log::init_lora(Cansat &cansat)
     }
 
     // setting paramaters
-    _lora.setTxPower(cansat.config.LORA_TXPOWER);
-    _lora.setSpreadingFactor(cansat.config.LORA_SPREADING);
-    _lora.setCodingRate4(cansat.config.LORA_CODING_RATE);
-    _lora.setSignalBandwidth(cansat.config.LORA_SIGNAL_BW);
+    _lora.setTxPower(config.LORA_TXPOWER);
+    _lora.setSpreadingFactor(config.LORA_SPREADING);
+    _lora.setCodingRate4(config.LORA_CODING_RATE);
+    _lora.setSignalBandwidth(config.LORA_SIGNAL_BW);
     Serial.println("LoRa! Running");
 }
-void Log::init_flash(Cansat &cansat)
+void Log::init_flash(Config &config)
 {
     // initilise flash
     if (LittleFS.begin())
@@ -32,20 +35,20 @@ void Log::init_flash(Cansat &cansat)
     }
 
     // determine nr for final path
-    while (LittleFS.exists(cansat.config.LOG_FILE_NAME_BASE_PATH + String(_log_file_name_nr) + ".txt"))
+    while (LittleFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(_log_file_name_nr) + ".txt"))
     {
         _log_file_name_nr++;
     }
-    _log_file_path_final = cansat.config.LOG_FILE_NAME_BASE_PATH + String(_log_file_name_nr) + ".txt";
+    _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(_log_file_name_nr) + ".txt";
     // print header
     File file = LittleFS.open(_log_file_path_final, "a+");
     file.println("");
 }
-void Log::init(Cansat &cansat)
+void Log::init(Config &config)
 {
     // initilise pc serial
-    Serial.begin(cansat.config.PC_BAUDRATE);
-    if (cansat.config.WAIT_PC)
+    Serial.begin(config.PC_BAUDRATE);
+    if (config.WAIT_PC)
     {
         while (!Serial)
         {
@@ -53,10 +56,10 @@ void Log::init(Cansat &cansat)
         }
     }
 
-    init_flash(cansat);
-    init_lora(cansat);
+    init_flash(config);
+    init_lora(config);
 }
-void Log::info(char msg[])
+void Log::info(String msg)
 {
     // prints message to serial
     Serial.println(msg);
@@ -66,125 +69,119 @@ void Log::info(char msg[])
     _lora.endPacket();
     // write to flash
     File file = LittleFS.open(_log_file_path_final, "a+");
-    file.println(String(msg));
+    file.println(msg);
     file.close();
 }
-void Log::error(Cansat &cansat, char msg[])
-{
-    info(msg);
-    // play error sound
-    cansat.sound.error(cansat);
-}
-void Log::data(Cansat &cansat)
+void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
 {
     // prints data
     Serial.print("DATA: ");
-    Serial.print(cansat.sensors.data.gps_lng);
+    Serial.print(data.gps_lng);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.gps_lat);
+    Serial.print(data.gps_lat);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.gps_height);
+    Serial.print(data.gps_height);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.gps_sattelites);
+    Serial.print(data.gps_sattelites);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.mag[0]);
+    Serial.print(data.mag[0]);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.mag[1]);
+    Serial.print(data.mag[1]);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.mag[2]);
+    Serial.print(data.mag[2]);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.acc[0]);
+    Serial.print(data.acc[0]);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.acc[1]);
+    Serial.print(data.acc[1]);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.acc[2]);
+    Serial.print(data.acc[2]);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.baro_height);
+    Serial.print(data.baro_height);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.pressure);
+    Serial.print(data.pressure);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.temperature);
+    Serial.print(data.temperature);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.humidity);
+    Serial.print(data.humidity);
     Serial.print(",");
-    Serial.print(cansat.sensors.data.light);
+    Serial.print(data.light);
     Serial.print(",");
-    Serial.println(cansat.sensors.data.time);
+    Serial.println(data.time);
 
     // sends data over lora if can be sent
     if (_lora.beginPacket() != 0)
     {
-        _lora.print(cansat.sensors.data.gps_lng);
+        _lora.print(data.gps_lng);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.gps_lat);
+        _lora.print(data.gps_lat);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.gps_height);
+        _lora.print(data.gps_height);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.gps_sattelites);
+        _lora.print(data.gps_sattelites);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.mag[0]);
+        _lora.print(data.mag[0]);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.mag[1]);
+        _lora.print(data.mag[1]);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.mag[2]);
+        _lora.print(data.mag[2]);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.acc[0]);
+        _lora.print(data.acc[0]);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.acc[1]);
+        _lora.print(data.acc[1]);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.acc[2]);
+        _lora.print(data.acc[2]);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.baro_height);
+        _lora.print(data.baro_height);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.pressure);
+        _lora.print(data.pressure);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.temperature);
+        _lora.print(data.temperature);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.humidity);
+        _lora.print(data.humidity);
         _lora.print(",");
-        _lora.print(cansat.sensors.data.light);
+        _lora.print(data.light);
         _lora.print(",");
-        _lora.println(cansat.sensors.data.time);
+        _lora.println(data.time);
     }
     // logs data to flash if apropriate state
-    if (cansat.current_state != cansat.LANDED)
+    if (log_to_storage)
     {
         File file = LittleFS.open(_log_file_path_final, "a+");
-        file.print(cansat.sensors.data.gps_lng);
+        file.print(data.gps_lng);
         file.print(",");
-        file.print(cansat.sensors.data.gps_lat);
+        file.print(data.gps_lat);
         file.print(",");
-        file.print(cansat.sensors.data.gps_height);
+        file.print(data.gps_height);
         file.print(",");
-        file.print(cansat.sensors.data.gps_sattelites);
+        file.print(data.gps_sattelites);
         file.print(",");
-        file.print(cansat.sensors.data.mag[0]);
+        file.print(data.mag[0]);
         file.print(",");
-        file.print(cansat.sensors.data.mag[1]);
+        file.print(data.mag[1]);
         file.print(",");
-        file.print(cansat.sensors.data.mag[2]);
+        file.print(data.mag[2]);
         file.print(",");
-        file.print(cansat.sensors.data.acc[0]);
+        file.print(data.acc[0]);
         file.print(",");
-        file.print(cansat.sensors.data.acc[1]);
+        file.print(data.acc[1]);
         file.print(",");
-        file.print(cansat.sensors.data.acc[2]);
+        file.print(data.acc[2]);
         file.print(",");
-        file.print(cansat.sensors.data.baro_height);
+        file.print(data.baro_height);
         file.print(",");
-        file.print(cansat.sensors.data.pressure);
+        file.print(data.pressure);
         file.print(",");
-        file.print(cansat.sensors.data.temperature);
+        file.print(data.temperature);
         file.print(",");
-        file.print(cansat.sensors.data.humidity);
+        file.print(data.humidity);
         file.print(",");
-        file.print(cansat.sensors.data.light);
+        file.print(data.light);
         file.print(",");
-        file.println(cansat.sensors.data.time);
+        file.println(data.time);
         file.close();
     }
 }
-bool Log::read(Cansat &cansat, String &msg)
+bool Log::read(String &msg)
 {
     // if anything has been recieved add message to string and return true if msg was read
     int packetSize = _lora.parsePacket();

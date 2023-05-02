@@ -12,8 +12,8 @@ void ascent_state(Cansat &cansat)
     cansat.log.info("ascent_state");
     while (true)
     {
-        cansat.sensors.read_data();
-        cansat.log.data(cansat);
+        cansat.sensors.read_data(cansat.config);
+        cansat.log.data(cansat.sensors.data, true);
 
         // check if falling
         if (is_falling())
