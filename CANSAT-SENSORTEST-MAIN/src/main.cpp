@@ -1,75 +1,71 @@
 #include <Arduino.h>
+#include <LoRa.h>
+#include <SPI.h> // include libraries
 #include <Wire.h>
-#include "H3LIS100.h"
-int sda = 16;
-int scl = 17;
+// SEMS to be sending but not verified
+// LORA 433.1 working
+long MAIN_FREQUENCY = 434.1E6;
+uint8_t SPI_MAIN_CS = 5;
+uint8_t SPI_MAIN_RX = 4;
+uint8_t SPI_MAIN_TX = 3;
+uint8_t SPI_MAIN_SCK = 2;
 
-TwoWire acc_wire(i2c0, sda, scl);
+int counter = 0;
+LoRaClass LoRaMain;
 
-void scan_address()
-{
-    byte error, address;
-    int nDevices;
-
-    Serial.println("Scanning...");
-
-    nDevices = 0;
-    for (address = 1; address < 127; address++)
-    {
-        // The i2c_scanner uses the return value of
-        // the Write.endTransmisstion to see if
-        // a device did acknowledge to the address.
-        acc_wire.beginTransmission(address);
-        error = acc_wire.endTransmission();
-
-        if (error == 0)
-        {
-            Serial.print("I2C device found at address 0x");
-            if (address < 16)
-                Serial.print("0");
-            Serial.print(address, HEX);
-            Serial.println("  !");
-
-            nDevices++;
-        }
-        else if (error == 4)
-        {
-            Serial.print("Unknown error at address 0x");
-            if (address < 16)
-                Serial.print("0");
-            Serial.println(address, HEX);
-        }
-    }
-    if (nDevices == 0)
-        Serial.println("No I2C devices found\n");
-    else
-        Serial.println("done\n");
-}
 void setup()
 {
-    Serial.begin();
+    Serial.begin(115200); // initialize serial
     while (!Serial)
     {
         delay(100);
     }
-    delay(500);
-    scan_address();
-    H3LIS100 acc(123);
-    if (acc.begin(24u, &acc_wire))
+    Serial.println("Starting LoRa......!");
+
+    // SPI LoRa pins
+    SPI.setCS(SPI_MAIN_CS);
+    SPI.setRX(SPI_MAIN_RX);
+    SPI.setTX(SPI_MAIN_TX);
+    SPI.setSCK(SPI_MAIN_SCK);
+
+    LoRaMain.setPins(SPI_MAIN_CS);
+    LoRaMain.setSPI(SPI);
+
+    if (!LoRaMain.begin(MAIN_FREQUENCY))
     {
-        Serial.println("alles good");
+        Serial.println("Starting LoRa failed!");
+        while (1)
+            ;
     }
-    Serial.println("alles good");
-    while (true)
-    {
-        sensors_event_t event;
-        acc.getEvent(&event);
-        Serial.print(event.acceleration.x);
-        Serial.print(event.acceleration.y);
-        Serial.println(event.acceleration.z);
-        delay(500);
-    }
+
+    // setting paramaters
+    LoRaMain.setTxPower(10);
+    LoRaMain.setSpreadingFactor(10);
+    LoRaMain.setCodingRate4(6);
+    LoRaMain.setSignalBandwidth(62.5E3);
+    Serial.println("LoRa! Running");
 }
+
 void loop()
 {
+    while (LoRaMain.beginPacket() == 0)
+    {
+        Serial.print("waiting for radio ... ");
+        delay(100);
+    }
+
+    Serial.print("Sending packet non-blocking: ");
+    Serial.println(counter);
+
+    // send packet
+    LoRaMain.beginPacket();
+    LoRaMain.print("hello ");
+    Serial.print("hello ");
+    LoRaMain.print(counter);
+    Serial.print(counter);
+    LoRaMain.endPacket();
+    Serial.println("ended ");
+    counter++;
+
+    delay(2500);
 }

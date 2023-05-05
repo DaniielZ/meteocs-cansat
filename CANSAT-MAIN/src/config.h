@@ -59,7 +59,7 @@ public:
     int SERVO_START_POS = 0;
     int SERVO_END_POS = 180;
     // Parachute
-    int MOSFET = 0; // TBD
+    int MOSFET = 22; // TBD
 
     // Photo resistor
     int PHOTO_ADC = 28;

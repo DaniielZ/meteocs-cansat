@@ -4,6 +4,8 @@
 int sda = 16;
 int scl = 17;
 
+TwoWire acc_wire(i2c0, sda, scl);
+
 void scan_address()
 {
     byte error, address;
@@ -12,14 +14,13 @@ void scan_address()
     Serial.println("Scanning...");
 
     nDevices = 0;
-    for (address = 20; address < 127; address++)
+    for (address = 1; address < 127; address++)
     {
         // The i2c_scanner uses the return value of
         // the Write.endTransmisstion to see if
         // a device did acknowledge to the address.
-        Serial.println(address);
-        Wire.beginTransmission(address);
-        error = Wire.endTransmission();
+        acc_wire.beginTransmission(address);
+        error = acc_wire.endTransmission();
 
         if (error == 0)
         {
@@ -46,21 +47,19 @@ void scan_address()
 }
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin();
     while (!Serial)
     {
         delay(100);
     }
-    Wire.setSCL(scl);
-    Wire.setSDA(sda);
     delay(500);
     scan_address();
-    H3LIS100 acc(1223);
-    if (!acc.begin(0x18, &Wire))
+    H3LIS100 acc(123);
+    if (acc.begin(24u, &acc_wire))
     {
-        Serial.println("alles bad");
+        Serial.println("alles good");
     }
-
+    Serial.println("alles good");
     while (true)
     {
         sensors_event_t event;
