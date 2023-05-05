@@ -20,15 +20,9 @@ uint8_t SPI_NANO_BUSY = 13;
 // for SX126x series or LLCC68
 #include <SX126x.h>
 SX126x LoRaNano;
-
-void setup()
+void init_LoRa_main()
 {
-    Serial.begin(9600); // initialize serial
-    while (!Serial)
-    {
-        delay(100);
-    }
-    Serial.println("Starting LoRa......!");
+    Serial.println("Starting LoRa main......!");
 
     // SPI LoRa pins
     SPI.setCS(SPI_MAIN_CS);
@@ -52,52 +46,35 @@ void setup()
     LoRaMain.setCodingRate4(6);
     LoRaMain.setSignalBandwidth(62.5E3);
     Serial.println("LoRa main! Running");
+}
 
+void init_LoRa_nano()
+{
     // SPI LoRa  nano pins
     SPI1.setCS(SPI_NANO_CS);
     SPI1.setRX(SPI_NANO_RX);
     SPI1.setTX(SPI_NANO_TX);
     SPI1.setSCK(SPI_NANO_SCK);
     LoRaNano.setSPI(SPI1);
-    if (!LoRaNano.begin(SPI_NANO_CS, SPI_NANO_NREST, SPI_NANO_BUSY, -1, -1, -1))
+    LoRaNano.setPins(SPI_NANO_CS, SPI_NANO_NREST, SPI_NANO_BUSY);
+    if (!LoRaNano.begin())
     {
         Serial.println("Something wrong, can't begin LoRa nano radio");
         while (1)
             ;
     }
+
     LoRaNano.setFrequency(NANO_FREQUENCY);
-
-    // Set RX gain to boosted gain
-    Serial.println("Set RX gain to boosted gain");
     LoRaNano.setRxGain(SX126X_RX_GAIN_BOOSTED);
-
-    // Configure modulation parameter including spreading factor (SF), bandwidth (BW), and coding rate (CR)
-    Serial.println("Set modulation parameters:\n\tSpreading factor = 7\n\tBandwidth = 125 kHz\n\tCoding rate = 4/5");
     uint8_t sf = 7;
     uint32_t bw = 125000;
     uint8_t cr = 5;
     LoRaNano.setLoRaModulation(sf, bw, cr);
-
-    // Configure packet parameter including header type, preamble length, payload length, and CRC type
-    Serial.println("Set packet parameters:\n\tExplicit header type\n\tPreamble length = 12\n\tPayload Length = 15\n\tCRC on");
-    uint8_t headerType = SX126X_HEADER_EXPLICIT;
-    uint16_t preambleLength = 12;
-    uint8_t payloadLength = 15;
-    bool crcType = true;
-    LoRaNano.setLoRaPacket(headerType, preambleLength, payloadLength, crcType);
-
-    // Set syncronize word for public network (0x3444)
-    Serial.println("Set syncronize word to 0x3444");
+    LoRaNano.setLoRaPacket(LORA_HEADER_EXPLICIT, 12, 15, true, false);
     LoRaNano.setSyncWord(0x3444);
-
-    Serial.println("\n-- LORA RECEIVER CONTINUOUS --\n");
-
-    // Request for receiving new LoRa packet in RX continuous mode
-    LoRaNano.request(SX126X_RX_CONTINUOUS);
-    Serial.println("LoRa! nano Running");
+    Serial.println("LoRa nano! Running");
 }
-
-void loop()
+void read_main_lora()
 {
     // try to parse packet
     int packetSize = LoRaMain.parsePacket();
@@ -116,46 +93,18 @@ void loop()
         Serial.print("' with RSSI ");
         Serial.println(LoRaMain.packetRssi());
     }
-    int nanoPacketSize = LoRaNano.available();
-    if (nanoPacketSize)
+}
+void read_nano_lora()
+{
+    LoRaNano.request();
+    LoRaNano.wait();
+    const uint8_t msgLen = LoRaNano.available();
+    if (msgLen)
     {
-        // received a packet
-        Serial.print("Received packet '");
-
-        // read packet
         while (LoRaNano.available())
         {
             Serial.print((char)LoRaNano.read());
         }
-
-        // print RSSI of packet
-        Serial.print("' with RSSI ");
-        Serial.println(LoRaNano.packetRssi());
-    }
-
-    // CANSAT nano recieve
-
-    // Check for incoming LoRa packet
-    const uint8_t msgLen = LoRaNano.available();
-    if (msgLen)
-    {
-        Serial.println("PAKETA");
-
-        // Put received packet to message and counter variable
-        char message[msgLen - 1];
-        uint8_t counter;
-        uint8_t i = 0;
-        while (LoRaNano.available() > 1)
-        {
-            message[i++] = LoRaNano.read();
-        }
-        counter = LoRaNano.read();
-
-        // Print received message and counter in serial
-        Serial.print(message);
-        Serial.print("  ");
-        Serial.println(counter);
-
         // Print packet/signal status including package RSSI and SNR
         Serial.print("Packet status: RSSI = ");
         Serial.print(LoRaNano.packetRssi());
@@ -171,4 +120,20 @@ void loop()
             Serial.println("Packet header error");
         Serial.println();
     }
+}
+void setup()
+{
+    Serial.begin(9600); // initialize serial
+    while (!Serial)
+    {
+        delay(100);
+    }
+    init_LoRa_main();
+    init_LoRa_nano();
+}
+
+void loop()
+{
+    read_main_lora();
+    read_nano_lora();
 }
