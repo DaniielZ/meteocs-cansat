@@ -12,3 +12,4 @@ void loop()
 }
 
 // if you want to configure the cansat go to INCLUDE/config.h
+// The program lacks a lot of error checking

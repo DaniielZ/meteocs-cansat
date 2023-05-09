@@ -59,7 +59,7 @@ void loop()
 
     // send packet
     LoRaMain.beginPacket();
-    LoRaMain.print("hello ");
+    LoRaMain.print("hello ");   
     Serial.print("hello ");
     LoRaMain.print(counter);
     Serial.print(counter);

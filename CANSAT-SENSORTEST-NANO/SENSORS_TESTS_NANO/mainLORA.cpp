@@ -1,90 +1,72 @@
 #include <Arduino.h>
-#include <SPI.h> // include libraries
+#include <LoRa.h>
 #include <Wire.h>
-#include <SX126x.h>
+#include <SPI.h> // include libraries
+
 // SEMS to be sending but not verified
 
-long NANO_FREQUENCY = 868.1E6;
-uint8_t SPI_NANO_CS = 5;
+long NANO_FREQUENCY = 433.1E6;
+uint8_t SPI_NANO_CS = 6;
 uint8_t SPI_NANO_RX = 8;
 uint8_t SPI_NANO_TX = 7;
 uint8_t SPI_NANO_SCK = 27;
-uint8_t SPI_NANO_NREST = 16;
-uint8_t SPI_NANO_DIO0 = 25; // unused
-uint8_t SPI_NANO_BUSY = 26;
 
-SX126x LoRa;
-
-// Message to transmit
-char message[] = "HeLoRa World!";
-uint8_t nBytes = sizeof(message);
-uint8_t counter = 0;
+int counter = 0;
+LoRaClass LoRaNano;
 
 void setup()
 {
-
-    // Begin serial communication
-    Serial.begin(38400);
+    Serial.begin(115200); // initialize serial
     while (!Serial)
     {
         delay(100);
     }
+    Serial.println("Starting LoRa......!");
 
+    // SPI LoRa pins
     SPI.setCS(SPI_NANO_CS);
     SPI.setMISO(SPI_NANO_RX);
     SPI.setMOSI(SPI_NANO_TX);
     SPI.setSCK(SPI_NANO_SCK);
-    LoRa.setSPI(SPI);
-    LoRa.setPins(SPI_NANO_CS, SPI_NANO_NREST, SPI_NANO_BUSY);
-    Serial.println("Begin LoRa radio");
-    if (!LoRa.begin())
+
+    LoRaNano.setPins(SPI_NANO_CS);
+    LoRaNano.setSPI(SPI);
+
+    if (!LoRaNano.begin(NANO_FREQUENCY))
     {
-        Serial.println("Something wrong, can't begin LoRa radio");
+        Serial.println("Starting LoRa failed!");
         while (1)
             ;
     }
-    LoRa.setFrequency(NANO_FREQUENCY);
-    LoRa.setTxPower(17);
 
-    uint8_t sf = 7;       // LoRa spreading factor: 7
-    uint32_t bw = 125000; // Bandwidth: 125 kHz
-    uint8_t cr = 5;       // Coding rate: 4/5
-    LoRa.setLoRaModulation(sf, bw, cr);
-    uint8_t headerType = SX126X_HEADER_EXPLICIT; // Explicit header mode
-    uint16_t preambleLength = 12;                // Set preamble length to 12
-    uint8_t payloadLength = 15;                  // Initialize payloadLength to 15
-    bool crcType = true;                         // Set CRC enable
-    LoRa.setLoRaPacket(headerType, preambleLength, payloadLength, crcType);
-
-    LoRa.setSyncWord(0x3444);
-
-    Serial.println("\n-- LORA TRANSMITTER --\n");
+    // setting paramaters
+    LoRaNano.setTxPower(10);
+    LoRaNano.setSpreadingFactor(10);
+    LoRaNano.setCodingRate4(6);
+    LoRaNano.setSignalBandwidth(62.5E3);
+    Serial.println("LoRa! Running");
 }
 
 void loop()
 {
+    while (LoRaNano.beginPacket() == 0)
+    {
+        Serial.print("waiting for radio ... ");
+        delay(100);
+    }
 
-    // Transmit message and counter
-    // write() method must be placed between beginPacket() and endPacket()
-    LoRa.beginPacket();
-    LoRa.write(message, nBytes);
-    LoRa.write(counter);
-    LoRa.endPacket();
+    Serial.print("Sending packet non-blocking: ");
+    Serial.println(counter);
 
-    // Print message and counter in serial
-    Serial.print(message);
-    Serial.print("  ");
-    Serial.println(counter++);
+    // send packet
+    LoRaNano.beginPacket();
+    LoRaNano.print("hello nano ");
+    Serial.print("hello nano ");
+    LoRaNano.print(counter);
+    Serial.print(counter);
+    LoRaNano.endPacket();
+    Serial.println("ended ");
+    counter++;
 
-    // Wait until modulation process for transmitting packet finish
-    LoRa.wait();
-
-    // Print transmit time
-    Serial.print("Transmit time: ");
-    Serial.print(LoRa.transmitTime());
-    Serial.println(" ms");
-    Serial.println();
-
-    // Don't load RF module with continous transmit
-    delay(5000);
+    delay(2500);
 }
