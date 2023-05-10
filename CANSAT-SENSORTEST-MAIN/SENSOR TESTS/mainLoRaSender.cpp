@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <LoRa.h>
 #include <SPI.h> // include libraries
-
+#include <Wire.h>
 // SEMS to be sending but not verified
-
-long MAIN_FREQUENCY = 434.1E6;
+// LORA 433.1 working
+long MAIN_FREQUENCY = 434.25E6;
 uint8_t SPI_MAIN_CS = 5;
 uint8_t SPI_MAIN_RX = 4;
 uint8_t SPI_MAIN_TX = 3;
@@ -16,10 +16,11 @@ LoRaClass LoRaMain;
 void setup()
 {
     Serial.begin(115200); // initialize serial
-    while (!Serial)
-    {
-        delay(100);
-    }
+    delay(2000);
+    // while (!Serial)
+    // {
+    //     delay(100);
+    // }
     Serial.println("Starting LoRa......!");
 
     // SPI LoRa pins
@@ -59,8 +60,8 @@ void loop()
 
     // send packet
     LoRaMain.beginPacket();
-    LoRaMain.print("hello ");   
-    Serial.print("hello ");
+    LoRaMain.print("hello main ");
+    Serial.print("hello main ");
     LoRaMain.print(counter);
     Serial.print(counter);
     LoRaMain.endPacket();

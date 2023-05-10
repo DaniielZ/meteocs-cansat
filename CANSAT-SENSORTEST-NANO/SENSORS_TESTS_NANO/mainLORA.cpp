@@ -5,7 +5,7 @@
 
 // SEMS to be sending but not verified
 
-long NANO_FREQUENCY = 433.1E6;
+long NANO_FREQUENCY = 432.25E6;
 uint8_t SPI_NANO_CS = 6;
 uint8_t SPI_NANO_RX = 8;
 uint8_t SPI_NANO_TX = 7;
@@ -17,10 +17,10 @@ LoRaClass LoRaNano;
 void setup()
 {
     Serial.begin(115200); // initialize serial
-    while (!Serial)
-    {
-        delay(100);
-    }
+    // while (!Serial)
+    // {
+    //     delay(100);
+    // }
     Serial.println("Starting LoRa......!");
 
     // SPI LoRa pins
@@ -68,5 +68,5 @@ void loop()
     Serial.println("ended ");
     counter++;
 
-    delay(2500);
+    delay(1000);
 }

@@ -16,6 +16,10 @@ uint8_t SPI_NANO_TX = 3;
 uint8_t SPI_NANO_SCK = 2;
 LoRaClass LoRaNano;
 
+String ARM_MSG = "arm_confirm";
+String DATA_MSG = "data_send";
+
+bool transmiting_mode = false; // dont change
 void init_LoRa_main()
 {
     Serial.println("Starting LoRa main......!");
@@ -106,6 +110,34 @@ void read_nano_lora()
         Serial.println(LoRaNano.packetRssi());
     }
 }
+void send_nano_lora(String msg)
+{
+    while (LoRaNano.beginPacket() == 0)
+    {
+        Serial.print("waiting for nano lora ... ");
+        delay(50);
+    }
+    // send packet
+    LoRaNano.beginPacket();
+    LoRaNano.print(msg);
+    Serial.print("Nano lora transmited: " + msg + " ....");
+    LoRaNano.endPacket();
+    Serial.println("done!");
+}
+void send_main_lora(String msg)
+{
+    while (LoRaMain.beginPacket() == 0)
+    {
+        Serial.print("waiting for main lora ... ");
+        delay(50);
+    }
+    // send packet
+    LoRaMain.beginPacket();
+    LoRaMain.print(msg);
+    Serial.print("Main lora transmited: " + msg + " ....");
+    LoRaMain.endPacket();
+    Serial.println("done!");
+}
 void setup()
 {
     Serial.begin(115200); // initialize serial
@@ -119,6 +151,50 @@ void setup()
 
 void loop()
 {
-    read_main_lora();
-    read_nano_lora();
+    if (transmiting_mode)
+    {
+        if (Serial.available() > 0)
+        {
+            if (Serial.read() == 'D')
+            {
+                send_main_lora(DATA_MSG);
+                send_nano_lora(DATA_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (Serial.read() == 'A')
+            {
+                send_main_lora(ARM_MSG);
+                send_nano_lora(ARM_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (Serial.read() == 'R')
+            {
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else
+            {
+                Serial.println("Unexpected input : " + (char)Serial.read());
+            }
+        }
+    }
+    else
+    {
+        read_main_lora();
+        read_nano_lora();
+        if (Serial.available() > 0)
+        {
+            if (Serial.read() == 'T')
+            {
+                Serial.println("Switching to transmiting mode");
+                transmiting_mode = true;
+            }
+            else
+            {
+                Serial.println("Unexpected input : " + (char)Serial.read());
+            }
+        }
+    }
 }
