@@ -10,39 +10,63 @@ float get_altitude(float pressure_Pa, float sea_level_hPa)
 
 String Sensor_manager::init(Config &config)
 {
+
     String status;
+
+    // WIRE0
+    Wire.setSCL(config.LIS2MDL_SCL);
+    Wire.setSDA(config.LIS2MDL_SDA);
+    // WIRE1
+    Wire1.setSCL(config.SHTC3_SCL);
+    Wire1.setSDA(config.SHTC3_SDA);
     // GPS UART0
     _gps_serial = new SoftwareSerial(config.GPS_RX, config.GPS_TX);
     _gps_serial->begin(config.GPS_BAUDRATE);
+    _gps_initialized = true;
     // MAGNETO WIRE0
-    _magneto_wire = new TwoWire(i2c0, config.LIS2MDL_SDA, config.LIS2MDL_SCL);
     _magneto = Adafruit_LIS2MDL(12345);
     _magneto.enableAutoRange(true);
-    if (!_magneto.begin(30U, _magneto_wire))
+    if (!_magneto.begin(30U, &Wire))
     {
         status += "Magneto error";
+        Serial.println("Magento turned off");
     }
-    // BARO WIRE1
-    _baro_wire = new TwoWire(i2c1, config.MS5611_SDA, config.MS5611_SCL);
-    _baro = MS5611(config.MS5611_ADDRESS);
-    if (!_baro.begin(_baro_wire))
+    else
     {
-        status += " Baro error";
-    }
-    // HUMIDITY WIRE1
-    _humidity_wire = new TwoWire(i2c1, config.SHTC3_SDA, config.SHTC3_SCL);
-    if (!_humidity.begin(_humidity_wire))
-    {
-        status += "Humidity error";
+        _magneto_initialized = true;
     }
 
-    // Log innit complete
-    status += "Sensor innit complete";
+    // BARO WIRE1
+    _baro = MS5611(config.MS5611_ADDRESS);
+    if (!_baro.begin(&Wire1))
+    {
+        status += " Baro error";
+        Serial.println("Baro turned off");
+    }
+    else
+    {
+        _baro_initialized = true;
+    }
+    // HUMIDITY WIRE1
+    if (!_humidity.begin(&Wire1))
+    {
+        status += " Humidity error";
+        Serial.println("Humidity turned off");
+    }
+    else
+    {
+        _humidity_initialized = true;
+    }
+    Serial.println(_baro_initialized);
     return status;
 }
 
 void Sensor_manager::read_gps()
 {
+    if (!_gps_initialized)
+    {
+        return;
+    }
     while (_gps_serial->available() > 0)
     {
         _gps.encode(_gps_serial->read());
@@ -58,6 +82,10 @@ void Sensor_manager::read_gps()
 void Sensor_manager::read_magneto()
 {
     /* Get a new sensor event */
+    if (!_magneto_initialized)
+    {
+        return;
+    }
     sensors_event_t event;
     _magneto.getEvent(&event);
 
@@ -68,6 +96,11 @@ void Sensor_manager::read_magneto()
 }
 void Sensor_manager::read_baro(Config &config)
 {
+    if (_baro_initialized != true)
+    {
+        Serial.println("Baro not init.. returning");
+        return;
+    }
     _baro.read(); // note no error checking => "optimistic".
     data.pressure = _baro.getPressure();
     data.baro_height = get_altitude(data.pressure, config.SEA_LEVEL_HPA);
@@ -75,6 +108,10 @@ void Sensor_manager::read_baro(Config &config)
 }
 void Sensor_manager::read_humidity()
 {
+    if (!_humidity_initialized)
+    {
+        return;
+    }
     sensors_event_t humidity, temp;
     _humidity.getEvent(&humidity, &temp); // populate temp and humidity objects with fresh data
     data.humidity = humidity.relative_humidity;
@@ -83,10 +120,16 @@ void Sensor_manager::read_humidity()
 void Sensor_manager::read_acc()
 {
 }
+void Sensor_manager::read_time()
+{
+    data.time = millis();
+}
 void Sensor_manager::read_data(Config &config)
 {
+    data = {0, 0, 0, 0, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0, 0, 0, 0};
     read_gps();
     read_magneto();
     read_baro(config);
     read_humidity();
+    read_time();
 }

@@ -23,6 +23,7 @@
 #include "Adafruit_SHTC3.h"
 #include <Servo.h>
 #include "LittleFS.h"
+#include <Vector.h>
 
 class Cansat
 {
@@ -35,6 +36,12 @@ public:
         DESCENT,
         LANDED
     };
+    struct data_point
+    {
+        float value;
+        unsigned long time;
+    };
+    
     State current_state = State::PREP;
 
     Config config;
@@ -42,5 +49,6 @@ public:
     Log log;
     Sound sound;
     // Servo ejection_servo;
+    float average_value(float current_value, unsigned long current_time, unsigned long time_span, Vector<data_point> &data_points);
     void start_states(Cansat &cansat);
 };

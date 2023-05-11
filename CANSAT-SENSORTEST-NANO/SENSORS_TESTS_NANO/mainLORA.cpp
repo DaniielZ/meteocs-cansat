@@ -54,7 +54,6 @@ void loop()
         Serial.print("waiting for radio ... ");
         delay(100);
     }
-
     Serial.print("Sending packet non-blocking: ");
     Serial.println(counter);
 

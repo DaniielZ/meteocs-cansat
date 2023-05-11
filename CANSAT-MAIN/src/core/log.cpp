@@ -21,9 +21,14 @@ void Log::init_lora(Config &config)
     _lora.setCodingRate4(config.LORA_CODING_RATE);
     _lora.setSignalBandwidth(config.LORA_SIGNAL_BW);
     Serial.println("LoRa! Running");
+    _lora_initialized = true;
 }
 void Log::init_flash(Config &config)
 {
+    if (!config.LOG_TO_STORAGE)
+    {
+        return;
+    }
     // initilise flash
     if (LittleFS.begin())
     {
@@ -35,16 +40,24 @@ void Log::init_flash(Config &config)
     }
 
     // determine nr for final path
-    while (LittleFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(_log_file_name_nr) + ".txt"))
+    int log_file_name_nr = 0;
+    while (LittleFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
     {
-        _log_file_name_nr++;
+        log_file_name_nr++;
     }
-    _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(_log_file_name_nr) + ".txt";
+    _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
     // print header
     File file = LittleFS.open(_log_file_path_final, "a+");
-    file.println("");
+    file.println("DATA");
+    if (!file)
+    {
+        Serial.println("Failed opening flash file");
+    }
+    file.close();
+    Serial.println("Final path: " + _log_file_path_final);
+    _flash_initialized = true;
 }
-void Log::init(Config &config)
+void Log::init_pcserial(Config &config)
 {
     // initilise pc serial
     Serial.begin(config.PC_BAUDRATE);
@@ -55,7 +68,10 @@ void Log::init(Config &config)
             delay(500);
         }
     }
-
+}
+void Log::init(Config &config)
+{
+    init_pcserial(config);
     init_flash(config);
     init_lora(config);
 }
@@ -64,13 +80,28 @@ void Log::info(String msg)
     // prints message to serial
     Serial.println(msg);
     // sends message over lora
-    _lora.beginPacket();
-    _lora.println(msg);
-    _lora.endPacket();
-    // write to flash
-    File file = LittleFS.open(_log_file_path_final, "a+");
-    file.println(msg);
-    file.close();
+    if (_lora_initialized)
+    {
+        while (_lora.beginPacket() == 0)
+        {
+            Serial.print("waiting for lora ... ");
+            delay(50);
+        }
+        _lora.beginPacket();
+        _lora.println(msg);
+        _lora.endPacket();
+    }
+    if (_flash_initialized)
+    {
+        // write to flash
+        File file = LittleFS.open(_log_file_path_final, "a+");
+        if (!file)
+        {
+            Serial.println("Failed opening flash file");
+        }
+        file.println(msg);
+        file.close();
+    }
 }
 void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
 {
@@ -96,6 +127,12 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     Serial.print(",");
     Serial.print(data.acc[2]);
     Serial.print(",");
+    Serial.print(data.gyro[0]);
+    Serial.print(",");
+    Serial.print(data.gyro[1]);
+    Serial.print(",");
+    Serial.print(data.gyro[2]);
+    Serial.print(",");
     Serial.print(data.baro_height);
     Serial.print(",");
     Serial.print(data.pressure);
@@ -109,8 +146,10 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     Serial.println(data.time);
 
     // sends data over lora if can be sent
-    if (_lora.beginPacket() != 0)
+
+    if (_lora.beginPacket() != 0 && _lora_initialized)
     {
+        _lora.beginPacket();
         _lora.print(data.gps_lng);
         _lora.print(",");
         _lora.print(data.gps_lat);
@@ -131,6 +170,12 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         _lora.print(",");
         _lora.print(data.acc[2]);
         _lora.print(",");
+        _lora.print(data.gyro[0]);
+        _lora.print(",");
+        _lora.print(data.gyro[1]);
+        _lora.print(",");
+        _lora.print(data.gyro[2]);
+        _lora.print(",");
         _lora.print(data.baro_height);
         _lora.print(",");
         _lora.print(data.pressure);
@@ -142,11 +187,16 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         _lora.print(data.light);
         _lora.print(",");
         _lora.println(data.time);
+        _lora.endPacket();
     }
     // logs data to flash if apropriate state
-    if (log_to_storage)
+    if (log_to_storage && _flash_initialized)
     {
         File file = LittleFS.open(_log_file_path_final, "a+");
+        if (!file)
+        {
+            Serial.println("file open failed");
+        }
         file.print(data.gps_lng);
         file.print(",");
         file.print(data.gps_lat);
@@ -167,6 +217,12 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         file.print(",");
         file.print(data.acc[2]);
         file.print(",");
+        file.print(data.gyro[0]);
+        file.print(",");
+        file.print(data.gyro[1]);
+        file.print(",");
+        file.print(data.gyro[2]);
+        file.print(",");
         file.print(data.baro_height);
         file.print(",");
         file.print(data.pressure);
@@ -181,11 +237,14 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         file.close();
     }
 }
-bool Log::read(String &msg)
+void Log::read(String &msg)
 {
+    if (!_lora_initialized)
+    {
+        return;
+    }
     // if anything has been recieved add message to string and return true if msg was read
     int packetSize = _lora.parsePacket();
-
     if (packetSize)
     {
         while (_lora.available())
@@ -193,10 +252,5 @@ bool Log::read(String &msg)
             char incoming = (char)_lora.read();
             msg += incoming;
         }
-        return true;
-    }
-    else
-    {
-        return false;
     }
 }

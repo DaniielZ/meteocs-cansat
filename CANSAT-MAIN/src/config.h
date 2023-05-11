@@ -3,9 +3,15 @@
 class Config
 {
 public:
+    struct Detection_parameter
+    {
+        float THRESHOLD;
+        unsigned long int TIMESPAN;
+    };
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = true;
+    bool LOG_TO_STORAGE = true;
 
     // USING INTERNAL MEMORY INSTED !!!!!
     // // flash SPI1
@@ -27,7 +33,7 @@ public:
     int LIS2MDL_SDA = 20;
 
     // LORA SPI0
-    long LORA_FREQUENCY = 434.1E6;
+    long LORA_FREQUENCY = 434.25E6;
     int LORA_CS = 5;
     int LORA_RX = 4;
     int LORA_TX = 3;
@@ -73,14 +79,10 @@ public:
     // hard data rate limiter
     int SLEEP = 100; // ms
 
-    // detection parameters
-    unsigned long FALLING_TIME_SPAN = 1000;
-    float FALING_TRESHOLD_ACC_MIN = 0;
-    float FALING_TRESHOLD_ACC_MAX = 2;
-
-    unsigned long LANDING_TIME_SPAN = 10000;
-    float LANDING_TRESHOLD_ACC_MIN = 8;
-    float LANDING_TRESHOLD_ACC_MAX = 11;
+    
+    Detection_parameter HARD_LOCK_HEIGHT = {1000, 5000};
+    Detection_parameter PARACHUTE_HEIGHT = {800, 3000};
+    Detection_parameter LANDED_HEIGHT = {200, 60000};
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";

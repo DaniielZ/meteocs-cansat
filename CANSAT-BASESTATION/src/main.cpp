@@ -155,28 +155,30 @@ void loop()
     {
         if (Serial.available() > 0)
         {
-            if (Serial.read() == 'D')
+            String incoming_msg = Serial.readString();
+
+            if (incoming_msg == "D")
             {
                 send_main_lora(DATA_MSG);
                 send_nano_lora(DATA_MSG);
                 Serial.println("Switching to recieving mode");
                 transmiting_mode = false;
             }
-            else if (Serial.read() == 'A')
+            else if (incoming_msg == "A")
             {
                 send_main_lora(ARM_MSG);
                 send_nano_lora(ARM_MSG);
                 Serial.println("Switching to recieving mode");
                 transmiting_mode = false;
             }
-            else if (Serial.read() == 'R')
+            else if (incoming_msg == "R")
             {
                 Serial.println("Switching to recieving mode");
                 transmiting_mode = false;
             }
             else
             {
-                Serial.println("Unexpected input : " + (char)Serial.read());
+                Serial.println("Unexpected input : " + incoming_msg);
             }
         }
     }
@@ -186,14 +188,15 @@ void loop()
         read_nano_lora();
         if (Serial.available() > 0)
         {
-            if (Serial.read() == 'T')
+            String incoming_msg = Serial.readString();
+            if (incoming_msg == "T")
             {
                 Serial.println("Switching to transmiting mode");
                 transmiting_mode = true;
             }
             else
             {
-                Serial.println("Unexpected input : " + (char)Serial.read());
+                Serial.println("Unexpected input : " + incoming_msg);
             }
         }
     }
