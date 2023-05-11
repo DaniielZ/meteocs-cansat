@@ -30,6 +30,8 @@ class Sensor_manager
     void read_baro(Config &config);
     void read_humidity();
     void read_acc();
+    void read_gyro();
+    void read_light();
     void read_time();
 
 public:

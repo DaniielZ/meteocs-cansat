@@ -5,6 +5,7 @@ I3G4250D i3g4250d;
 I3G4250D_DataScaled i3g4250d_data = {0};
 uint8_t I2C_I3G4250_SCL = 17;
 uint8_t I2C_I3G4250_SDA = 16;
+
 void setup()
 {
     uint8_t id = 0;

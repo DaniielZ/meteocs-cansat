@@ -1,27 +1,28 @@
 #include "states/ascent_state.h"
-#include <Vector.h>
+#include "core/gnc_math.h"
 #include <Arduino.h>
 
 void ascent_state(Cansat &cansat)
 {
     cansat.log.info("ascent_state");
     bool hard_locked = true;
+
+    Vector<data_point> gps_height_values;
     while (true)
     {
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, true);
+        data_point current_gps_height_data_point = {cansat.sensors.data.gps_height, cansat.sensors.data.time};
         // check if falling
         if (hard_locked)
         {
-            Vector<Cansat::data_point> gps_height_values;
-            float gps_height_average = cansat.average_value(
-                cansat.sensors.data.gps_height,
-                cansat.sensors.data.time,
+            float gps_height_average = average_value(
+                current_gps_height_data_point,
                 cansat.config.HARD_LOCK_HEIGHT.TIMESPAN,
                 gps_height_values);
 
-            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average));
-            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average != 0)
+            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
+            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average != -1)
             {
                 hard_locked = false;
                 cansat.log.info("hard_lock turned off");
@@ -29,15 +30,13 @@ void ascent_state(Cansat &cansat)
         }
         else
         {
-            Vector<Cansat::data_point> gps_height_values;
-            float gps_height_average = cansat.average_value(
-                cansat.sensors.data.gps_height,
-                cansat.sensors.data.time,
+            float gps_height_average = average_value(
+                current_gps_height_data_point,
                 cansat.config.PARACHUTE_HEIGHT.TIMESPAN,
                 gps_height_values);
 
-            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average));
-            if (gps_height_average <= cansat.config.PARACHUTE_HEIGHT.THRESHOLD && gps_height_average != 0)
+            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
+            if (gps_height_average <= cansat.config.PARACHUTE_HEIGHT.THRESHOLD && gps_height_average != -1)
             {
                 return;
             }

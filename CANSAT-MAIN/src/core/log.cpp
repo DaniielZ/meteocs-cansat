@@ -107,9 +107,9 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
 {
     // prints data
     Serial.print("DATA: ");
-    Serial.print(data.gps_lng);
+    Serial.print(data.gps_lng, 6);
     Serial.print(",");
-    Serial.print(data.gps_lat);
+    Serial.print(data.gps_lat, 6);
     Serial.print(",");
     Serial.print(data.gps_height);
     Serial.print(",");
@@ -150,9 +150,9 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     if (_lora.beginPacket() != 0 && _lora_initialized)
     {
         _lora.beginPacket();
-        _lora.print(data.gps_lng);
+        _lora.print(data.gps_lng, 6);
         _lora.print(",");
-        _lora.print(data.gps_lat);
+        _lora.print(data.gps_lat, 6);
         _lora.print(",");
         _lora.print(data.gps_height);
         _lora.print(",");
@@ -195,11 +195,11 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         File file = LittleFS.open(_log_file_path_final, "a+");
         if (!file)
         {
-            Serial.println("file open failed");
+            Serial.println("File open failed");
         }
-        file.print(data.gps_lng);
+        file.print(data.gps_lng, 6);
         file.print(",");
-        file.print(data.gps_lat);
+        file.print(data.gps_lat, 6);
         file.print(",");
         file.print(data.gps_height);
         file.print(",");

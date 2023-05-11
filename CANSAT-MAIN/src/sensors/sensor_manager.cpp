@@ -120,10 +120,17 @@ void Sensor_manager::read_humidity()
 void Sensor_manager::read_acc()
 {
 }
+void Sensor_manager::read_gyro()
+{
+}
+void Sensor_manager::read_light()
+{
+}
 void Sensor_manager::read_time()
 {
     data.time = millis();
 }
+
 void Sensor_manager::read_data(Config &config)
 {
     data = {0, 0, 0, 0, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0, 0, 0, 0};
@@ -131,5 +138,7 @@ void Sensor_manager::read_data(Config &config)
     read_magneto();
     read_baro(config);
     read_humidity();
+    read_light();
+    read_gyro();
     read_time();
 }

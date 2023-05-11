@@ -1,5 +1,5 @@
 #include "states/descent_state.h"
-#include <Vector.h>
+#include <core/gnc_math.h>
 #include <Arduino.h>
 void toggle_parachute(Cansat &cansat, PinStatus mosfet_state)
 {
@@ -17,25 +17,24 @@ void descent_state(Cansat &cansat)
     toggle_parachute(cansat, HIGH);
     delay(1000);
     toggle_parachute(cansat, LOW);
+
+    Vector<data_point> gps_height_values;
     while (true)
     {
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, true);
 
         // check if should move to next state
-
-        Vector<Cansat::data_point> gps_height_values;
-        float gps_height_average = cansat.average_value(
-            cansat.sensors.data.gps_height,
-            cansat.sensors.data.time,
+        data_point current_gps_height_data_point = {cansat.sensors.data.gps_height, cansat.sensors.data.time};
+        float gps_height_average = average_value(
+            current_gps_height_data_point,
             cansat.config.LANDED_HEIGHT.TIMESPAN,
             gps_height_values);
 
         Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average));
 
-        if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average != 0)
+        if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average != -1)
         {
-
             return;
         }
 

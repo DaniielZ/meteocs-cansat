@@ -38,7 +38,7 @@ public:
     int LORA_RX = 4;
     int LORA_TX = 3;
     int LORA_SCK = 2;
-    int LORA_TXPOWER = 10;
+    int LORA_TXPOWER = 99; // max :)
     int LORA_SPREADING = 10;
     int LORA_CODING_RATE = 6;
     long LORA_SIGNAL_BW = 62.5E3;
@@ -77,9 +77,8 @@ public:
     float SEA_LEVEL_HPA = 1013.25; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
-    int SLEEP = 100; // ms
+    int SLEEP = 50; // ms
 
-    
     Detection_parameter HARD_LOCK_HEIGHT = {1000, 5000};
     Detection_parameter PARACHUTE_HEIGHT = {800, 3000};
     Detection_parameter LANDED_HEIGHT = {200, 60000};
