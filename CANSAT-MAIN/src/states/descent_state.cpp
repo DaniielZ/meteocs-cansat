@@ -35,6 +35,7 @@ void descent_state(Cansat &cansat)
         cansat.sensors.data.average_value = gps_height_average; // so it can be logged
         if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average != -1)
         {
+            cansat.log.info("Landing detected");
             return;
         }
 

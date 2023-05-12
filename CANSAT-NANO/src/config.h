@@ -10,7 +10,7 @@ public:
     };
     // logging
     unsigned long PC_BAUDRATE = 115200;
-    bool WAIT_PC = true;
+    bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
 
     // USING INTERNAL MEMORY INSTED !!!!!
@@ -77,10 +77,10 @@ public:
 
     // hard data rate limiter
     int SLEEP = 200; // ms
-
-    Detection_parameter HARD_LOCK_HEIGHT = {1000, 5000}; // makse sure to change the max array size if needed
-    Detection_parameter EJECTION_HEIGHT = {800, 3000};
-    Detection_parameter LANDED_HEIGHT = {200, 60000};
+    // !!!!!!!!!! THE ALTITUDE IS IN SEA LEVEL DONT FUCK THIS UP!!!!!!!!!!!!!!!!!!!!
+    Detection_parameter HARD_LOCK_HEIGHT = {200, 5000}; // makse sure to change the max array size if needed
+    Detection_parameter EJECTION_HEIGHT = {150, 3000};
+    Detection_parameter LANDED_HEIGHT = {50, 10000};
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";

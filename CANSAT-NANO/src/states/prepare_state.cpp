@@ -12,6 +12,7 @@ void prepare_state(Cansat &cansat)
     cansat.sound.init_success(cansat.config);
     while (true)
     {
+        cansat.sensors.read_data(cansat.config); // needs to be run for gps
         // check for further commands either pc or lora
         String incoming_msg = "";
 
@@ -25,7 +26,7 @@ void prepare_state(Cansat &cansat)
         if (incoming_msg == cansat.config.DATA_SEND_MSG)
         {
             delay(2000);
-            cansat.sensors.read_data(cansat.config);
+            // cansat.sensors.read_data(cansat.config);
             cansat.log.data(cansat.sensors.data, true);
         }
         // check if should arm

@@ -1,13 +1,11 @@
 #include "sensors/sensor_manager.h"
 
-float get_altitude(float pressure_Pa, float sea_level_hPa)
+float get_altitude(float pressure_hPa, float sea_level_hPa)
 {
     float altitude;
-    pressure_Pa /= 100;
-    altitude = 44330 * (1.0 - pow(pressure_Pa / sea_level_hPa, 0.1903));
+    altitude = 44330 * (1.0 - pow(pressure_hPa / sea_level_hPa, 0.1903));
     return altitude;
 }
-
 String Sensor_manager::init(Config &config)
 {
 

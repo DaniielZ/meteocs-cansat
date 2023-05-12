@@ -1,10 +1,9 @@
 #include "sensors/sensor_manager.h"
 
-float get_altitude(float pressure_Pa, float sea_level_hPa)
+float get_altitude(float pressure_hPa, float sea_level_hPa)
 {
     float altitude;
-    pressure_Pa /= 100;
-    altitude = 44330 * (1.0 - pow(pressure_Pa / sea_level_hPa, 0.1903));
+    altitude = 44330 * (1.0 - pow(pressure_hPa / sea_level_hPa, 0.1903));
     return altitude;
 }
 
@@ -23,9 +22,12 @@ String Sensor_manager::init(Config &config)
     Wire1.setSCL(config.ACC_SCL);
     Wire1.setSDA(config.ACC_SDA);
     // GPS UART0
-    _gps_serial = new SoftwareSerial(config.GPS_RX, config.GPS_TX);
+    //_gps_serial = new SoftwareSerial(config.GPS_RX, config.GPS_TX);
+    _gps_serial = &Serial1;
+    _gps_serial->addMemoryForRead(_serial_buffer, sizeof(_serial_buffer));
     _gps_serial->begin(config.GPS_BAUDRATE);
     _gps_initialized = true;
+
     // MAGNETO WIRE0
     // _magneto = Adafruit_LIS2MDL(12345);
     // _magneto.enableAutoRange(true);
@@ -104,7 +106,10 @@ void Sensor_manager::read_gps()
     }
     while (_gps_serial->available() > 0)
     {
-        _gps.encode(_gps_serial->read());
+        char result = _gps_serial->read();
+        // Serial.print(result);
+
+        _gps.encode(result);
         if (_gps.location.isUpdated())
         {
             data.gps_lat = _gps.location.lat();

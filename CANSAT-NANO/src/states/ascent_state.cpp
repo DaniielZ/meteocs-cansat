@@ -23,6 +23,7 @@ void ascent_state(Cansat &cansat)
                 gps_height_values);
 
             Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
+            cansat.sensors.data.average_value = gps_height_average;
             if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average != -1)
             {
                 hard_locked = false;
@@ -36,9 +37,10 @@ void ascent_state(Cansat &cansat)
                 cansat.config.EJECTION_HEIGHT.TIMESPAN,
                 gps_height_values);
 
-            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
+            cansat.sensors.data.average_value = gps_height_average;
             if (gps_height_average <= cansat.config.EJECTION_HEIGHT.THRESHOLD && gps_height_average > -1)
             {
+                cansat.log.info("nanosat ejecting");
                 return;
             }
         }

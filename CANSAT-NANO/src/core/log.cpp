@@ -6,6 +6,7 @@
 void Log::init_lora(Config &config)
 {
     // platform specific
+    Serial.println("init lora");
     SPI.setMISO(config.LORA_RX);
     SPI.setMOSI(config.LORA_TX);
     SPI.setCS(config.LORA_CS);
@@ -47,8 +48,8 @@ void Log::init_flash(Config &config)
 
     // determine nr for final path
     int log_file_name_nr = 0;
-    String temp_path = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
-    while (SD.exists(temp_path.c_str()))
+    // String temp_path = String(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt");
+    while (SD.exists(String(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt").c_str()))
     {
         log_file_name_nr++;
     }
@@ -102,7 +103,7 @@ void Log::info(String msg)
     if (_flash_initialized)
     {
         // write to flash
-        File file = SD.open(_log_file_path_final, FILE_WRITE);
+        File file = SD.open(_log_file_path_final.c_str(), FILE_WRITE);
         if (!file)
         {
             Serial.println("Failed opening flash file");
@@ -114,7 +115,7 @@ void Log::info(String msg)
 }
 void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
 {
-    unsigned long int start_time = millis();
+    // unsigned long int start_time = millis();
     // prints data
     Serial.print("DATA: ");
     Serial.print(data.gps_lng, 6);
@@ -152,8 +153,8 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     Serial.print(data.temperature);
     Serial.print(",");
     Serial.print(data.humidity);
-    Serial.print(",");
-    Serial.print(data.light);
+    // Serial.print(",");
+    // Serial.print(data.light);
     Serial.print(",");
     Serial.println(data.time);
     // sends data over lora if can be sent
@@ -197,8 +198,8 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         _lora.print(",");
         _lora.print(data.humidity);
         _lora.print(",");
-        _lora.print(data.light);
-        _lora.print(",");
+        // _lora.print(data.light);
+        // _lora.print(",");
         _lora.println(data.time);
         _lora.endPacket(true);
     }
@@ -206,7 +207,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
     {
-        File file = SD.open(_log_file_path_final, FILE_WRITE);
+        File file = SD.open(_log_file_path_final.c_str(), FILE_WRITE);
         if (!file)
         {
             Serial.println("File open failed");
@@ -248,8 +249,8 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         file.print(",");
         file.print(data.humidity);
         file.print(",");
-        file.print(data.light);
-        file.print(",");
+        // file.print(data.light);
+        // file.print(",");
         file.println(data.time);
         file.close();
     }

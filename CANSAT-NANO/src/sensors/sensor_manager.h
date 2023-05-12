@@ -14,8 +14,9 @@ class Sensor_manager
     // SENSOR OBJECTS AND Comunication
     // GPS UART1
     TinyGPSPlus _gps;
-    SoftwareSerial *_gps_serial;
+    HardwareSerial *_gps_serial;
     bool _gps_initialized = false;
+    uint8_t _serial_buffer[255];
     // MAGNETO unused
     // Adafruit_LIS2MDL _magneto;
     // bool _magneto_initialized = false;
@@ -45,24 +46,24 @@ public:
     struct Sensor_data
     {
         // array data is ordered: x y z
-        float gps_lng;
-        float gps_lat;
-        float gps_height;
-        int gps_sattelites;
-        float average_value;
+        float gps_lng = 0;
+        float gps_lat = 0;
+        float gps_height = 0;
+        int gps_sattelites = 0;
+        float average_value = 0;
         // magnetic vector values are in micro-Tesla (uT)) */
         // float mag[3];
-        float acc[3];       // in m/s
-                            // float gyro[3];
-        float baro_height;  // m
-        float pressure;     // Pa
-        float temperature;  // C
-        float humidity;     // %
-        float light;        // should be 0-255
-        unsigned long time; // ms
+        float acc[3] = {0, 0, 0}; // in m/s
+                                  // float gyro[3];
+        float baro_height = 0;    // m
+        float pressure = 0;       // Pa
+        float temperature = 0;    // C
+        float humidity = 0;       // %
+        // float light;        // should be 0-255
+        unsigned long time = 0; // ms
     };
     //[F] - not send over lora
-    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, light, time";
+    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, time";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

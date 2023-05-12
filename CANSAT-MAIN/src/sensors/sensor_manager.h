@@ -49,6 +49,7 @@ public:
         float gps_lat;
         float gps_height;
         int gps_sattelites;
+        float average_value; // used for detection
         // magnetic vector values are in micro-Tesla (uT)) */
         float mag[3];
         float acc[3]; // in m/s
@@ -58,11 +59,10 @@ public:
         float temperature;   // C
         float humidity;      // %
         float light;         // should be 0-255
-        float average_value; // used for detection
         unsigned long time;  // ms
     };
     //[F] - not send over lora
-    String header = "gps_lng, gps_lat, gps_height, gps_count, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, time";
+    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, time";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

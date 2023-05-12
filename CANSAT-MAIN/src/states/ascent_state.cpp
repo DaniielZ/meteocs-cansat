@@ -40,6 +40,7 @@ void ascent_state(Cansat &cansat)
             cansat.sensors.data.average_value = light_average; // so it can be logged
             if (light_average >= cansat.config.PARACHUTE_LIGHT.THRESHOLD && light_average > -1)
             {
+                cansat.log.info("nanosat jection detected");
                 return;
             }
         }
