@@ -24,7 +24,6 @@ void ascent_state(Cansat &cansat)
                 cansat.config.HARD_LOCK_HEIGHT.TIMESPAN,
                 data_values);
             cansat.sensors.data.average_value = gps_height_average;
-            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
             if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average != -1)
             {
                 hard_locked = false;
@@ -38,8 +37,7 @@ void ascent_state(Cansat &cansat)
                 current_light_data_point,
                 cansat.config.PARACHUTE_LIGHT.TIMESPAN,
                 data_values);
-            cansat.sensors.data.average_value = light_average;                   // so it can be logged
-            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(light_average)); // debuging
+            cansat.sensors.data.average_value = light_average; // so it can be logged
             if (light_average >= cansat.config.PARACHUTE_LIGHT.THRESHOLD && light_average > -1)
             {
                 return;

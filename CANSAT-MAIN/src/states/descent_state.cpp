@@ -32,8 +32,7 @@ void descent_state(Cansat &cansat)
             cansat.config.LANDED_HEIGHT.TIMESPAN,
             gps_height_values);
 
-        Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average));
-        cansat.sensors.data.average_value = gps_height_average;
+        cansat.sensors.data.average_value = gps_height_average; // so it can be logged
         if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average != -1)
         {
             return;
