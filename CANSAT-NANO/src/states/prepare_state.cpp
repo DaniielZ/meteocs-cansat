@@ -9,6 +9,7 @@ void prepare_state(Cansat &cansat)
     cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_START);
     cansat.log.info("init done, waiting for arm");
     cansat.log.info(cansat.sensors.header);
+    bool servo_high = false;
     cansat.sound.init_success(cansat.config);
     while (true)
     {
@@ -35,6 +36,20 @@ void prepare_state(Cansat &cansat)
             delay(2000);
             cansat.log.info("Arming singal recieved");
             return;
+        }
+        // check if
+        else if (incoming_msg == cansat.config.SERVO_MSG)
+        {
+            delay(2000);
+            cansat.log.info("Servo singal recieved");
+            if (servo_high)
+            {
+                cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_START);
+            }
+            else
+            {
+                cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_END);
+            }
         }
         else if (incoming_msg != "")
         {

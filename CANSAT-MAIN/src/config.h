@@ -38,7 +38,7 @@ public:
     int LORA_RX = 4;
     int LORA_TX = 3;
     int LORA_SCK = 2;
-    int LORA_TXPOWER = 10; // max :)
+    int LORA_TXPOWER = 99; // max :)
     int LORA_SPREADING = 10;
     int LORA_CODING_RATE = 7;
     long LORA_SIGNAL_BW = 62.5E3;
@@ -82,6 +82,5 @@ public:
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
-
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

@@ -16,7 +16,7 @@ class Sensor_manager
     TinyGPSPlus _gps;
     HardwareSerial *_gps_serial;
     bool _gps_initialized = false;
-    uint8_t _serial_buffer[255];
+    uint8_t _serial_buffer[512];
     // MAGNETO unused
     // Adafruit_LIS2MDL _magneto;
     // bool _magneto_initialized = false;
@@ -59,11 +59,13 @@ public:
         float pressure = 0;       // Pa
         float temperature = 0;    // C
         float humidity = 0;       // %
-        // float light;        // should be 0-255
-        unsigned long time = 0; // ms
+        // float light;           // should be 0-255
+        unsigned long time = 0;                // ms
+        unsigned long time_since_last_gps = 0; // ms
     };
+    unsigned long last_gps_packet_time = 0;
     //[F] - not send over lora
-    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, time";
+    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, since_gps, time";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

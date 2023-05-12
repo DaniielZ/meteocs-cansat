@@ -1,56 +1,30 @@
 #include <Arduino.h>
 #include <SPI.h>
-// gps
-#include <TinyGPS++.h>
-#include "SoftwareSerial.h"
-#include <string.h>
+#include <Servo.h>
 #include <Wire.h>
-// The TinyGPS++ object
-TinyGPSPlus gps;
-
-uint8_t GPS_RX = 0;
-uint8_t GPS_TX = 1;
-static const uint32_t GPS_BAUD = 9600;
-#define ss Serial1
-char cat;
-uint8_t serial_buffer[255];
+int SERVO_PWM = 29;
+int SERVO_START_POS = 0;
+int SERVO_END_POS = 180;
+Servo servo;
 void setup()
 {
-    Serial.begin(115200);
-    delay(500);
+    Serial.begin(9600);
     while (!Serial)
     {
-        delay(1000);
+        delay(100);
     }
-    ss.begin(GPS_BAUD);
-    ss.addMemoryForRead(serial_buffer, sizeof(serial_buffer));
-    Serial.println("GPS initialized!");
-}
+    delay(1000);
+    Serial.println("HI");
 
+    servo.attach(SERVO_PWM);
+    delay(100);
+}
 void loop()
 {
-    while (ss.available())
-    {
-        cat = (ss.read());
-        gps.encode(cat);
-        Serial.print(cat);
-        if (cat == '%')
-            Serial.println(" ");
-    }
-
-    Serial.println("");
-    Serial.println("");
-    if (gps.location.isUpdated())
-    {
-        // Number of satellites in use (u32)
-        Serial.print("Number os satellites in use = ");
-        Serial.println(gps.satellites.value());
-        // Latitude in degrees (double)
-        Serial.print("Latitude= ");
-        Serial.print(gps.location.lat(), 6);
-        // Longitude in degrees (double)
-        Serial.print(" Longitude= ");
-        Serial.println(gps.location.lng(), 6);
-    }
-    delay(500);
+    servo.writeMicroseconds(1700);
+    Serial.println("START");
+    delay(1000);
+    servo.writeMicroseconds(1900);
+    Serial.println("END");
+    delay(1000);
 }

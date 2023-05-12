@@ -54,13 +54,15 @@ public:
         float mag[3];
         float acc[3]; // in m/s
         float gyro[3];
-        float baro_height;   // m
-        float pressure;      // Pa
-        float temperature;   // C
-        float humidity;      // %
-        float light;         // should be 0-255
-        unsigned long time;  // ms
+        float baro_height;  // m
+        float pressure;     // Pa
+        float temperature;  // C
+        float humidity;     // %
+        float light;        // should be 0-255
+        unsigned long time; // ms
+        unsigned long time_since_last_gps;
     };
+    unsigned long last_gps_packet_time = 0;
     //[F] - not send over lora
     String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, time";
     Sensor_data data;

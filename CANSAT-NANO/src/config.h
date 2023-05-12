@@ -64,8 +64,8 @@ public:
 
     // Ejection
     int SERVO_PWM = 29;
-    int SERVO_START = 1050;
-    int SERVO_END = 1900;
+    int SERVO_START = 1900;
+    int SERVO_END = 1700;
     // Parachute
     // int MOSFET = 22; // TBD
 
@@ -76,7 +76,8 @@ public:
     float SEA_LEVEL_HPA = 1013.25; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
-    int SLEEP = 200; // ms
+    int SLEEP = 100; // ms
+
     // !!!!!!!!!! THE ALTITUDE IS IN SEA LEVEL DONT FUCK THIS UP!!!!!!!!!!!!!!!!!!!!
     Detection_parameter HARD_LOCK_HEIGHT = {200, 5000}; // makse sure to change the max array size if needed
     Detection_parameter EJECTION_HEIGHT = {150, 3000};
@@ -84,6 +85,7 @@ public:
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
+    String SERVO_MSG = "servo_toggle";
 
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

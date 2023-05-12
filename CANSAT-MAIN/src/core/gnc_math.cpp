@@ -7,7 +7,7 @@ float average_value(data_point current_data_point, unsigned long time_span, Vect
     // return if not enough samples gathered
     if (data_points.size() < 2)
     {
-        return -2;
+        return -1;
     }
     // return if not enough samples gathered
     if (data_points.back().time - data_points.front().time <= time_span)

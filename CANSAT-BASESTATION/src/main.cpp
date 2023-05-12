@@ -18,6 +18,7 @@ LoRaClass LoRaNano;
 
 String ARM_MSG = "arm_confirm";
 String DATA_MSG = "data_send";
+String SERVO_MSG = "servo_toggle";
 
 bool transmiting_mode = false; // dont change
 void init_LoRa_main()
@@ -39,9 +40,9 @@ void init_LoRa_main()
     }
 
     // setting paramaters
-    LoRaMain.setTxPower(10);
+    LoRaMain.setTxPower(99);
     LoRaMain.setSpreadingFactor(10);
-    LoRaMain.setCodingRate4(6);
+    LoRaMain.setCodingRate4(7);
     LoRaMain.setSignalBandwidth(62.5E3);
     Serial.println("LoRa main! Running");
 }
@@ -64,9 +65,9 @@ void init_LoRa_nano()
     }
 
     // setting paramaters
-    LoRaNano.setTxPower(10);
+    LoRaNano.setTxPower(99);
     LoRaNano.setSpreadingFactor(10);
-    LoRaNano.setCodingRate4(6);
+    LoRaNano.setCodingRate4(7);
     LoRaNano.setSignalBandwidth(62.5E3);
     Serial.println("LoRa nano! Running");
 }
@@ -168,6 +169,12 @@ void loop()
             {
                 send_main_lora(ARM_MSG);
                 send_nano_lora(ARM_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (incoming_msg == "S")
+            {
+                send_nano_lora(SERVO_MSG);
                 Serial.println("Switching to recieving mode");
                 transmiting_mode = false;
             }

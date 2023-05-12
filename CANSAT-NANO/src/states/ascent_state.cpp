@@ -38,7 +38,7 @@ void ascent_state(Cansat &cansat)
                 gps_height_values);
 
             cansat.sensors.data.average_value = gps_height_average;
-            if (gps_height_average <= cansat.config.EJECTION_HEIGHT.THRESHOLD && gps_height_average > -1)
+            if (gps_height_average <= cansat.config.EJECTION_HEIGHT.THRESHOLD && gps_height_average != -1)
             {
                 cansat.log.info("nanosat ejecting");
                 return;

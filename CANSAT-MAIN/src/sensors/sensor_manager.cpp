@@ -103,6 +103,7 @@ void Sensor_manager::read_gps()
         _gps.encode(_gps_serial->read());
         if (_gps.location.isUpdated())
         {
+            last_gps_packet_time = millis();
             data.gps_lat = _gps.location.lat();
             data.gps_lng = _gps.location.lng();
             data.gps_height = _gps.altitude.meters();
@@ -180,6 +181,7 @@ void Sensor_manager::read_light(Config &config)
 void Sensor_manager::read_time()
 {
     data.time = millis();
+    data.time_since_last_gps = data.time - last_gps_packet_time;
 }
 
 void Sensor_manager::read_data(Config &config)

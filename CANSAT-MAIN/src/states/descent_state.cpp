@@ -23,7 +23,6 @@ void descent_state(Cansat &cansat)
     while (true)
     {
         cansat.sensors.read_data(cansat.config);
-        cansat.log.data(cansat.sensors.data, true);
 
         // check if should move to next state
         data_point current_gps_height_data_point = {cansat.sensors.data.gps_height, cansat.sensors.data.time};
@@ -33,6 +32,8 @@ void descent_state(Cansat &cansat)
             gps_height_values);
 
         cansat.sensors.data.average_value = gps_height_average; // so it can be logged
+        cansat.log.data(cansat.sensors.data, true);
+
         if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average != -1)
         {
             cansat.log.info("Landing detected");
