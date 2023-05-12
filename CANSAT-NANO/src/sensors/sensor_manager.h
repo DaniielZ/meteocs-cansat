@@ -12,20 +12,20 @@
 class Sensor_manager
 {
     // SENSOR OBJECTS AND Comunication
-    // GPS UART0
+    // GPS UART1
     TinyGPSPlus _gps;
-    SerialUART *_gps_serial;
+    SoftwareSerial *_gps_serial;
     bool _gps_initialized = false;
-    // MAGNETO WIRE0s
-    Adafruit_LIS2MDL _magneto;
-    bool _magneto_initialized = false;
-    // MAGNETO WIRE0s
-    I3G4250D _gyro;
-    bool _gyro_initialized = false;
-    // ACC WIRE1
+    // MAGNETO unused
+    // Adafruit_LIS2MDL _magneto;
+    // bool _magneto_initialized = false;
+    // Gyro WIRE0s
+    // I3G4250D _gyro;
+    // bool _gyro_initialized = false;
+    // ACC WIRE2
     H3LIS100 *_acc;
     bool _acc_initialized = false;
-    // BARO WIRE1
+    // BARO WIRE0
     MS5611 _baro;
     bool _baro_initialized = false;
     // HUMIDITY WIRE1
@@ -49,20 +49,20 @@ public:
         float gps_lat;
         float gps_height;
         int gps_sattelites;
+        float average_value;
         // magnetic vector values are in micro-Tesla (uT)) */
-        float mag[3];
-        float acc[3]; // in m/s
-        float gyro[3];
-        float baro_height;   // m
-        float pressure;      // Pa
-        float temperature;   // C
-        float humidity;      // %
-        float light;         // should be 0-255
-        float average_value; // used for detection
-        unsigned long time;  // ms
+        // float mag[3];
+        float acc[3];       // in m/s
+                            // float gyro[3];
+        float baro_height;  // m
+        float pressure;     // Pa
+        float temperature;  // C
+        float humidity;     // %
+        float light;        // should be 0-255
+        unsigned long time; // ms
     };
     //[F] - not send over lora
-    String header = "gps_lng, gps_lat, gps_height, gps_count, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, time";
+    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, light, time";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

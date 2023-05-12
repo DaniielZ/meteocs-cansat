@@ -42,6 +42,6 @@ public:
     Sensor_manager sensors;
     Log log;
     Sound sound;
-    // Servo ejection_servo;
+    Servo ejection_servo;
     void start_states(Cansat &cansat);
 };

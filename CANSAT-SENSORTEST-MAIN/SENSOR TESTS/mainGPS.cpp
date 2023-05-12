@@ -8,8 +8,8 @@
 // The TinyGPS++ object
 TinyGPSPlus gps;
 
-uint8_t GPS_RX = 0;
-uint8_t GPS_TX = 1;
+uint8_t GPS_RX = 1;
+uint8_t GPS_TX = 0;
 static const uint32_t GPS_BAUD = 9600;
 
 SoftwareSerial ss(GPS_RX, GPS_TX);
@@ -22,15 +22,17 @@ void setup()
     {
         delay(1000);
     }
-    ss.begin(GPS_BAUD);
+    Serial1.setFIFOSize(128);
+    Serial1.begin(GPS_BAUD);
     Serial.println("GPS initialized!");
 }
 
 void loop()
 {
-    while (ss.available() > 0)
+    while (Serial1.available() > 0)
     {
-        gps.encode(ss.read());
+        char result = Serial1.read();
+        gps.encode(result);
         if (gps.location.isUpdated())
         {
             // Number of satellites in use (u32)

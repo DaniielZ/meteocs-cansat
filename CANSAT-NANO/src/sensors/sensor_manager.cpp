@@ -14,53 +14,55 @@ String Sensor_manager::init(Config &config)
     String status;
 
     // WIRE0
-    Wire.setSCL(config.LIS2MDL_SCL);
-    Wire.setSDA(config.LIS2MDL_SDA);
+    Wire.setSCL(config.MS5611_SCL);
+    Wire.setSDA(config.MS5611_SDA);
     // WIRE1
     Wire1.setSCL(config.SHTC3_SCL);
     Wire1.setSDA(config.SHTC3_SDA);
+    // WIRE2
+    Wire1.setSCL(config.ACC_SCL);
+    Wire1.setSDA(config.ACC_SDA);
     // GPS UART0
-    _gps_serial = &Serial1;
-    _gps_serial->setFIFOSize(256);
+    _gps_serial = new SoftwareSerial(config.GPS_RX, config.GPS_TX);
     _gps_serial->begin(config.GPS_BAUDRATE);
     _gps_initialized = true;
     // MAGNETO WIRE0
-    _magneto = Adafruit_LIS2MDL(12345);
-    _magneto.enableAutoRange(true);
-    if (!_magneto.begin(30U, &Wire))
-    {
-        status += "Magneto error";
-        Serial.println("Magento turned off");
-    }
-    else
-    {
-        _magneto_initialized = true;
-    }
+    // _magneto = Adafruit_LIS2MDL(12345);
+    // _magneto.enableAutoRange(true);
+    // if (!_magneto.begin(30U, &Wire))
+    // {
+    //     status += "Magneto error";
+    //     Serial.println("Magento turned off");
+    // }
+    // else
+    // {
+    //     _magneto_initialized = true;
+    // }
 
     // GYRO WIRE0
-    if (_gyro.I3G4250D_Init(0x0F, 0x00, 0x00, 0x00, 0x00, I3G4250D_SCALE_2000) != 0)
-    {
-        status += "Gyro error";
-        Serial.println("Gyro turned off");
-    }
-    else
-    {
-        uint8_t gyro_id = 0;
-        _gyro.readRegister(0x0F, &gyro_id, 1);
+    // if (_gyro.I3G4250D_Init(0x0F, 0x00, 0x00, 0x00, 0x00, I3G4250D_SCALE_2000) != 0)
+    // {
+    //     status += "Gyro error";
+    //     Serial.println("Gyro turned off");
+    // }
+    // else
+    // {
+    //     uint8_t gyro_id = 0;
+    //     _gyro.readRegister(0x0F, &gyro_id, 1);
 
-        if (gyro_id != 0xD3)
-        {
-            status += "Gyro ID error";
-            Serial.println("Gyro turned off");
-        }
-        else
-        {
-            _gyro_initialized = true;
-        }
-    }
-    // ACC WIRE1
+    //     if (gyro_id != 0xD3)
+    //     {
+    //         status += "Gyro ID error";
+    //         Serial.println("Gyro turned off");
+    //     }
+    //     else
+    //     {
+    //         _gyro_initialized = true;
+    //     }
+    // }
+    // ACC WIRE2
     _acc = new H3LIS100(123);
-    if (!_acc->begin(0x19, &Wire1))
+    if (!_acc->begin(0x19, &Wire2))
     {
         status += "Acc error";
         Serial.println("Acc turned off");
@@ -69,9 +71,9 @@ String Sensor_manager::init(Config &config)
     {
         _acc_initialized = true;
     }
-    // BARO WIRE1
+    // BARO WIRE0
     _baro = MS5611(config.MS5611_ADDRESS);
-    if (!_baro.begin(&Wire1))
+    if (!_baro.begin(&Wire))
     {
         status += " Baro error";
         Serial.println("Baro turned off");
@@ -115,17 +117,17 @@ void Sensor_manager::read_gps()
 void Sensor_manager::read_magneto()
 {
     /* Get a new sensor event */
-    if (!_magneto_initialized)
-    {
-        return;
-    }
-    sensors_event_t event;
-    _magneto.getEvent(&event);
+    // if (!_magneto_initialized)
+    // {
+    //     return;
+    // }
+    // sensors_event_t event;
+    // _magneto.getEvent(&event);
 
-    /* magnetic vector values are in micro-Tesla (uT)) */
-    data.mag[0] = event.magnetic.x;
-    data.mag[1] = event.magnetic.y;
-    data.mag[2] = event.magnetic.z;
+    // /* magnetic vector values are in micro-Tesla (uT)) */
+    // data.mag[0] = event.magnetic.x;
+    // data.mag[1] = event.magnetic.y;
+    // data.mag[2] = event.magnetic.z;
 }
 void Sensor_manager::read_baro(Config &config)
 {
@@ -164,20 +166,20 @@ void Sensor_manager::read_acc()
 }
 void Sensor_manager::read_gyro()
 {
-    if (!_gyro_initialized)
-    {
-        return;
-    }
-    I3G4250D_DataScaled gyro_data = {0};
-    gyro_data = _gyro.I3G4250D_GetScaledData();
-    data.gyro[0] = gyro_data.x;
-    data.gyro[1] = gyro_data.y;
-    data.gyro[2] = gyro_data.z;
+    // if (!_gyro_initialized)
+    // {
+    //     return;
+    // }
+    // I3G4250D_DataScaled gyro_data = {0};
+    // gyro_data = _gyro.I3G4250D_GetScaledData();
+    // data.gyro[0] = gyro_data.x;
+    // data.gyro[1] = gyro_data.y;
+    // data.gyro[2] = gyro_data.z;
 }
 void Sensor_manager::read_light(Config &config)
 {
-    analogReadResolution(12);
-    data.light = analogRead(config.PHOTO_ADC);
+    // analogReadResolution(12);
+    // data.light = analogRead(config.PHOTO_ADC);
 }
 void Sensor_manager::read_time()
 {
@@ -188,11 +190,11 @@ void Sensor_manager::read_data(Config &config)
 {
     // data = {0, 0, 0, 0, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0, 0, 0, 0};
     read_gps();
-    read_magneto();
+    // read_magneto();
     read_baro(config);
     read_humidity();
-    read_light(config);
+    // read_light(config);
     read_acc();
-    read_gyro();
+    // read_gyro();
     read_time();
 }

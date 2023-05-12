@@ -1,9 +1,10 @@
 // flash dumper
 #include <LittleFS.h>
 #include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
 // .ini settings
-// [env:log_output_to_file]
-// platform = … monitor_filters = default, log2file
+// monitor_filters = default, log2file, send_on_enter
 
 String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 
@@ -59,7 +60,7 @@ void dump_data()
         {
         };
         String incoming_msg = Serial.readString();
-        if (incoming_msg == "Yes")
+        if (incoming_msg == "yes")
         {
             if (LittleFS.remove(log_file_path_final))
             {
@@ -69,21 +70,26 @@ void dump_data()
             {
                 Serial.println("Failed removing : " + log_file_path_final);
             }
+            break;
         }
-        if (incoming_msg == "No")
+        else if (incoming_msg == "no")
         {
             break;
+        }
+        else
+        {
+            Serial.println("Unexpected input try again");
         }
     }
 }
 void loop()
 {
-    Serial.println("Type Erase to format, Type Dump to dump latest file");
+    Serial.println("Type _erase_ to format, Type _dump_ to dump latest file");
     while (Serial.available() == 0)
     {
     }
     String incoming_msg = Serial.readString();
-    if (incoming_msg == "Erase")
+    if (incoming_msg == "erase")
     {
         Serial.print("Earsing...");
         if (LittleFS.format())
@@ -95,7 +101,7 @@ void loop()
             Serial.println("Fail");
         }
     }
-    else if (incoming_msg == "Dump")
+    else if (incoming_msg == "dump")
     {
         dump_data();
     }

@@ -5,8 +5,8 @@ void prepare_state(Cansat &cansat)
     cansat.log.init(cansat.config);
     String status = cansat.sensors.init(cansat.config);
     cansat.log.info(status);
-    // cansat.ejection_servo.attach(cansat.config.SERVO_PWM); // setup ejection servo
-    // cansat.ejection_servo.write(cansat.config.SERVO_START_POS);
+    cansat.ejection_servo.attach(cansat.config.SERVO_PWM); // setup ejection servo
+    cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_START);
     cansat.log.info("init done, waiting for arm");
     cansat.log.info(cansat.sensors.header);
     cansat.sound.init_success(cansat.config);

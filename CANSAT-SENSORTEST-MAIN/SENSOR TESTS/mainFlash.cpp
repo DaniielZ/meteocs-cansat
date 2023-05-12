@@ -22,14 +22,14 @@ void setup()
         delay(100);
     }
 
-    Serial.println(F("Inizializing FS..."));
+    Serial.println("Inizializing FS...");
     if (LittleFS.begin())
     {
-        Serial.println(F("done."));
+        Serial.println("done.");
     }
     else
     {
-        Serial.println(F("fail."));
+        Serial.println("fail.");
     }
 
     // To format all space in LittleFS

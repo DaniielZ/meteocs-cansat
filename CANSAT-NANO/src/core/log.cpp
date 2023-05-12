@@ -1,13 +1,13 @@
 #include "core/log.h"
 // #include "config.h"
 // #include "sensors/sensor_manager.h"
-#include <LittleFS.h>
+#include <SD.h>
 
 void Log::init_lora(Config &config)
 {
     // platform specific
-    SPI.setRX(config.LORA_RX);
-    SPI.setTX(config.LORA_TX);
+    SPI.setMISO(config.LORA_RX);
+    SPI.setMOSI(config.LORA_TX);
     SPI.setCS(config.LORA_CS);
     SPI.setSCK(config.LORA_SCK);
     _spi_lora = &SPI;
@@ -36,7 +36,7 @@ void Log::init_flash(Config &config)
         return;
     }
     // initilise flash
-    if (LittleFS.begin())
+    if (SD.begin(BUILTIN_SDCARD))
     {
         Serial.println("FileSystem init success");
     }
@@ -47,13 +47,15 @@ void Log::init_flash(Config &config)
 
     // determine nr for final path
     int log_file_name_nr = 0;
-    while (LittleFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
+    String temp_path = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
+    while (SD.exists(temp_path.c_str()))
     {
         log_file_name_nr++;
     }
     _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
     // print header
-    File file = LittleFS.open(_log_file_path_final, "a+");
+    File file = SD.open(_log_file_path_final.c_str(), FILE_WRITE);
+    file.seek(EOF);
     file.println("DATA");
     if (!file)
     {
@@ -61,10 +63,6 @@ void Log::init_flash(Config &config)
     }
     file.close();
     Serial.println("Final path: " + _log_file_path_final);
-    FSInfo64 fsinfo;
-    LittleFS.info64(fsinfo);
-    Serial.println("Current size:" + String((unsigned long)fsinfo.usedBytes / 1024) + "/" + String((unsigned long)fsinfo.totalBytes / 1024));
-
     _flash_initialized = true;
 }
 void Log::init_pcserial(Config &config)
@@ -104,11 +102,12 @@ void Log::info(String msg)
     if (_flash_initialized)
     {
         // write to flash
-        File file = LittleFS.open(_log_file_path_final, "a+");
+        File file = SD.open(_log_file_path_final, FILE_WRITE);
         if (!file)
         {
             Serial.println("Failed opening flash file");
         }
+        file.seek(EOF);
         file.println(msg);
         file.close();
     }
@@ -128,24 +127,24 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     Serial.print(",");
     Serial.print(data.average_value);
     Serial.print(",");
-    Serial.print(data.mag[0]);
-    Serial.print(",");
-    Serial.print(data.mag[1]);
-    Serial.print(",");
-    Serial.print(data.mag[2]);
-    Serial.print(",");
+    // Serial.print(data.mag[0]);
+    // Serial.print(",");
+    // Serial.print(data.mag[1]);
+    // Serial.print(",");
+    // Serial.print(data.mag[2]);
+    // Serial.print(",");
     Serial.print(data.acc[0]);
     Serial.print(",");
     Serial.print(data.acc[1]);
     Serial.print(",");
     Serial.print(data.acc[2]);
     Serial.print(",");
-    Serial.print(data.gyro[0]);
-    Serial.print(",");
-    Serial.print(data.gyro[1]);
-    Serial.print(",");
-    Serial.print(data.gyro[2]);
-    Serial.print(",");
+    // Serial.print(data.gyro[0]);
+    // Serial.print(",");
+    // Serial.print(data.gyro[1]);
+    // Serial.print(",");
+    // Serial.print(data.gyro[2]);
+    // Serial.print(",");
     Serial.print(data.baro_height);
     Serial.print(",");
     Serial.print(data.pressure);
@@ -207,11 +206,12 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
     {
-        File file = LittleFS.open(_log_file_path_final, "a+");
+        File file = SD.open(_log_file_path_final, FILE_WRITE);
         if (!file)
         {
             Serial.println("File open failed");
         }
+        file.seek(EOF);
         file.print(data.gps_lng, 6);
         file.print(",");
         file.print(data.gps_lat, 6);
@@ -222,24 +222,24 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         file.print(",");
         file.print(data.average_value);
         file.print(",");
-        file.print(data.mag[0]);
-        file.print(",");
-        file.print(data.mag[1]);
-        file.print(",");
-        file.print(data.mag[2]);
-        file.print(",");
+        // file.print(data.mag[0]);
+        // file.print(",");
+        // file.print(data.mag[1]);
+        // file.print(",");
+        // file.print(data.mag[2]);
+        // file.print(",");
         file.print(data.acc[0]);
         file.print(",");
         file.print(data.acc[1]);
         file.print(",");
         file.print(data.acc[2]);
         file.print(",");
-        file.print(data.gyro[0]);
-        file.print(",");
-        file.print(data.gyro[1]);
-        file.print(",");
-        file.print(data.gyro[2]);
-        file.print(",");
+        // file.print(data.gyro[0]);
+        // file.print(",");
+        // file.print(data.gyro[1]);
+        // file.print(",");
+        // file.print(data.gyro[2]);
+        // file.print(",");
         file.print(data.baro_height);
         file.print(",");
         file.print(data.pressure);

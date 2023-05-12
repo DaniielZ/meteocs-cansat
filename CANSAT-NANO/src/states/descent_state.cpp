@@ -1,22 +1,21 @@
 #include "states/descent_state.h"
 #include <core/gnc_math.h>
 #include <Arduino.h>
-void toggle_parachute(Cansat &cansat, PinStatus mosfet_state)
-{
-    digitalWrite(cansat.config.MOSFET, mosfet_state);
-}
+// void toggle_parachute(Cansat &cansat, PinStatus mosfet_state)
+// {
+//     digitalWrite(cansat.config.MOSFET, mosfet_state);
+// }
 void eject_nanosat(Cansat &cansat)
 {
     // open servo
-    // cansat.ejection_servo.write(cansat.config.SERVO_END_POS);
+    cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_END);
 }
 
 void descent_state(Cansat &cansat)
 {
     cansat.log.info("descent_state");
-    toggle_parachute(cansat, HIGH);
+    eject_nanosat(cansat);
     delay(1000);
-    toggle_parachute(cansat, LOW);
 
     data_point ELEMENT_COUNT_MAX[2000]; // change this if changing config
     Vector<data_point> gps_height_values(ELEMENT_COUNT_MAX);

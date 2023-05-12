@@ -1,9 +1,15 @@
-#include <Arduino.h>
+#include "core/cansat.h"
 
-void setup() {
-  // put your setup code here, to run once:
+void setup()
+{
+    Cansat cansat;
+    cansat.start_states(cansat);
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop()
+{
+    // not used for this programm
 }
+
+// if you want to configure the cansat go to INCLUDE/config.h
+// The program lacks a lot of error checking
