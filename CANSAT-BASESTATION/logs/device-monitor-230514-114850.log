@@ -1,0 +1,39 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet '0.000000,0.000000,0.00,0,0.00,106.78,1013.08,41.00,38.37,267002
+' with RSSI -79
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.78,1013.20,41.05,38.03,268931
+' with RSSI -71
+Nano received packet '0.000000,0.000000,0.00,0,0.00,106.78,1013.08,41.10,37.79,270859
+' with RSSI -82
+Nano received packet '0000000,0.000000,0.00,0,0.00,105.78,1013.20,41.16,37.55,272788
+' with RSSI -72
+Nano received packet '0.000000,0.000000,0.00,0,0.00,106.44,1013.12,41.23,37.24,274705
+' with RSSI -78
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.78,1013.20,41.31,37.20,276612
+' with RSSI -75
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.78,1013.20,41.31,37.46,278516
+' with RSSI -73
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.36,1013.25,41.33,37.87,280465
+' with RSSI -66
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.36,1013.25,41.38,38.38,282397
+' with RSSI -74
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.03,1013.29,41.40,39.01,284329
+' with RSSI -69
+Nano received packet '0.000000,0.000000,0.00,0,0.00,104.70,1013.33,41.42,39.50,286261
+' with RSSI -75
+Nano received packet '0.000000,0.000000,0.00,0,0.00,105.70,1013.21,41.47,39.87,288193
+' with RSSI -66
+Nano received packet '0.000000,0.000000,0.00,0,0.00,104.70,1013.33,41.52,40.13,290124
+' with RSSI -68
+Nano received packet '0.000000,0.000000,0.00,0,0.00,106.44,1013.12,41.59,40.22��h�Ա��' with RSSI -101
+Nano received packet '
+' with RSSI -73
+Nano received packet 'init done, waiting for arm
+' with RSSI -71
+Nano received packet 'gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, �=ma�(K=�,�L�w���I}>��' with RSSI -104

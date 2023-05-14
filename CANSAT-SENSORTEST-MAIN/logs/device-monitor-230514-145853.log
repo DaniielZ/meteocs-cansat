@@ -1,0 +1,38 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet '0.000000,0.000000,0.00,0,0.00,0.00,0.00,0.00,0.00,3171.00,60437
+' with RSSI -81
+Nano received packet '25.321802,57.320915,140.20,9,0.00,125.57,1010.82,29.79,30.69�45713
+' with RSSI -79
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet '0.000000,0.000000,0.00,0,0.00,0.00,0.00,0.00,0.00,3669.00,78286
+' with RSSI -82
+Nano received packet '25.321854,57.320896,141.70,9,0.00,126.07,1010.76,30.61,30.47,63632
+' with RSSI -80
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet '25.321777,57.320854,121.10,12,0.00,0.00,0.00,0.00,0.00,3974.00,105540
+' with RSSI -80
+Nano received packet '25.321810,57.320869,133.00,10,0.00,126.40,1010.72,31.34,27.57,90702
+' with RSSI -77
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -70
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -73

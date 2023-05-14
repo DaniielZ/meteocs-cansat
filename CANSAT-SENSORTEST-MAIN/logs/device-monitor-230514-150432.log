@@ -1,0 +1,18 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet '
+' with RSSI -75
+Nano received packet 'init done, waiting for arm
+' with RSSI -65
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -72
+Switching to transmiting mode
+Main lora transmited: data_send ....

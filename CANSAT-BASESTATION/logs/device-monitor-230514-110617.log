@@ -1,0 +1,6 @@
+Main received packet ' Baro error
+' with RSSI -51
+Main received packet 'init done, waiting for arm
+' with RSSI -48
+Main received packet 'gps_lng, gps_lat, gps_height, gps_count, avrg_det, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, since_gps, time
+' with RSSI -51

@@ -2,14 +2,14 @@
 #include <SPI.h>
 #include <LoRa.h>
 
-long MAIN_FREQUENCY = 434.25E6;
+long MAIN_FREQUENCY = 430.6E6;
 uint8_t SPI_MAIN_CS = 5;  // 7
 uint8_t SPI_MAIN_RX = 4;  // 6 miso
 uint8_t SPI_MAIN_TX = 3;  // 5 mosi
 uint8_t SPI_MAIN_SCK = 2; // 4
 LoRaClass LoRaMain;
 
-double NANO_FREQUENCY = 430.6E6;
+double NANO_FREQUENCY = 433.575E6;
 uint8_t SPI_NANO_CS = 9;
 uint8_t SPI_NANO_RX = 4;
 uint8_t SPI_NANO_TX = 3;

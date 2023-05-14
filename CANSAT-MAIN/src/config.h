@@ -76,7 +76,7 @@ public:
     // hard data rate limiter
     int SLEEP = 200; // ms
 
-    Detection_parameter HARD_LOCK_HEIGHT = {950, 5000}; // makse sure to change the max array size if needed
+    Detection_parameter HARD_LOCK_HEIGHT = {570, 5000}; // makse sure to change the max array size if needed
     // Detection_parameter PARACHUTE_LIGHT = {800, 2000};
     Detection_parameter LANDED_HEIGHT = {200, 10000};
     // ARMING AND DATA SENDING MSG IN PREP SATE

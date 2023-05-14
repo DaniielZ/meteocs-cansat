@@ -1,0 +1,30 @@
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet '0.000000,0.000000,0.00,0,0.00,0.00,0.00,0.00,40.60,1385.00,244805
+' with RSSI -60
+Nano received packet '0.000000,0.000000,0.00,0,0.00,0.00(0.00�0.@0�40N;9,1S8a. 0�b04;:=
+' with RSSI -97
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Nano received packet '0.000000,0.00�000,0*00,0!0.0�,0.0=(0.0��0.@0�37-G�,3S=7.0S,31��7
+' with RSSI -98
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet '0.000000,0.000000,0.00,0,0.00,0.00,0.00,0.00,38.62,1273.00,342679
+' with RSSI -61
+Nano received packet '0.000000,0.000000,0.00,0,0.00,0.00,0.00,0.00,38.6;,1273.00,�426:1
+' with RSSI -97
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet '0.000000,0.000000,0.00,0,0.00,0.00,0.00,0.00,41.20,2691.00,398178
+' with RSSI -56
+Nano received packet '0.000000,0.000000,0.00,0,0.00,101.79,1013.68,26.15,39.41,7729
+' with RSSI -57

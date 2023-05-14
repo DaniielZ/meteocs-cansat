@@ -11,7 +11,7 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = false;
-    bool LOG_TO_STORAGE = false;
+    bool LOG_TO_STORAGE = true;
 
     // USING INTERNAL MEMORY INSTED !!!!!
     // // flash SPI1
@@ -33,7 +33,7 @@ public:
     // int LIS2MDL_SDA = 20;
 
     // LORA SPI0
-    long LORA_FREQUENCY = 430.575E6;
+    long LORA_FREQUENCY = 433.575E6;
     int LORA_CS = 6;
     int LORA_RX = 8;
     int LORA_TX = 7;
@@ -65,7 +65,7 @@ public:
     // Ejection
     int SERVO_PWM = 29;
     int SERVO_START = 1950; // 1950
-    int SERVO_END = 1750;   // 1840
+    int SERVO_END = 1790;   // 1840
     // Parachute
     // int MOSFET = 22; // TBD
 
@@ -79,8 +79,8 @@ public:
     int SLEEP = 100; // ms
 
     // !!!!!!!!!! THE ALTITUDE IS IN SEA LEVEL DONT FUCK THIS UP!!!!!!!!!!!!!!!!!!!!
-    Detection_parameter HARD_LOCK_HEIGHT = {950, 5000}; // makse sure to change the max array size if needed
-    Detection_parameter EJECTION_HEIGHT = {900, 3000};
+    Detection_parameter HARD_LOCK_HEIGHT = {570, 5000}; // makse sure to change the max array size if needed
+    Detection_parameter EJECTION_HEIGHT = {520, 3000};
     Detection_parameter LANDED_HEIGHT = {200, 10000};
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";

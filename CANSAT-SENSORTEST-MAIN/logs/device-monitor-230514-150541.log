@@ -1,0 +1,20 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Unexpected input : 
+T
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet 'NOy-1Q"�A?��w�m����c]�i��' with RSSI -100
+Nano received packet '25.321890,57.320805,119.80,11,0.00,123.82,1011.03,33.98,24.65,56419
+' with RSSI -59
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Main received packet 'NOI-1Q"�A?���K��cn��S' with RSSI -101
+Nano received packet '25.321880,57.320797,120.10,11,0.00,124.65,1010.93,34.24,23.77,65448
+' with RSSI -63
