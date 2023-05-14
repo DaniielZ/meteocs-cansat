@@ -24,7 +24,7 @@ void ascent_state(Cansat &cansat)
 
             Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
             cansat.sensors.data.average_value = gps_height_average;
-            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average != -1)
+            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average  -1)
             {
                 hard_locked = false;
                 cansat.log.info("hard_lock turned off");

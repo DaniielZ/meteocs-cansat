@@ -9,7 +9,7 @@ uint8_t SPI_MAIN_TX = 3;  // 5 mosi
 uint8_t SPI_MAIN_SCK = 2; // 4
 LoRaClass LoRaMain;
 
-double NANO_FREQUENCY = 432.25E6;
+double NANO_FREQUENCY = 430.6E6;
 uint8_t SPI_NANO_CS = 9;
 uint8_t SPI_NANO_RX = 4;
 uint8_t SPI_NANO_TX = 3;

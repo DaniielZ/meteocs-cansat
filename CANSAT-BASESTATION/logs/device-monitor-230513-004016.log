@@ -1,0 +1,11 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Nano received packet '
+' with RSSI -82
+Nano received packet 'init done, waiting for arm
+' with RSSI -57
+Nano received packet 'gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, since_gps, time�' with RSSI -77
+Unexpected input : TT
+

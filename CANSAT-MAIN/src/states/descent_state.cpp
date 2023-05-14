@@ -14,9 +14,9 @@ void eject_nanosat(Cansat &cansat)
 void descent_state(Cansat &cansat)
 {
     cansat.log.info("descent_state");
-    toggle_parachute(cansat, HIGH);
-    delay(1000);
-    toggle_parachute(cansat, LOW);
+    // toggle_parachute(cansat, HIGH);
+    // delay(1000);
+    // toggle_parachute(cansat, LOW);
 
     data_point ELEMENT_COUNT_MAX[2000]; // change this if changing config
     Vector<data_point> gps_height_values(ELEMENT_COUNT_MAX);
@@ -34,7 +34,7 @@ void descent_state(Cansat &cansat)
         cansat.sensors.data.average_value = gps_height_average; // so it can be logged
         cansat.log.data(cansat.sensors.data, true);
 
-        if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average != -1)
+        if (gps_height_average <= cansat.config.LANDED_HEIGHT.THRESHOLD && gps_height_average > 1)
         {
             cansat.log.info("Landing detected");
             return;

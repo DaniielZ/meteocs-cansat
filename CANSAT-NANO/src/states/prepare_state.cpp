@@ -7,9 +7,9 @@ void prepare_state(Cansat &cansat)
     cansat.log.info(status);
     cansat.ejection_servo.attach(cansat.config.SERVO_PWM); // setup ejection servo
     cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_START);
+    bool servo_high = false;
     cansat.log.info("init done, waiting for arm");
     cansat.log.info(cansat.sensors.header);
-    bool servo_high = false;
     cansat.sound.init_success(cansat.config);
     while (true)
     {
@@ -42,13 +42,15 @@ void prepare_state(Cansat &cansat)
         {
             delay(2000);
             cansat.log.info("Servo singal recieved");
-            if (servo_high)
+            if (servo_high == true)
             {
                 cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_START);
+                servo_high = false;
             }
             else
             {
                 cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_END);
+                servo_high = true;
             }
         }
         else if (incoming_msg != "")

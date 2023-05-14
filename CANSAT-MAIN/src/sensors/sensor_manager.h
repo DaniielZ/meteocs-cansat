@@ -64,7 +64,7 @@ public:
     };
     unsigned long last_gps_packet_time = 0;
     //[F] - not send over lora
-    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, time";
+    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, since_gps, time";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

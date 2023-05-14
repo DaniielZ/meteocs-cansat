@@ -1,0 +1,33 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -73
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -70
+Nano received packet '
+' with RSSI -83
+Nano received packet 'init done, waiting for arm
+' with RSSI -80
+Nano received packet 'gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, since_gps, time
+' with RSSI -74
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -68
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -64

@@ -1,0 +1,12 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Unexpected input : 
+
+
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -95

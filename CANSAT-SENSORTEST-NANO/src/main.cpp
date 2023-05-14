@@ -21,10 +21,10 @@ void setup()
 }
 void loop()
 {
-    servo.writeMicroseconds(1700);
+    servo.writeMicroseconds(1730);
     Serial.println("START");
-    delay(1000);
+    delay(5000);
     servo.writeMicroseconds(1900);
     Serial.println("END");
-    delay(1000);
+    delay(5000);
 }

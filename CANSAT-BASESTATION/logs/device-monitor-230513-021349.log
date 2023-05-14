@@ -1,0 +1,71 @@
+
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Unexpected input : 
+
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode
+Unexpected input : 
+
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Nano received packet '
+' with RSSI -79
+Nano received packet 'init done, waiting for arm
+' with RSSI -65
+Nano received packet 'gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro� temp, humid, since_gps, time�
+' with RSSI -71
+Nano received packet '
+' with RSSI -97
+Nano received packet '
+' with RSSI -82
+Nano received packet 'init done, waiting for arm
+' with RSSI -68
+Nano received packet 'gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, since_gps, time
+' with RSSI -78
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -70
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Nano received packet 'Servo singal recieved
+' with RSSI -70
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Nano received packet '0.000000,0.000000,0.00,0,0.00,-117.31,1027.42,28.48,35.06,32802
+' with RSSI -61
+Nano received packet '
+' with RSSI -89
+Nano received packet 'init done, waiting for arm
+' with RSSI -79
+Unexpected input : 
+
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode

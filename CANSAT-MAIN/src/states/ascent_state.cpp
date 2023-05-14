@@ -24,7 +24,7 @@ void ascent_state(Cansat &cansat)
                 cansat.config.HARD_LOCK_HEIGHT.TIMESPAN,
                 data_values);
             cansat.sensors.data.average_value = gps_height_average;
-            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average != -1)
+            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average > 1)
             {
                 hard_locked = false;
                 data_values.clear();
@@ -33,16 +33,17 @@ void ascent_state(Cansat &cansat)
         }
         else
         {
-            float light_average = average_value(
-                current_light_data_point,
-                cansat.config.PARACHUTE_LIGHT.TIMESPAN,
-                data_values);
-            cansat.sensors.data.average_value = light_average; // so it can be logged
-            if (light_average >= cansat.config.PARACHUTE_LIGHT.THRESHOLD && light_average > -1)
-            {
-                cansat.log.info("nanosat jection detected");
-                return;
-            }
+            // float light_average = average_value(
+            //     current_light_data_point,
+            //     cansat.config.PARACHUTE_LIGHT.TIMESPAN,
+            //     data_values);
+            // cansat.sensors.data.average_value = light_average; // so it can be logged
+            // if (light_average >= cansat.config.PARACHUTE_LIGHT.THRESHOLD && light_average > -1)
+            // {
+            //     cansat.log.info("nanosat jection detected");
+            //     return;
+            // }
+            return;
         }
         delay(cansat.config.SLEEP);
     }

@@ -33,7 +33,7 @@ public:
     int LIS2MDL_SDA = 20;
 
     // LORA SPI0
-    long LORA_FREQUENCY = 434.25E6;
+    long LORA_FREQUENCY = 430.6E6; // 434.25E6
     int LORA_CS = 5;
     int LORA_RX = 4;
     int LORA_TX = 3;
@@ -71,14 +71,14 @@ public:
     int PHOTO_ADC = 28;
 
     // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1013.25; // CHNAGE BEFORE FLIGHT;
+    float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
     int SLEEP = 200; // ms
 
-    Detection_parameter HARD_LOCK_HEIGHT = {200, 5000}; // makse sure to change the max array size if needed
-    Detection_parameter PARACHUTE_LIGHT = {800, 2000};
-    Detection_parameter LANDED_HEIGHT = {50, 10000};
+    Detection_parameter HARD_LOCK_HEIGHT = {950, 5000}; // makse sure to change the max array size if needed
+    // Detection_parameter PARACHUTE_LIGHT = {800, 2000};
+    Detection_parameter LANDED_HEIGHT = {200, 10000};
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";

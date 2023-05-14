@@ -11,7 +11,7 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = false;
-    bool LOG_TO_STORAGE = true;
+    bool LOG_TO_STORAGE = false;
 
     // USING INTERNAL MEMORY INSTED !!!!!
     // // flash SPI1
@@ -33,12 +33,12 @@ public:
     // int LIS2MDL_SDA = 20;
 
     // LORA SPI0
-    long LORA_FREQUENCY = 432.25E6;
+    long LORA_FREQUENCY = 430.575E6;
     int LORA_CS = 6;
     int LORA_RX = 8;
     int LORA_TX = 7;
     int LORA_SCK = 27;
-    int LORA_TXPOWER = 10; // max :)
+    int LORA_TXPOWER = 99; // max :)
     int LORA_SPREADING = 10;
     int LORA_CODING_RATE = 7;
     long LORA_SIGNAL_BW = 62.5E3;
@@ -64,8 +64,8 @@ public:
 
     // Ejection
     int SERVO_PWM = 29;
-    int SERVO_START = 1900;
-    int SERVO_END = 1700;
+    int SERVO_START = 1950; // 1950
+    int SERVO_END = 1750;   // 1840
     // Parachute
     // int MOSFET = 22; // TBD
 
@@ -73,15 +73,15 @@ public:
     // int PHOTO_ADC = 28;
 
     // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1013.25; // CHNAGE BEFORE FLIGHT;
+    float SEA_LEVEL_HPA = 1026; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
     int SLEEP = 100; // ms
 
     // !!!!!!!!!! THE ALTITUDE IS IN SEA LEVEL DONT FUCK THIS UP!!!!!!!!!!!!!!!!!!!!
-    Detection_parameter HARD_LOCK_HEIGHT = {200, 5000}; // makse sure to change the max array size if needed
-    Detection_parameter EJECTION_HEIGHT = {150, 3000};
-    Detection_parameter LANDED_HEIGHT = {50, 10000};
+    Detection_parameter HARD_LOCK_HEIGHT = {950, 5000}; // makse sure to change the max array size if needed
+    Detection_parameter EJECTION_HEIGHT = {900, 3000};
+    Detection_parameter LANDED_HEIGHT = {200, 10000};
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
