@@ -7,9 +7,11 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <SoftwareSerial.h>
+#include <RadioLib.h>
 #include "config.h"
 class Sensor_manager
 {
+    unsigned long _last_gps_packet_time = 0;
     // SENSOR OBJECTS AND Comunication
     // GPS UART0
     TinyGPSPlus _gps;
@@ -24,6 +26,9 @@ class Sensor_manager
     // IMU WIRE1
     Adafruit_BNO055 _imu;
     bool _imu_initialized = false;
+    // RANGING LORA SPI1
+    SX1280 _lora;
+    bool _lora_initialized = false;
 
     void read_gps();
     void read_magneto();
@@ -50,9 +55,9 @@ public:
         unsigned long time; // ms
         unsigned long time_since_last_gps;
     };
-    unsigned long last_gps_packet_time = 0;
+
     //[F] = not sent over lora
-    String header = "gps_lat, gps_lng, gps_height, gps_count, avrg_det, mag_x[F], mag_y[F], mag_z[F], acc_x[F], acc_y[F], acc_z[F], gyro_x[F], gyro_y[F], gyro_z[F], baro_height, baro, temp, humid, light, since_gps, time";
+    String header = "gps_lat, gps_lng, gps_height, gps_count, total_acc, , gyro_x, gyro_y, gyro_z, baro_height, baro, temp, humid, light, since_gps, time, acc_x[F], acc_y[F], acc_z[F]";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

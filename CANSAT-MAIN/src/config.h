@@ -8,6 +8,24 @@ public:
         float THRESHOLD;
         unsigned long int TIMESPAN;
     };
+    struct Lora_device
+    {
+        long FREQUENCY;
+        int CS;
+        int RX;
+        int TX;
+        int SCK;
+        int DIO0; // busy pin
+        int DIO1;
+        int RESET;
+
+        int TXPOWER;
+        int SPREADING;
+        int CODING_RATE;
+        long SIGNAL_BW;
+        SPIClassRP2040 *SPI;
+    };
+
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = false;
@@ -18,17 +36,38 @@ public:
     int GPS_TX = 1;
     long GPS_BAUDRATE = 9600;
 
-    // LORA SPI0
-    long LORA_FREQUENCY = 430.6E6;
-    int LORA_CS = 5;
-    int LORA_RX = 4;
-    int LORA_TX = 3;
-    int LORA_SCK = 2;
-    int LORA_TXPOWER = 99; // max :)
-    int LORA_SPREADING = 10;
-    int LORA_CODING_RATE = 7;
-    long LORA_SIGNAL_BW = 62.5E3;
+    // LORA 433 SPI0
+    Lora_device LORA433{
+        .FREQUENCY = 430.6E6,
+        .CS = 5,
+        .RX = 4,
+        .TX = 3,
+        .SCK = 2,
+        .DIO0 = 7,
+        .DIO1 = 8,
+        .RESET = 6,
+        .TXPOWER = 99,
+        .SPREADING = 10,
+        .CODING_RATE = 7,
+        .SIGNAL_BW = 62.5E3,
+        .SPI = &SPI};
 
+    // LORA 2.4 SPI1
+    Lora_device LORA2400{
+        .FREQUENCY = 2400.6E6,
+        .CS = 13,
+        .RX = 12,
+        .TX = 11,
+        .SCK = 10,
+        .DIO0 = 16,
+        .DIO1 = 15,
+        .RESET = 14,
+        .TXPOWER = 99,
+        .SPREADING = 10,
+        .CODING_RATE = 7,
+        .SIGNAL_BW = 62.5E3,
+        .SPI = &SPI1};
+    long RANGING_SLAVE_ADDRESS = 0x12345678;
     // WIRE1 lines
     int WIRE1_SCL = 27;
     int WIRE1_SDA = 26;

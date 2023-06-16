@@ -1,32 +1,35 @@
 #include "core/log.h"
-// #include "config.h"
-// #include "sensors/sensor_manager.h"
 #include <LittleFS.h>
+volatile bool rfm_lora_transmiting = false; // yeah sadly wasnt able to move it into the class
+void rfm_transmission_end(void)
+{
+    rfm_lora_transmiting = false;
+}
 
-void Log::init_lora(Config &config)
+void Log::init_lora(Config::Lora_device &lora_cfg)
 {
     // platform specific
-    SPI.setRX(config.LORA_RX);
-    SPI.setTX(config.LORA_TX);
-    SPI.setCS(config.LORA_CS);
-    SPI.setSCK(config.LORA_SCK);
-    _spi_lora = &SPI;
-
-    _lora.setPins(config.LORA_CS);
-    _lora.setSPI(*_spi_lora);
-    if (!_lora.begin(config.LORA_FREQUENCY))
+    lora_cfg.SPI->setRX(lora_cfg.RX);
+    lora_cfg.SPI->setTX(lora_cfg.TX);
+    lora_cfg.SPI->setCS(lora_cfg.CS);
+    lora_cfg.SPI->setSCK(lora_cfg.SCK);
+    _lora = new Module(lora_cfg.CS, lora_cfg.DIO0, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI);
+    int state = _lora.begin();
+    if (state != RADIOLIB_ERR_NONE)
     {
-        Serial.println("Starting LoRa failed!");
-        while (1)
-            ;
+        Serial.print("RFM lora failed state: ");
+        Serial.println(state);
     }
 
     // setting paramaters
-    _lora.setTxPower(config.LORA_TXPOWER);
-    _lora.setSpreadingFactor(config.LORA_SPREADING);
-    _lora.setCodingRate4(config.LORA_CODING_RATE);
-    _lora.setSignalBandwidth(config.LORA_SIGNAL_BW);
-    Serial.println("LoRa! Running");
+    _lora.setOutputPower(lora_cfg.TXPOWER);
+    _lora.setSpreadingFactor(lora_cfg.SPREADING);
+    _lora.setCodingRate(lora_cfg.CODING_RATE);
+    _lora.setBandwidth(lora_cfg.SIGNAL_BW);
+
+    // setup interupt
+    _lora.setDio0Action(rfm_transmission_end, RISING);
+    Serial.println("RFM LoRa! Running");
     _lora_initialized = true;
 }
 void Log::init_flash(Config &config)
@@ -83,7 +86,7 @@ void Log::init(Config &config)
 {
     init_pcserial(config);
     init_flash(config);
-    init_lora(config);
+    init_lora(config.LORA433);
 }
 void Log::info(String msg)
 {
@@ -92,14 +95,14 @@ void Log::info(String msg)
     // sends message over lora
     if (_lora_initialized)
     {
-        while (_lora.beginPacket() == 0)
+        while (rfm_lora_transmiting)
         {
             Serial.print("waiting for lora ... ");
-            delay(50);
+            delay(10);
         }
-        _lora.beginPacket();
-        _lora.println(msg);
-        _lora.endPacket();
+        _lora.finishTransmit();
+        rfm_lora_transmiting = true;
+        _lora.transmit(msg);
     }
     if (_flash_initialized)
     {
@@ -115,94 +118,56 @@ void Log::info(String msg)
 }
 void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
 {
-    unsigned long int start_time = millis();
+
+    String packet;
+    packet += String(data.gps_lat, 6);
+    packet += ", ";
+    packet += String(data.gps_lng, 6);
+    packet += ", ";
+    packet += String(data.gps_height);
+    packet += ", ";
+    packet += String(data.gps_sattelites);
+    packet += ", ";
+    packet += String(data.total_acc, 3);
+    packet += ", ";
+    packet += String(data.gyro[0], 3);
+    packet += ", ";
+    packet += String(data.gyro[1], 3);
+    packet += ", ";
+    packet += String(data.gyro[2], 3);
+    packet += ", ";
+    packet += String(data.baro_height, 1);
+    packet += ", ";
+    packet += String(data.pressure, 2);
+    packet += ", ";
+    packet += String(data.temperature, 2);
+    packet += ", ";
+    packet += String(data.humidity, 2);
+    packet += ", ";
+    packet += String(data.time_since_last_gps);
+    packet += ", ";
+    packet += String(data.time);
+
+    // sends data over lora if can be sent
+    if (!rfm_lora_transmiting && _lora_initialized)
+    {
+
+        rfm_lora_transmiting = true;
+        _lora.finishTransmit();
+
+        rfm_lora_transmiting = true;
+        _lora.startTransmit(packet);
+    }
+    // apend more data to packet string which will only show up on storage
+    packet += String(data.acc[0], 3);
+    packet += ", ";
+    packet += String(data.acc[1], 3);
+    packet += ", ";
+    packet += String(data.acc[2], 3);
+
     // prints data
     Serial.print("DATA: ");
-    Serial.print(data.gps_lng, 6);
-    Serial.print(",");
-    Serial.print(data.gps_lat, 6);
-    Serial.print(",");
-    Serial.print(data.gps_height);
-    Serial.print(",");
-    Serial.print(data.gps_sattelites);
-    Serial.print(",");
-    Serial.print(data.average_value);
-    Serial.print(",");
-    Serial.print(data.mag[0]);
-    Serial.print(",");
-    Serial.print(data.mag[1]);
-    Serial.print(",");
-    Serial.print(data.mag[2]);
-    Serial.print(",");
-    Serial.print(data.acc[0]);
-    Serial.print(",");
-    Serial.print(data.acc[1]);
-    Serial.print(",");
-    Serial.print(data.acc[2]);
-    Serial.print(",");
-    Serial.print(data.gyro[0]);
-    Serial.print(",");
-    Serial.print(data.gyro[1]);
-    Serial.print(",");
-    Serial.print(data.gyro[2]);
-    Serial.print(",");
-    Serial.print(data.baro_height);
-    Serial.print(",");
-    Serial.print(data.pressure);
-    Serial.print(",");
-    Serial.print(data.temperature);
-    Serial.print(",");
-    Serial.print(data.humidity);
-    Serial.print(",");
-    Serial.print(data.light);
-    Serial.print(",");
-    Serial.println(data.time);
-    // sends data over lora if can be sent
-
-    if (_lora.beginPacket() != 0 && _lora_initialized)
-    {
-        _lora.beginPacket();
-        _lora.print(data.gps_lng, 6);
-        _lora.print(",");
-        _lora.print(data.gps_lat, 6);
-        _lora.print(",");
-        _lora.print(data.gps_height);
-        _lora.print(",");
-        _lora.print(data.gps_sattelites);
-        _lora.print(",");
-        _lora.print(data.average_value);
-        _lora.print(",");
-        // _lora.print(data.mag[0]);
-        // _lora.print(",");
-        // _lora.print(data.mag[1]);
-        // _lora.print(",");
-        // _lora.print(data.mag[2]);
-        // _lora.print(",");
-        // _lora.print(data.acc[0]);
-        // _lora.print(",");
-        // _lora.print(data.acc[1]);
-        // _lora.print(",");
-        // _lora.print(data.acc[2]);
-        // _lora.print(",");
-        // _lora.print(data.gyro[0]);
-        // _lora.print(",");
-        // _lora.print(data.gyro[1]);
-        // _lora.print(",");
-        // _lora.print(data.gyro[2]);
-        // _lora.print(",");
-        _lora.print(data.baro_height);
-        _lora.print(",");
-        _lora.print(data.pressure);
-        _lora.print(",");
-        _lora.print(data.temperature);
-        _lora.print(",");
-        _lora.print(data.humidity);
-        _lora.print(",");
-        _lora.print(data.light);
-        _lora.print(",");
-        _lora.println(data.time);
-        _lora.endPacket(true);
-    }
+    Serial.println(packet);
 
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
@@ -212,45 +177,8 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         {
             Serial.println("File open failed");
         }
-        file.print(data.gps_lng, 6);
-        file.print(",");
-        file.print(data.gps_lat, 6);
-        file.print(",");
-        file.print(data.gps_height);
-        file.print(",");
-        file.print(data.gps_sattelites);
-        file.print(",");
-        file.print(data.average_value);
-        file.print(",");
-        file.print(data.mag[0]);
-        file.print(",");
-        file.print(data.mag[1]);
-        file.print(",");
-        file.print(data.mag[2]);
-        file.print(",");
-        file.print(data.acc[0]);
-        file.print(",");
-        file.print(data.acc[1]);
-        file.print(",");
-        file.print(data.acc[2]);
-        file.print(",");
-        file.print(data.gyro[0]);
-        file.print(",");
-        file.print(data.gyro[1]);
-        file.print(",");
-        file.print(data.gyro[2]);
-        file.print(",");
-        file.print(data.baro_height);
-        file.print(",");
-        file.print(data.pressure);
-        file.print(",");
-        file.print(data.temperature);
-        file.print(",");
-        file.print(data.humidity);
-        file.print(",");
-        file.print(data.light);
-        file.print(",");
-        file.println(data.time);
+
+        file.println(packet);
         file.close();
     }
 }
@@ -260,14 +188,17 @@ void Log::read(String &msg)
     {
         return;
     }
-    // if anything has been recieved add message to string and return true if msg was read
-    int packetSize = _lora.parsePacket();
-    if (packetSize)
+    // wait for transmission end
+    while (rfm_lora_transmiting)
     {
-        while (_lora.available())
-        {
-            char incoming = (char)_lora.read();
-            msg += incoming;
-        }
+        delay(10);
     }
+    int state = _lora.receive(msg);
+
+    if (state == RADIOLIB_ERR_NONE)
+    {
+        return;
+    }
+
+    msg = "";
 }

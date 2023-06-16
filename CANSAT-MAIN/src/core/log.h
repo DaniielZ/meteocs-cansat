@@ -1,21 +1,18 @@
 #pragma once
 #include <SPI.h>
-#include <LoRa.h>
+#include <RadioLib.h>
 #include <Arduino.h>
 #include "config.h"
 #include "sensors/sensor_manager.h"
 class Log
 {
-    SPIClass *_spi_lora;
-
-    LoRaClass _lora;
+    RFM96 _lora;
     bool _lora_initialized = false;
 
     String _log_file_path_final;
     bool _flash_initialized = false;
-
     void init_flash(Config &config);
-    void init_lora(Config &config);
+    void init_lora(Config::Lora_device &lora_cfg);
     void init_pcserial(Config &config);
 
 public:
