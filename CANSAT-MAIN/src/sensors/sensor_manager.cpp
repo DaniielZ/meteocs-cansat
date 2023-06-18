@@ -58,7 +58,7 @@ String Sensor_manager::init(Config &config)
     lora_cfg.SPI->setTX(lora_cfg.TX);
     lora_cfg.SPI->setCS(lora_cfg.CS);
     lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    _lora = new Module(lora_cfg.CS, lora_cfg.DIO0, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI);
+    _lora = new Module(lora_cfg.CS, lora_cfg.DIO1, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI); // busy pin doesnt coutn
     int state = _lora.begin();
     if (state != RADIOLIB_ERR_NONE)
     {
@@ -77,6 +77,8 @@ String Sensor_manager::init(Config &config)
     //
     _lora.startRanging(false, 0x12345678);
     // need to setup interupt
+    // need to wait for irq to be high
+
     return status;
 }
 

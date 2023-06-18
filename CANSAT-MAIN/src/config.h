@@ -59,8 +59,8 @@ public:
         .RX = 12,
         .TX = 11,
         .SCK = 10,
-        .DIO0 = 16,
-        .DIO1 = 15,
+        .DIO0 = 16, // busy dont use
+        .DIO1 = 15, // only use thsi
         .RESET = 14,
         .TXPOWER = 99,
         .SPREADING = 10,
