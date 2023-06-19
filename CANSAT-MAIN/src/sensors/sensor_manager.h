@@ -27,9 +27,10 @@ class Sensor_manager
     Adafruit_BNO055 _imu;
     bool _imu_initialized = false;
     // RANGING LORA SPI1
-    SX1280 _lora;
+    SX1280 *_lora;
     bool _lora_initialized = false;
 
+    void enable_ranging(Config &config);
     void read_gps();
     void read_magneto();
     void read_baro(Config &config);

@@ -6,7 +6,7 @@
 #include "sensors/sensor_manager.h"
 class Log
 {
-    RFM96 _lora;
+    RFM96 *_lora;
     bool _lora_initialized = false;
 
     String _log_file_path_final;

@@ -13,8 +13,8 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
     lora_cfg.SPI->setTX(lora_cfg.TX);
     lora_cfg.SPI->setCS(lora_cfg.CS);
     lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    _lora = new Module(lora_cfg.CS, lora_cfg.DIO0, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI);
-    int state = _lora.begin();
+    *_lora = new Module(lora_cfg.CS, lora_cfg.DIO0, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI);
+    int state = _lora->begin();
     if (state != RADIOLIB_ERR_NONE)
     {
         Serial.print("RFM lora failed state: ");
@@ -22,13 +22,13 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
     }
 
     // setting paramaters
-    _lora.setOutputPower(lora_cfg.TXPOWER);
-    _lora.setSpreadingFactor(lora_cfg.SPREADING);
-    _lora.setCodingRate(lora_cfg.CODING_RATE);
-    _lora.setBandwidth(lora_cfg.SIGNAL_BW);
+    _lora->setOutputPower(lora_cfg.TXPOWER);
+    _lora->setSpreadingFactor(lora_cfg.SPREADING);
+    _lora->setCodingRate(lora_cfg.CODING_RATE);
+    _lora->setBandwidth(lora_cfg.SIGNAL_BW);
 
     // setup interupt
-    _lora.setDio0Action(rfm_transmission_end, RISING);
+    _lora->setDio0Action(rfm_transmission_end, RISING);
     Serial.println("RFM LoRa! Running");
     _lora_initialized = true;
 }
@@ -87,6 +87,8 @@ void Log::init(Config &config)
     init_pcserial(config);
     init_flash(config);
     init_lora(config.LORA433);
+    String status = " INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_lora_initialized);
+    info(status);
 }
 void Log::info(String msg)
 {
@@ -100,9 +102,9 @@ void Log::info(String msg)
             Serial.print("waiting for lora ... ");
             delay(10);
         }
-        _lora.finishTransmit();
+        _lora->finishTransmit();
         rfm_lora_transmiting = true;
-        _lora.transmit(msg);
+        _lora->transmit(msg);
     }
     if (_flash_initialized)
     {
@@ -153,12 +155,13 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     {
 
         rfm_lora_transmiting = true;
-        _lora.finishTransmit();
+        _lora->finishTransmit();
 
         rfm_lora_transmiting = true;
-        _lora.startTransmit(packet);
+        _lora->startTransmit(packet);
     }
     // apend more data to packet string which will only show up on storage
+    packet += ", ";
     packet += String(data.acc[0], 3);
     packet += ", ";
     packet += String(data.acc[1], 3);
@@ -193,7 +196,7 @@ void Log::read(String &msg)
     {
         delay(10);
     }
-    int state = _lora.receive(msg);
+    int state = _lora->receive(msg);
 
     if (state == RADIOLIB_ERR_NONE)
     {

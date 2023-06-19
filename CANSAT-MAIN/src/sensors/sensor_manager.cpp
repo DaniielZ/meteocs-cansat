@@ -1,4 +1,9 @@
 #include "sensors/sensor_manager.h"
+volatile bool sx1280_lora_ranging = false; // yeah sadly wasnt able to move it into the class
+void sx1280_ranging_end(void)
+{
+    sx1280_lora_ranging = false;
+}
 
 float get_altitude(float pressure_hPa, float sea_level_hPa)
 {
@@ -58,8 +63,8 @@ String Sensor_manager::init(Config &config)
     lora_cfg.SPI->setTX(lora_cfg.TX);
     lora_cfg.SPI->setCS(lora_cfg.CS);
     lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    _lora = new Module(lora_cfg.CS, lora_cfg.DIO1, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI); // busy pin doesnt coutn
-    int state = _lora.begin();
+    *_lora = new Module(lora_cfg.CS, lora_cfg.DIO1, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI); // busy pin doesnt coutn
+    int state = _lora->begin();
     if (state != RADIOLIB_ERR_NONE)
     {
         Serial.print("SX1280 lora failed state: ");
@@ -67,21 +72,30 @@ String Sensor_manager::init(Config &config)
     }
 
     // setting paramaters
-    _lora.setOutputPower(lora_cfg.TXPOWER);
-    _lora.setSpreadingFactor(lora_cfg.SPREADING);
-    _lora.setCodingRate(lora_cfg.CODING_RATE);
-    _lora.setBandwidth(lora_cfg.SIGNAL_BW);
+    _lora->setOutputPower(lora_cfg.TXPOWER);
+    _lora->setSpreadingFactor(lora_cfg.SPREADING);
+    _lora->setCodingRate(lora_cfg.CODING_RATE);
+    _lora->setBandwidth(lora_cfg.SIGNAL_BW);
     Serial.println("SX1280 LoRa! Running");
     _lora_initialized = true;
 
     //
-    _lora.startRanging(false, 0x12345678);
+    _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS);
+    sx1280_lora_ranging = true;
     // need to setup interupt
+    _lora->setDio1Action(sx1280_ranging_end);
     // need to wait for irq to be high
 
     return status;
 }
-
+void Sensor_manager::enable_ranging(Config &config)
+{
+    if (!sx1280_lora_ranging)
+    {
+        _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS);
+        sx1280_lora_ranging = true;
+    }
+}
 void Sensor_manager::read_gps()
 {
     if (!_gps_initialized)

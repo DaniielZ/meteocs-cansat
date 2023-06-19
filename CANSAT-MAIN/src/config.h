@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <SPI.h>
 class Config
 {
 public:
@@ -38,7 +39,7 @@ public:
 
     // LORA 433 SPI0
     Lora_device LORA433{
-        .FREQUENCY = 430.6E6,
+        .FREQUENCY = (long)430.6E6,
         .CS = 5,
         .RX = 4,
         .TX = 3,
@@ -49,12 +50,12 @@ public:
         .TXPOWER = 99,
         .SPREADING = 10,
         .CODING_RATE = 7,
-        .SIGNAL_BW = 62.5E3,
+        .SIGNAL_BW = (long)62.5E3,
         .SPI = &SPI};
 
     // LORA 2.4 SPI1
     Lora_device LORA2400{
-        .FREQUENCY = 2400.6E6,
+        .FREQUENCY = (long)2400.6E6,
         .CS = 13,
         .RX = 12,
         .TX = 11,
@@ -65,7 +66,7 @@ public:
         .TXPOWER = 99,
         .SPREADING = 10,
         .CODING_RATE = 7,
-        .SIGNAL_BW = 62.5E3,
+        .SIGNAL_BW = (long)62.5E3,
         .SPI = &SPI1};
     long RANGING_SLAVE_ADDRESS = 0x12345678;
     // WIRE1 lines
@@ -90,9 +91,9 @@ public:
     int BUZZER_ERROR_BEEPS = 20;
 
     // Ejection
-    int SERVO_PWM = 22;
-    int SERVO_START_POS = 0;
-    int SERVO_END_POS = 180;
+    int SERVO_PWM = 29;
+    int SERVO_START = 1950;
+    int SERVO_END = 1790;
 
     // Parachute
     int MOSFET = 22; // TBD
@@ -101,14 +102,18 @@ public:
     float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
-    int MAX_DATA_RATE = 10; // Hz
+    const int MAX_LOOP_TIME = 100; // ms
+    // detection parameters
+    const int DATA_POINTS_FOR_LAUNCH_DETECTION = 10;
+    float LAUNCH_DETECTION_HEIGHT = 100; // delta m
 
-    // Detection_parameter HARD_LOCK_HEIGHT = {570, 5000}; // makse sure to change the max array size if needed
-    // // Detection_parameter PARACHUTE_LIGHT = {800, 2000};
-    // Detection_parameter LANDED_HEIGHT = {200, 10000};
-    // // ARMING AND DATA SENDING MSG IN PREP SATE
+    int TIME_FROM_LAUNCH_TO_DETECT_EJECTION = 20000;      // ms
+    int TIME_AFTER_SOLAR_SAIL_TO_DEATACH_NANOSAT = 10000; // ms
+    int TIME_AFTER_SOLAR_SAIL_TO_LAND = 200000;           // ms
+    // ARMING AND DATA SENDING MSG IN PREP SATE
 
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
+    String SERVO_MSG = "servo_toggle";
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };
