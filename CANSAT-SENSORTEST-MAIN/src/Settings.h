@@ -13,7 +13,7 @@
 // should be set to -1.
 
 #define NSS 13
-#define RFBUSY 18
+#define RFBUSY 18 // or 16
 #define NRESET 14
 #define LED1 -1
 #define DIO1 15
