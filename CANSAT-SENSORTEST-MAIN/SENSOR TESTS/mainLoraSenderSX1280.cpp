@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <SPI.h>
 #include <RadioLib.h>
 
 // LORA 2.4 SPI1
@@ -36,7 +37,8 @@ Lora_device LORA2400{
     .SIGNAL_BW = (long)1600E3,
     .SPI = &SPI1};
 
-SX1280 lora = new Module(LORA2400.CS, LORA2400.DIO1, LORA2400.RESET, -1, SPI1); // busy pin doesnt coutn
+SX1280 lora = new Module(LORA2400.CS, LORA2400.DIO0, LORA2400.RESET, -1, SPI1); // busy pin doesnt coutn
+
 void setup()
 {
     Serial.begin(115200);
@@ -44,7 +46,7 @@ void setup()
     {
         delay(100);
     }
-    delay(1000);
+
     // RANGING lora
     SPI1.setRX(LORA2400.RX);
     SPI1.setTX(LORA2400.TX);

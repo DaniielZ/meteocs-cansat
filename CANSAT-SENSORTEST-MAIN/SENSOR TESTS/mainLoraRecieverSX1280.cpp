@@ -30,13 +30,13 @@ Lora_device LORA2400{
     .DIO1 = 15, // only use thsi
     .RESET = 14,
     .SYNC_WORD = 0xF4,
-    .TXPOWER = 10,
+    .TXPOWER = 14,
     .SPREADING = 9,
     .CODING_RATE = 7,
     .SIGNAL_BW = (long)1600E3,
     .SPI = &SPI1};
 
-SX1280 lora = new Module(LORA2400.CS, LORA2400.DIO1, LORA2400.RESET, -1, SPI1); // busy pin doesnt coutn
+SX1280 lora = new Module(LORA2400.CS, LORA2400.DIO1, LORA2400.RESET, LORA2400.DIO1, *LORA2400.SPI); // busy pin doesnt coutn
 void setup()
 {
     Serial.begin(115200);
@@ -44,12 +44,12 @@ void setup()
     {
         delay(100);
     }
-    delay(1000);
+
     // RANGING lora
-    SPI1.setRX(LORA2400.RX);
-    SPI1.setTX(LORA2400.TX);
-    SPI1.setCS(LORA2400.CS);
-    SPI1.setSCK(LORA2400.SCK);
+    LORA2400.SPI->setRX(LORA2400.RX);
+    LORA2400.SPI->setTX(LORA2400.TX);
+    LORA2400.SPI->setCS(LORA2400.CS);
+    LORA2400.SPI->setSCK(LORA2400.SCK);
 
     int state = lora.begin();
     if (state != RADIOLIB_ERR_NONE)
@@ -71,26 +71,42 @@ void setup()
 
 void loop()
 {
-    Serial.print(F("[sx1280] Transmitting packet ... "));
+    Serial.print(F("[sx1280] Waiting for incoming transmission ... "));
 
-    // you can transmit C-string or Arduino string up to 64 characters long
-    int state = lora.transmit("Hello World!");
+    // you can receive data as an Arduino String
+    String str;
+    int state = lora.receive(str);
 
-    // you can also transmit byte array up to 64 bytes long
+    // you can also receive data as byte array
     /*
-      byte byteArr[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
-      int state = radio.transmit(byteArr, 8);
+      byte byteArr[8];
+      int state = radio.receive(byteArr, 8);
     */
 
     if (state == RADIOLIB_ERR_NONE)
     {
-        // the packet was successfully transmitted
+        // packet was successfully received
         Serial.println(F("success!"));
+
+        // print the data of the packet
+        Serial.print(F("[sx1280] Data:\t\t"));
+        Serial.println(str);
+
+        // print RSSI (Received Signal Strength Indicator)
+        // of the last received packet
+        Serial.print(F("[sx1280] RSSI:\t\t"));
+        Serial.print(lora.getRSSI());
+        Serial.println(F(" dBm"));
     }
-    else if (state == RADIOLIB_ERR_PACKET_TOO_LONG)
+    else if (state == RADIOLIB_ERR_RX_TIMEOUT)
     {
-        // the supplied packet was longer than 64 bytes
-        Serial.println(F("too long!"));
+        // timeout occurred while waiting for a packet
+        Serial.println(F("timeout!"));
+    }
+    else if (state == RADIOLIB_ERR_CRC_MISMATCH)
+    {
+        // packet was received, but is malformed
+        Serial.println(F("CRC error!"));
     }
     else
     {
@@ -98,7 +114,4 @@ void loop()
         Serial.print(F("failed, code "));
         Serial.println(state);
     }
-
-    // wait for a second before transmitting again
-    delay(2000);
 }
