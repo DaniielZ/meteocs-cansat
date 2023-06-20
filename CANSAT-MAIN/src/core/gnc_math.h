@@ -1,5 +1,8 @@
 #pragma once
 #include <Array.h>
+
+// might use this latter for often used math operations like averging and other data procesing
+
 // struct data_point
 // {
 //     float value;

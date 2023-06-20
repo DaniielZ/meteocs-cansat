@@ -21,7 +21,7 @@ String Sensor_manager::init(Config &config)
     Wire1.setSDA(config.WIRE1_SDA);
     // GPS UART0
     _gps_serial = &Serial1;
-    _gps_serial->setFIFOSize(256);
+    _gps_serial->setFIFOSize(256); // once had a prblem of not reading serial properly but this seemed to fix it
     _gps_serial->begin(config.GPS_BAUDRATE);
     _gps_initialized = true;
 
@@ -70,21 +70,24 @@ String Sensor_manager::init(Config &config)
         Serial.print("SX1280 lora failed state: ");
         Serial.println(state);
     }
+    else
+    {
+        // setting paramaters
+        _lora->setOutputPower(lora_cfg.TXPOWER);
+        _lora->setSpreadingFactor(lora_cfg.SPREADING);
+        _lora->setCodingRate(lora_cfg.CODING_RATE);
+        _lora->setBandwidth(lora_cfg.SIGNAL_BW);
+        _lora->setSyncWord(lora_cfg.SYNC_WORD);
+        Serial.println("SX1280 LoRa! Running");
+        _lora_initialized = true;
 
-    // setting paramaters
-    _lora->setOutputPower(lora_cfg.TXPOWER);
-    _lora->setSpreadingFactor(lora_cfg.SPREADING);
-    _lora->setCodingRate(lora_cfg.CODING_RATE);
-    _lora->setBandwidth(lora_cfg.SIGNAL_BW);
-    Serial.println("SX1280 LoRa! Running");
-    _lora_initialized = true;
-
-    //
-    _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS);
-    sx1280_lora_ranging = true;
-    // need to setup interupt
-    _lora->setDio1Action(sx1280_ranging_end);
-    // need to wait for irq to be high
+        //
+        _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS);
+        sx1280_lora_ranging = true;
+        // need to setup interupt
+        _lora->setDio1Action(sx1280_ranging_end);
+        // need to wait for irq to be high
+    }
 
     return status;
 }

@@ -26,6 +26,7 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
     _lora->setSpreadingFactor(lora_cfg.SPREADING);
     _lora->setCodingRate(lora_cfg.CODING_RATE);
     _lora->setBandwidth(lora_cfg.SIGNAL_BW);
+    _lora->setSyncWord(lora_cfg.SYNC_WORD);
 
     // setup interupt
     _lora->setDio0Action(rfm_transmission_end, RISING);

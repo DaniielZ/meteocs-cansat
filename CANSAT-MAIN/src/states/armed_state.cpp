@@ -5,7 +5,7 @@
 void armed_state(Cansat &cansat)
 {
 
-    // 10 sec buffer KINDA well its just 100 data pounts
+    // 10 sec buffer KINDA well its just 100 data pounts but will definetly work for this example
     Array<Sensor_manager::Sensor_data, 105> data_buffer;
     cansat.sensors.read_data(cansat.config);
 

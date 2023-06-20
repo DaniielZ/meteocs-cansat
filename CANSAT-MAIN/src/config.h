@@ -19,6 +19,7 @@ public:
         int DIO0; // busy pin
         int DIO1;
         int RESET;
+        int SYNC_WORD;
 
         int TXPOWER;
         int SPREADING;
@@ -47,26 +48,28 @@ public:
         .DIO0 = 7,
         .DIO1 = 8,
         .RESET = 6,
-        .TXPOWER = 99,
-        .SPREADING = 10,
-        .CODING_RATE = 7,
+        .SYNC_WORD = 0xF3,
+        .TXPOWER = 14,
+        .SPREADING = 9,
+        .CODING_RATE = 6,
         .SIGNAL_BW = (long)62.5E3,
         .SPI = &SPI};
 
     // LORA 2.4 SPI1
     Lora_device LORA2400{
-        .FREQUENCY = (long)2400.6E6,
+        .FREQUENCY = (long)2405.6E6,
         .CS = 13,
         .RX = 12,
         .TX = 11,
         .SCK = 10,
-        .DIO0 = 16, // busy dont use
+        .DIO0 = 16, // busy pin not programmable dont use
         .DIO1 = 15, // only use thsi
         .RESET = 14,
-        .TXPOWER = 99,
-        .SPREADING = 10,
+        .SYNC_WORD = 0xF4,
+        .TXPOWER = 14,
+        .SPREADING = 9,
         .CODING_RATE = 7,
-        .SIGNAL_BW = (long)62.5E3,
+        .SIGNAL_BW = (long)1600E3,
         .SPI = &SPI1};
     long RANGING_SLAVE_ADDRESS = 0x12345678;
     // WIRE1 lines
