@@ -1,4 +1,5 @@
 #include "sensors/sensor_manager.h"
+
 volatile bool sx1280_lora_ranging = false; // yeah sadly wasnt able to move it into the class
 void sx1280_ranging_end(void)
 {
@@ -63,12 +64,13 @@ String Sensor_manager::init(Config &config)
     lora_cfg.SPI->setTX(lora_cfg.TX);
     lora_cfg.SPI->setCS(lora_cfg.CS);
     lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    *_lora = new Module(lora_cfg.CS, lora_cfg.DIO1, lora_cfg.RESET, lora_cfg.DIO1, *lora_cfg.SPI); // busy pin doesnt coutn
+    *_lora = new Module(lora_cfg.CS, lora_cfg.DIO1, lora_cfg.RESET, lora_cfg.DIO0, *lora_cfg.SPI);
+    lora_cfg.SPI->begin();
+
     int state = _lora->begin();
     if (state != RADIOLIB_ERR_NONE)
     {
-        Serial.print("SX1280 lora failed state: ");
-        Serial.println(state);
+        status += " SX1280 error (" + String(state) + ")";
     }
     else
     {
@@ -78,11 +80,10 @@ String Sensor_manager::init(Config &config)
         _lora->setCodingRate(lora_cfg.CODING_RATE);
         _lora->setBandwidth(lora_cfg.SIGNAL_BW);
         _lora->setSyncWord(lora_cfg.SYNC_WORD);
-        Serial.println("SX1280 LoRa! Running");
         _lora_initialized = true;
 
         //
-        _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS);
+        _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS[0]);
         sx1280_lora_ranging = true;
         // need to setup interupt
         _lora->setDio1Action(sx1280_ranging_end);
@@ -95,7 +96,18 @@ void Sensor_manager::enable_ranging(Config &config)
 {
     if (!sx1280_lora_ranging)
     {
-        _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS);
+        // mybe add some sort of logging and timeout
+        int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
+        if (_lora_slave_address_index >= array_length - 1)
+        {
+            _lora_slave_address_index = 0;
+        }
+        else
+        {
+            _lora_slave_address_index++;
+        }
+
+        _lora->startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
         sx1280_lora_ranging = true;
     }
 }
@@ -172,5 +184,6 @@ void Sensor_manager::read_data(Config &config)
     read_baro(config);
     read_humidity();
     read_imu();
+    enable_ranging(config);
     read_time();
 }

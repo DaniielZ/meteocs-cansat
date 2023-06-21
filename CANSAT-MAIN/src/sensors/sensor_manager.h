@@ -29,6 +29,7 @@ class Sensor_manager
     // RANGING LORA SPI1
     SX1280 *_lora;
     bool _lora_initialized = false;
+    int _lora_slave_address_index = 0;
 
     void enable_ranging(Config &config);
     void read_gps();

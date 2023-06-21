@@ -31,9 +31,9 @@ Lora_device LORA2400{
     .RESET = 14,
     .SYNC_WORD = 0xF4,
     .TXPOWER = 10,
-    .SPREADING = 6,
+    .SPREADING = 9,
     .CODING_RATE = 7,
-    .SIGNAL_BW = (long)62.5E3,
+    .SIGNAL_BW = (long)1600E3,
     .SPI = &SPI1};
 
 SX1280 lora = new Module(LORA2400.CS, LORA2400.DIO1, LORA2400.RESET, LORA2400.DIO0, *LORA2400.SPI); // busy pin doesnt coutn
@@ -119,60 +119,50 @@ void setup()
 
 void loop()
 {
-    // check if the flag is set
-    if (receivedFlag)
+    Serial.print(F("[SX1280] Ranging ... "));
+
+    // start ranging exchange
+    // range as master:             true
+    // slave address:               0x12345678
+    int state = lora.range(false, 0x12345678);
+
+    // the other module must be configured as slave with the same address
+    /*
+      int state = radio.range(false, 0x12345678);
+    */
+
+    // if ranging calibration is known, it can be provided
+    // this should improve the accuracy and precision
+    /*
+      uint16_t calibration[3][6] = {
+        { 10299, 10271, 10244, 10242, 10230, 10246 },
+        { 11486, 11474, 11453, 11426, 11417, 11401 },
+        { 13308, 13493, 13528, 13515, 13430, 13376 }
+      };
+
+      int state = radio.range(true, 0x12345678, calibration);
+    */
+
+    if (state == RADIOLIB_ERR_NONE)
     {
-        // reset flag
-        receivedFlag = false;
-
-        // you can read received data as an Arduino String
-        String str;
-        int state = lora.readData(str);
-
-        // you can also read received data as byte array
-        /*
-          byte byteArr[8];
-          int state = radio.readData(byteArr, 8);
-        */
-
-        if (state == RADIOLIB_ERR_NONE)
-        {
-            // packet was successfully received
-            Serial.println(F("[SX1280] Received packet!"));
-
-            // print data of the packet
-            Serial.print(F("[SX1280] Data:\t\t"));
-            Serial.println(str);
-
-            // print RSSI (Received Signal Strength Indicator)
-            Serial.print(F("[SX1280] RSSI:\t\t"));
-            Serial.print(lora.getRSSI());
-            Serial.println(F(" dBm"));
-
-            // print SNR (Signal-to-Noise Ratio)
-            Serial.print(F("[SX1280] SNR:\t\t"));
-            Serial.print(lora.getSNR());
-            Serial.println(F(" dB"));
-
-            // print the Frequency Error
-            // of the last received packet
-            Serial.print(F("[SX1280] Frequency Error:\t"));
-            Serial.print(lora.getFrequencyError());
-            Serial.println(F(" Hz"));
-        }
-        else if (state == RADIOLIB_ERR_CRC_MISMATCH)
-        {
-            // packet was received, but is malformed
-            Serial.println(F("CRC error!"));
-        }
-        else
-        {
-            // some other error occurred
-            Serial.print(F("failed, code "));
-            Serial.println(state);
-        }
-
-        // put module back to listen mode
-        lora.startReceive();
+        // ranging finished successfully
+        Serial.println(F("success!"));
+        Serial.print(F("[SX1280] Distance:\t\t\t"));
+        Serial.print(lora.getRangingResult());
+        Serial.println(F(" meters (raw)"));
     }
+    else if (state == RADIOLIB_ERR_RANGING_TIMEOUT)
+    {
+        // timed out waiting for ranging packet
+        Serial.println(F("timed out!"));
+    }
+    else
+    {
+        // some other error occurred
+        Serial.print(F("failed, code "));
+        Serial.println(state);
+    }
+
+    // wait for a second before ranging again
+    delay(1000);
 }

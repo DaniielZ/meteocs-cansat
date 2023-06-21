@@ -71,7 +71,7 @@ public:
         .CODING_RATE = 7,
         .SIGNAL_BW = (long)1600E3,
         .SPI = &SPI1};
-    long RANGING_SLAVE_ADDRESS = 0x12345678;
+    long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x1234562, 0x12345673};
     // WIRE1 lines
     int WIRE1_SCL = 27;
     int WIRE1_SDA = 26;
