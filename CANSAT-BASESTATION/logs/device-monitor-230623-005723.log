@@ -1,0 +1,41 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Unexpected input : S
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Nano lora transmited: servo_toggle ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode

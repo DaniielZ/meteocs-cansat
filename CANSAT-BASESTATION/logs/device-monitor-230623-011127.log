@@ -1,0 +1,21 @@
+Starting LoRa main......!
+LoRa main! Running
+Starting LoRa nano......!
+LoRa nano! Running
+Unexpected input : t
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: data_send ....done!
+Nano lora transmited: data_send ....done!
+Switching to recieving mode
+Switching to transmiting mode
+Main lora transmited: arm_confirm ....done!
+Nano lora transmited: arm_confirm ....done!
+Switching to recieving mode
