@@ -30,8 +30,8 @@ public:
 
     // logging
     unsigned long PC_BAUDRATE = 115200;
-    bool WAIT_PC = false;
-    bool LOG_TO_STORAGE = true;
+    bool WAIT_PC = true;
+    bool LOG_TO_STORAGE = false;
 
     // GPS UART0
     int GPS_RX = 0;
@@ -83,7 +83,7 @@ public:
     int SHTC3_ADDRESS = 0x70;
 
     // BNO055 WIRE1
-    int BNO055_ADDRESS = 0x28; // or 29
+    int BNO055_ADDRESS = 0x29; // or 29
 
     // BUZZER
     int BUZZER = 6;

@@ -1,7 +1,6 @@
 #include "states/prepare_state.h"
 void prepare_state(Cansat &cansat)
 {
-
     cansat.log.init(cansat.config);
     String status = cansat.sensors.init(cansat.config);
     cansat.log.info(status);

@@ -2,8 +2,16 @@
 
 void setup()
 {
-    Cansat cansat;
-    cansat.start_states(cansat);
+    Serial.begin(115200);
+    if (!Serial)
+    {
+        delay(500);
+    }
+    delay(2000);
+    Serial.println("Init started");
+
+    // Cansat cansat;
+    // cansat.start_states(cansat);
 }
 
 void loop()

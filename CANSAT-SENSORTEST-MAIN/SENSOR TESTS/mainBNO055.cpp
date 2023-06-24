@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 
@@ -10,8 +11,8 @@ void setup()
     {
         delay(100);
     }
-    Wire.setSCL(27);
-    Wire.setSDA(26);
+    Wire1.setSCL(27);
+    Wire1.setSDA(26);
 
     /* Initialise the sensor */
     if (!bno.begin())
@@ -39,4 +40,7 @@ void setup()
         Serial.print(accelerometerData.acceleration.z);
         Serial.println(": acc");
     }
+}
+void loop()
+{
 }

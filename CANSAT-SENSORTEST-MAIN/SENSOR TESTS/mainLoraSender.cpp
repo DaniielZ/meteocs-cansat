@@ -9,7 +9,10 @@ void setup()
     {
         delay(100);
     }
-
+    SPI.setRX(4);
+    SPI.setTX(3);
+    SPI.setSCK(2);
+    SPI.begin();
     int state = radio.begin();
     if (state == RADIOLIB_ERR_NONE)
     {
