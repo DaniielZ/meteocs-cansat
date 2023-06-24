@@ -31,7 +31,7 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = true;
-    bool LOG_TO_STORAGE = false;
+    bool LOG_TO_STORAGE = true;
 
     // GPS UART0
     int GPS_RX = 0;
@@ -43,7 +43,7 @@ public:
         .FREQUENCY = (long)430.6E6,
         .CS = 5,
         .RX = 4,
-        .TX = 3,
+        .TX = 3, // only info
         .SCK = 2,
         .DIO0 = 7,
         .DIO1 = 8,
@@ -60,7 +60,7 @@ public:
         .FREQUENCY = (long)2405.6E6,
         .CS = 13,
         .RX = 12,
-        .TX = 11,
+        .TX = 11, // only info
         .SCK = 10,
         .DIO0 = 16, // busy pin not programmable dont use
         .DIO1 = 15, // only use thsi
@@ -86,7 +86,7 @@ public:
     int BNO055_ADDRESS = 0x29; // or 29
 
     // BUZZER
-    int BUZZER = 6;
+    int BUZZER = -1;
     int BUZZER_LONG_BEEP = 300;
     int BUZZER_LONG_PAUSE = 300;
     int BUZZER_SHORT_BEEP = 50;
@@ -105,9 +105,9 @@ public:
     float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
-    const int MAX_LOOP_TIME = 100; // ms
+    const int MAX_LOOP_TIME = 200; // ms
     // detection parameters
-    const int DATA_POINTS_FOR_LAUNCH_DETECTION = 10;
+    const int DATA_POINTS_FOR_LAUNCH_DETECTION = 5;
     float LAUNCH_DETECTION_HEIGHT = 100; // delta m
 
     int TIME_FROM_LAUNCH_TO_DETECT_EJECTION = 20000;      // ms

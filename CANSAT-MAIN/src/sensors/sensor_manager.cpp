@@ -57,17 +57,13 @@ String Sensor_manager::init(Config &config)
         _imu_initialized = true;
     }
     // mybe need to set axis max range TODO
-
     // RANGING lora
-    Config::Lora_device &lora_cfg = config.LORA2400;
+    Config::Lora_device lora_cfg = config.LORA2400;
     lora_cfg.SPI->setRX(lora_cfg.RX);
     lora_cfg.SPI->setTX(lora_cfg.TX);
-    lora_cfg.SPI->setCS(lora_cfg.CS);
     lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    *_lora = new Module(lora_cfg.CS, lora_cfg.DIO1, lora_cfg.RESET, lora_cfg.DIO0, *lora_cfg.SPI);
     lora_cfg.SPI->begin();
-
-    int state = _lora->begin();
+    int state = _lora.begin();
     if (state != RADIOLIB_ERR_NONE)
     {
         status += " SX1280 error (" + String(state) + ")";
@@ -75,18 +71,18 @@ String Sensor_manager::init(Config &config)
     else
     {
         // setting paramaters
-        _lora->setOutputPower(lora_cfg.TXPOWER);
-        _lora->setSpreadingFactor(lora_cfg.SPREADING);
-        _lora->setCodingRate(lora_cfg.CODING_RATE);
-        _lora->setBandwidth(lora_cfg.SIGNAL_BW);
-        _lora->setSyncWord(lora_cfg.SYNC_WORD);
+        _lora.setOutputPower(lora_cfg.TXPOWER);
+        _lora.setSpreadingFactor(lora_cfg.SPREADING);
+        _lora.setCodingRate(lora_cfg.CODING_RATE);
+        _lora.setBandwidth(lora_cfg.SIGNAL_BW);
+        _lora.setSyncWord(lora_cfg.SYNC_WORD);
         _lora_initialized = true;
 
         //
-        _lora->startRanging(false, config.RANGING_SLAVE_ADDRESS[0]);
-        sx1280_lora_ranging = true;
+        // _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS[0]);
+        // sx1280_lora_ranging = true;
         // need to setup interupt
-        _lora->setDio1Action(sx1280_ranging_end);
+        // _lora.setDio1Action(sx1280_ranging_end);
         // need to wait for irq to be high
     }
 
@@ -94,6 +90,15 @@ String Sensor_manager::init(Config &config)
 }
 void Sensor_manager::enable_ranging(Config &config)
 {
+    if (sx1280_lora_ranging)
+    {
+        if (millis() >= _ranging_start_time + 1000)
+        {
+            sx1280_lora_ranging = false;
+            _lora.clearDio1Action();
+            _lora.standby();
+        }
+    }
     if (!sx1280_lora_ranging)
     {
         // mybe add some sort of logging and timeout
@@ -106,8 +111,11 @@ void Sensor_manager::enable_ranging(Config &config)
         {
             _lora_slave_address_index++;
         }
+        Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
 
-        _lora->startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        _lora.setDio1Action(sx1280_ranging_end);
+        _ranging_start_time = millis();
         sx1280_lora_ranging = true;
     }
 }
@@ -180,6 +188,7 @@ void Sensor_manager::read_imu()
 }
 void Sensor_manager::read_data(Config &config)
 {
+
     read_gps();
     read_baro(config);
     read_humidity();

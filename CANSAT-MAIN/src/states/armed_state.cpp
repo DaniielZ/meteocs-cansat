@@ -5,8 +5,8 @@
 void armed_state(Cansat &cansat)
 {
 
-    // 10 sec buffer KINDA well its just 100 data pounts but will definetly work for this example
-    Array<Sensor_manager::Sensor_data, 105> data_buffer;
+    // 10 sec buffer KINDA well its just 50 data pounts but will definetly work for this example
+    Array<Sensor_manager::Sensor_data, 30> data_buffer;
     cansat.sensors.read_data(cansat.config);
 
     float starting_height = cansat.sensors.data.baro_height;
@@ -18,9 +18,10 @@ void armed_state(Cansat &cansat)
         unsigned long loop_start = millis();
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, false);
+
         data_buffer.push_back(cansat.sensors.data);
         // remove unneeded old data
-        while (data_buffer.size() > 100)
+        while (data_buffer.size() > 25)
         {
             data_buffer.remove(0);
         }
@@ -41,7 +42,7 @@ void armed_state(Cansat &cansat)
                 }
                 i--;
             }
-            if (all_values_over_threshold)
+            if (all_values_over_threshold || data_buffer.size() > 23)
             {
                 // launch detected
                 // log buffer

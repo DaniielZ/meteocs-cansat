@@ -1,17 +1,17 @@
 #include "core/cansat.h"
-
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
 void setup()
 {
     Serial.begin(115200);
-    if (!Serial)
+    while (!Serial)
     {
         delay(500);
     }
-    delay(2000);
-    Serial.println("Init started");
 
-    // Cansat cansat;
-    // cansat.start_states(cansat);
+    Cansat cansat;
+    cansat.start_states(cansat);
 }
 
 void loop()

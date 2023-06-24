@@ -27,8 +27,9 @@ class Sensor_manager
     Adafruit_BNO055 _imu;
     bool _imu_initialized = false;
     // RANGING LORA SPI1
-    SX1280 *_lora;
+    SX1280 _lora = new Module(13, 15, 14, 16, SPI1);
     bool _lora_initialized = false;
+    unsigned long _ranging_start_time = 0;
     int _lora_slave_address_index = 0;
 
     void enable_ranging(Config &config);
@@ -43,23 +44,25 @@ public:
     struct Sensor_data
     {
         // array data is ordered: x y z
-        float gps_lng;
-        float gps_lat;
-        float gps_height; // m
-        int gps_sattelites;
-        float acc[3];       // m/s
-        float gyro[3];      // deg or rad/s
-        float total_acc;    // m/s
-        float baro_height;  // m
-        float pressure;     // Pa
-        float temperature;  // C
-        float humidity;     // %
-        unsigned long time; // ms
-        unsigned long time_since_last_gps;
+        float gps_lng = 0;
+        float gps_lat = 0;
+        float gps_height = 0; // m
+        int gps_sattelites = 0;
+        float acc[3];          // m/s
+        float gyro[3];         // deg or rad/s
+        float total_acc = 0;   // m/s
+        float baro_height = 0; // m
+        float pressure = 0;    // Pa
+        float temperature = 0; // C
+        float humidity = 0;    // %
+        long ranging_address = 0;
+        float ranging_result = 0;
+        unsigned long time = 0; // ms
+        unsigned long time_since_last_gps = 0;
     };
 
     //[F] = not sent over lora
-    String header = "gps_lat, gps_lng, gps_height, gps_count, total_acc, , gyro_x, gyro_y, gyro_z, baro_height, baro, temp, humid, light, since_gps, time, acc_x[F], acc_y[F], acc_z[F]";
+    String header = "Data header:";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);
