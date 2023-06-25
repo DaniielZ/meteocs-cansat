@@ -78,13 +78,6 @@ String Sensor_manager::init(Config &config)
         _lora.setSyncWord(lora_cfg.SYNC_WORD);
         _lora.setFrequency(lora_cfg.FREQUENCY);
         _lora_initialized = true;
-
-        //
-        // _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS[0]);
-        // sx1280_lora_ranging = true;
-        // need to setup interupt
-        // _lora.setDio1Action(sx1280_ranging_end);
-        // need to wait for irq to be high
     }
 
     return status;
@@ -93,6 +86,19 @@ void Sensor_manager::enable_ranging(Config &config)
 {
     data.ranging_result = -1;
     data.ranging_address = 0;
+    if (_wait_for_othersat_start_time)
+    {
+        // check timer
+        if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
+        {
+            _wait_for_othersat_start_time = false;
+        }
+        // check incoming msg
+        String incoming_msg;
+        _lora.receive(incoming_msg);
+
+        return;
+    }
     if (sx1280_lora_ranging)
     {
         if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
@@ -127,6 +133,9 @@ void Sensor_manager::enable_ranging(Config &config)
         if (_lora_slave_address_index >= array_length - 1)
         {
             _lora_slave_address_index = 0;
+            // send command to nanosat
+            _lora.transmit(config.RANGE_DONE);
+            // start timer
         }
         else
         {

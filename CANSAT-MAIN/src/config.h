@@ -32,7 +32,8 @@ public:
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = true;
     bool LOG_TO_STORAGE = false;
-
+    //
+    bool START_RANGING_FIRST = true;
     // GPS UART0
     int GPS_RX = 0;
     int GPS_TX = 1;
@@ -43,7 +44,7 @@ public:
         .FREQUENCY = (long)430.6E6,
         .CS = 5,
         .RX = 4,
-        .TX = 3, // only info
+        .TX = 3, // only info changing pinx must be done manually in the code !!!
         .SCK = 2,
         .DIO0 = 7,
         .DIO1 = 8,
@@ -59,7 +60,7 @@ public:
     Lora_device LORA2400{
         .FREQUENCY = (long)2405.6E6,
         .CS = 13,
-        .RX = 12,
+        .RX = 12, // only info changing pinx must be done manually in the code !!!
         .TX = 11, // only info
         .SCK = 10,
         .DIO0 = 16, // busy pin not programmable dont use
@@ -72,7 +73,8 @@ public:
         .SIGNAL_BW = (long)1600E3,
         .SPI = &SPI1};
     long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
-    int RANGING_TIMEOUT = 3000; // ms
+    int RANGING_TIMEOUT = 3000;               // ms
+    int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
     // WIRE1 lines
     int WIRE1_SCL = 27;
     int WIRE1_SDA = 26;
@@ -115,7 +117,7 @@ public:
     int TIME_AFTER_SOLAR_SAIL_TO_DEATACH_NANOSAT = 10000; // ms
     int TIME_AFTER_SOLAR_SAIL_TO_LAND = 200000;           // ms
     // ARMING AND DATA SENDING MSG IN PREP SATE
-
+    String RANGE_DONE = "range_done"; // used by both sats to tell which one should be transmititing
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
     String SERVO_MSG = "servo_toggle";

@@ -9,7 +9,10 @@ void setup()
     {
         delay(100);
     }
-
+    SPI.setRX(4);
+    SPI.setTX(3);
+    SPI.setSCK(2);
+    SPI.begin();
     int state = radio.begin();
     if (state == RADIOLIB_ERR_NONE)
     {
@@ -23,8 +26,8 @@ void setup()
             ;
     }
     radio.setFrequency(430.6);
-    radio.setSpreadingFactor(10);
-    radio.setCodingRate(7);
+    radio.setSpreadingFactor(6);
+    radio.setCodingRate(6);
     radio.setBandwidth(62.5);
 }
 
@@ -34,6 +37,7 @@ void loop()
 
     // you can receive data as an Arduino String
     String str;
+
     int state = radio.receive(str);
 
     // you can also receive data as byte array

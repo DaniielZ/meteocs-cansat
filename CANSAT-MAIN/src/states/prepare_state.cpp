@@ -34,7 +34,12 @@ void prepare_state(Cansat &cansat)
         // check send data check
         if (incoming_msg == cansat.config.DATA_SEND_MSG)
         {
-            cansat.log.data(cansat.sensors.data, true);
+            for (int i = 0; i < 10; i++)
+            {
+                cansat.sensors.read_data(cansat.config);
+                cansat.log.data(cansat.sensors.data, true);
+                delay(1000);
+            }
         }
         // check if should arm
         else if (incoming_msg == cansat.config.ARM_MSG)

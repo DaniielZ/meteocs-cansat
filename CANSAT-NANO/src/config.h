@@ -40,7 +40,7 @@ public:
 
     // LORA 433 SPI0
     Lora_device LORA433{
-        .FREQUENCY = (long)430.6E6,
+        .FREQUENCY = (long)430.6,
         .CS = 5,
         .RX = 4,
         .TX = 3, // only info
@@ -57,7 +57,7 @@ public:
 
     // LORA 2.4 SPI1
     Lora_device LORA2400{
-        .FREQUENCY = (long)2405.6E6,
+        .FREQUENCY = (long)2405.6,
         .CS = 13,
         .RX = 12,
         .TX = 11, // only info

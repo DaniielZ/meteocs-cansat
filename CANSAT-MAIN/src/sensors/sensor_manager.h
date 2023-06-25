@@ -29,7 +29,9 @@ class Sensor_manager
     // RANGING LORA SPI1
     SX1280 _lora = new Module(13, 15, 14, 16, SPI1);
     bool _lora_initialized = false;
+    bool _lora_wait_for_othersat = false;
     unsigned long _ranging_start_time = 0;
+    unsigned long _wait_for_othersat_start_time = 0;
     int _lora_slave_address_index = -1;
     int _lora_range_state;
 
