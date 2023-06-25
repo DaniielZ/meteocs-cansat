@@ -1,6 +1,5 @@
 #include <core/cansat.h>
 
-
 void Cansat::start_states(Cansat &cansat)
 {
     current_state = State::PREP;

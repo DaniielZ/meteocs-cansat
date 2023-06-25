@@ -5,45 +5,23 @@
 void ascent_state(Cansat &cansat)
 {
     cansat.log.info("ascent_state");
-    bool hard_locked = true;
+    unsigned long ejection_time = millis() + cansat.config.TIME_FROM_LAUNCH_TO_DETECT_EJECTION;
 
-    data_point ELEMENT_COUNT_MAX[200]; // change this if changing config
-    Vector<data_point> gps_height_values(ELEMENT_COUNT_MAX);
     while (true)
     {
+        unsigned long loop_start = millis();
+
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, true);
-        data_point current_gps_height_data_point = {cansat.sensors.data.gps_height, cansat.sensors.data.time};
-        // check if falling
-        if (hard_locked)
+        if (millis() > ejection_time)
         {
-            float gps_height_average = average_value(
-                current_gps_height_data_point,
-                cansat.config.HARD_LOCK_HEIGHT.TIMESPAN,
-                gps_height_values);
-
-            Serial.println("GPS HEIGHT AVERAGE VALUE:" + String(gps_height_average)); // debuging
-            cansat.sensors.data.average_value = gps_height_average;
-            if (gps_height_average >= cansat.config.HARD_LOCK_HEIGHT.THRESHOLD && gps_height_average  -1)
-            {
-                hard_locked = false;
-                cansat.log.info("hard_lock turned off");
-            }
+            return;
         }
-        else
+        // check if should wait before next loop
+        unsigned long loop_time = millis() - loop_start;
+        if (loop_time < cansat.config.MAX_LOOP_TIME)
         {
-            float gps_height_average = average_value(
-                current_gps_height_data_point,
-                cansat.config.EJECTION_HEIGHT.TIMESPAN,
-                gps_height_values);
-
-            cansat.sensors.data.average_value = gps_height_average;
-            if (gps_height_average <= cansat.config.EJECTION_HEIGHT.THRESHOLD && gps_height_average != -1)
-            {
-                cansat.log.info("nanosat ejecting");
-                return;
-            }
+            delay(cansat.config.MAX_LOOP_TIME - loop_time);
         }
-        delay(cansat.config.SLEEP);
     }
 }

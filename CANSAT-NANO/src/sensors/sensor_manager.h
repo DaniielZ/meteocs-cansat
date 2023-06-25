@@ -4,42 +4,40 @@
 #include <Wire.h>
 #include <MS5611.h>
 #include <Adafruit_SHTC3.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
 #include <SoftwareSerial.h>
-#include <Adafruit_LIS2MDL.h>
-#include "sensors/H3LIS100.h"
-#include "sensors/I3G4250D.h"
+#include <RadioLib.h>
 #include "config.h"
 class Sensor_manager
 {
+    unsigned long _last_gps_packet_time = 0;
     // SENSOR OBJECTS AND Comunication
-    // GPS UART1
+    // GPS UART0
     TinyGPSPlus _gps;
-    HardwareSerial *_gps_serial;
+    SerialUART *_gps_serial;
     bool _gps_initialized = false;
-    uint8_t _serial_buffer[512];
-    // MAGNETO unused
-    // Adafruit_LIS2MDL _magneto;
-    // bool _magneto_initialized = false;
-    // Gyro WIRE0s
-    // I3G4250D _gyro;
-    // bool _gyro_initialized = false;
-    // ACC WIRE2
-    H3LIS100 *_acc;
-    bool _acc_initialized = false;
-    // BARO WIRE0
+    // BARO WIRE1
     MS5611 _baro;
     bool _baro_initialized = false;
     // HUMIDITY WIRE1
     Adafruit_SHTC3 _humidity;
     bool _humidity_initialized = false;
+    // IMU WIRE1
+    Adafruit_BNO055 _imu;
+    bool _imu_initialized = false;
+    // RANGING LORA SPI1
+    SX1280 _lora = new Module(13, 15, 14, 18, SPI1);
+    bool _lora_initialized = false;
+    unsigned long _ranging_start_time = 0;
+    int _lora_slave_address_index = 0;
 
+    void enable_ranging(Config &config);
     void read_gps();
     void read_magneto();
     void read_baro(Config &config);
     void read_humidity();
-    void read_acc();
-    void read_gyro();
-    void read_light(Config &config);
+    void read_imu();
     void read_time();
 
 public:
@@ -48,24 +46,23 @@ public:
         // array data is ordered: x y z
         float gps_lng = 0;
         float gps_lat = 0;
-        float gps_height = 0;
+        float gps_height = 0; // m
         int gps_sattelites = 0;
-        float average_value = 0;
-        // magnetic vector values are in micro-Tesla (uT)) */
-        // float mag[3];
-        float acc[3] = {0, 0, 0}; // in m/s
-                                  // float gyro[3];
-        float baro_height = 0;    // m
-        float pressure = 0;       // Pa
-        float temperature = 0;    // C
-        float humidity = 0;       // %
-        // float light;           // should be 0-255
-        unsigned long time = 0;                // ms
-        unsigned long time_since_last_gps = 0; // ms
+        float acc[3];          // m/s
+        float gyro[3];         // deg or rad/s
+        float total_acc = 0;   // m/s
+        float baro_height = 0; // m
+        float pressure = 0;    // Pa
+        float temperature = 0; // C
+        float humidity = 0;    // %
+        long ranging_address = 0;
+        float ranging_result = 0;
+        unsigned long time = 0; // ms
+        unsigned long time_since_last_gps = 0;
     };
-    unsigned long last_gps_packet_time = 0;
-    //[F] - not send over lora
-    String header = "gps_lng, gps_lat, gps_height, gps_count, avrg_det, acc_x[F], acc_y[F], acc_z[F], baro_height, baro, temp, humid, since_gps, time";
+
+    //[F] = not sent over lora
+    String header = "Data header:";
     Sensor_data data;
     String init(Config &config);
     void read_data(Config &config);

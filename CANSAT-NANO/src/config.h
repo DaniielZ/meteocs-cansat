@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <SPI.h>
 class Config
 {
 public:
@@ -8,51 +9,81 @@ public:
         float THRESHOLD;
         unsigned long int TIMESPAN;
     };
+    struct Lora_device
+    {
+        long FREQUENCY;
+        int CS;
+        int RX;
+        int TX;
+        int SCK;
+        int DIO0; // busy pin
+        int DIO1;
+        int RESET;
+        int SYNC_WORD;
+
+        int TXPOWER;
+        int SPREADING;
+        int CODING_RATE;
+        long SIGNAL_BW;
+        SPIClassRP2040 *SPI;
+    };
+
     // logging
     unsigned long PC_BAUDRATE = 115200;
-    bool WAIT_PC = false;
-    bool LOG_TO_STORAGE = true;
+    bool WAIT_PC = true;
+    bool LOG_TO_STORAGE = false;
 
-    // USING INTERNAL MEMORY INSTED !!!!!
-    // // flash SPI1
-    // int FLASH_CS = 13;
-    // int FLASH_RX = 12;
-    // int FLASH_TX = 11;
-    // int FLASH_SCK = 10;
-    // int FLASH_WP = 9;
-    // int FLASH_HOLD = 8;
-    // int FLASH_JDEC = 0x1F85;
-
-    // GPS UART1
-    int GPS_RX = 0;
-    int GPS_TX = 1;
+    // GPS UART0
+    int GPS_RX = 17;
+    int GPS_TX = 18;
     long GPS_BAUDRATE = 9600;
 
-    // MAGNETO WIRE0
-    // int LIS2MDL_SCL = 21;
-    // int LIS2MDL_SDA = 20;
+    // LORA 433 SPI0
+    Lora_device LORA433{
+        .FREQUENCY = (long)430.6E6,
+        .CS = 5,
+        .RX = 4,
+        .TX = 3, // only info
+        .SCK = 2,
+        .DIO0 = 7,
+        .DIO1 = 8,
+        .RESET = 6,
+        .SYNC_WORD = 0xF3,
+        .TXPOWER = 14,
+        .SPREADING = 9,
+        .CODING_RATE = 6,
+        .SIGNAL_BW = (long)62.5E3,
+        .SPI = &SPI};
 
-    // LORA SPI0
-    long LORA_FREQUENCY = 433.575E6;
-    int LORA_CS = 6;
-    int LORA_RX = 8;
-    int LORA_TX = 7;
-    int LORA_SCK = 27;
-    int LORA_TXPOWER = 99; // max :)
-    int LORA_SPREADING = 10;
-    int LORA_CODING_RATE = 7;
-    long LORA_SIGNAL_BW = 62.5E3;
-    // ACC WIRE2
-    int ACC_SDA = 4;
-    int ACC_SCL = 3;
-    // BARO WIRE0
-    int MS5611_SCL = 19;
-    int MS5611_SDA = 18;
+    // LORA 2.4 SPI1
+    Lora_device LORA2400{
+        .FREQUENCY = (long)2405.6E6,
+        .CS = 13,
+        .RX = 12,
+        .TX = 11, // only info
+        .SCK = 10,
+        .DIO0 = 18, // busy pin not programmable dont use
+        .DIO1 = 15, // only use thsi
+        .RESET = 14,
+        .SYNC_WORD = 0xF4,
+        .TXPOWER = 14,
+        .SPREADING = 9,
+        .CODING_RATE = 7,
+        .SIGNAL_BW = (long)1600E3,
+        .SPI = &SPI1};
+    long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x1234562, 0x12345673};
+    // WIRE lines
+    int WIRE0_SCL = 1;
+    int WIRE0_SDA = 0;
+
+    // BARO WIRE1
     int MS5611_ADDRESS = 0x77;
 
     // HUMIDITY WIRE1
-    int SHTC3_SCL = 37;
-    int SHTC3_SDA = 38;
+    int SHTC3_ADDRESS = 0x70;
+
+    // BNO055 WIRE1
+    int BNO055_ADDRESS = 0x29; // or 29
 
     // BUZZER
     int BUZZER = -1;
@@ -63,29 +94,29 @@ public:
     int BUZZER_ERROR_BEEPS = 20;
 
     // Ejection
-    int SERVO_PWM = 29;
-    int SERVO_START = 1950; // 1950
-    int SERVO_END = 1790;   // 1840
-    // Parachute
-    // int MOSFET = 22; // TBD
+    int SERVO_PWM = -1;
+    int SERVO_START = 1950;
+    int SERVO_END = 1790;
 
-    // Photo resistor
-    // int PHOTO_ADC = 28;
+    // Parachute
+    int MOSFET = -1; // TBD
 
     // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1026; // CHNAGE BEFORE FLIGHT;
+    float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
-    int SLEEP = 100; // ms
+    const int MAX_LOOP_TIME = 200; // ms
+    // detection parameters
+    const int DATA_POINTS_FOR_LAUNCH_DETECTION = 5;
+    float LAUNCH_DETECTION_HEIGHT = 100; // delta m
 
-    // !!!!!!!!!! THE ALTITUDE IS IN SEA LEVEL DONT FUCK THIS UP!!!!!!!!!!!!!!!!!!!!
-    Detection_parameter HARD_LOCK_HEIGHT = {570, 5000}; // makse sure to change the max array size if needed
-    Detection_parameter EJECTION_HEIGHT = {520, 3000};
-    Detection_parameter LANDED_HEIGHT = {200, 10000};
+    int TIME_FROM_LAUNCH_TO_DETECT_EJECTION = 20000;      // ms
+    int TIME_AFTER_SOLAR_SAIL_TO_DEATACH_NANOSAT = 10000; // ms
+    int TIME_AFTER_SOLAR_SAIL_TO_LAND = 200000;           // ms
     // ARMING AND DATA SENDING MSG IN PREP SATE
+
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
     String SERVO_MSG = "servo_toggle";
-
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

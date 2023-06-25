@@ -31,7 +31,7 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = true;
-    bool LOG_TO_STORAGE = true;
+    bool LOG_TO_STORAGE = false;
 
     // GPS UART0
     int GPS_RX = 0;
@@ -71,7 +71,8 @@ public:
         .CODING_RATE = 7,
         .SIGNAL_BW = (long)1600E3,
         .SPI = &SPI1};
-    long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x1234562, 0x12345673};
+    long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
+    int RANGING_TIMEOUT = 3000; // ms
     // WIRE1 lines
     int WIRE1_SCL = 27;
     int WIRE1_SDA = 26;
@@ -105,7 +106,7 @@ public:
     float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
-    const int MAX_LOOP_TIME = 200; // ms
+    const int MAX_LOOP_TIME = 100; // ms
     // detection parameters
     const int DATA_POINTS_FOR_LAUNCH_DETECTION = 5;
     float LAUNCH_DETECTION_HEIGHT = 100; // delta m

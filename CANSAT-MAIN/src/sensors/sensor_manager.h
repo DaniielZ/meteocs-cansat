@@ -30,7 +30,8 @@ class Sensor_manager
     SX1280 _lora = new Module(13, 15, 14, 16, SPI1);
     bool _lora_initialized = false;
     unsigned long _ranging_start_time = 0;
-    int _lora_slave_address_index = 0;
+    int _lora_slave_address_index = -1;
+    int _lora_range_state;
 
     void enable_ranging(Config &config);
     void read_gps();

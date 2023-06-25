@@ -7,6 +7,6 @@ void landed_state(Cansat &cansat)
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, false);
         cansat.sound.locate(cansat.config);
-        delay(cansat.config.SLEEP);
+        delay(cansat.config.MAX_LOOP_TIME);
     }
 }

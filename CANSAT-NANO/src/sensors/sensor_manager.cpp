@@ -1,103 +1,123 @@
 #include "sensors/sensor_manager.h"
 
+volatile bool sx1280_lora_ranging = false; // yeah sadly wasnt able to move it into the class
+void sx1280_ranging_end(void)
+{
+    sx1280_lora_ranging = false;
+}
+
 float get_altitude(float pressure_hPa, float sea_level_hPa)
 {
     float altitude;
     altitude = 44330 * (1.0 - pow(pressure_hPa / sea_level_hPa, 0.1903));
     return altitude;
 }
-
 String Sensor_manager::init(Config &config)
 {
 
     String status;
-
-    // WIRE0
-    Wire.setSCL(config.MS5611_SCL);
-    Wire.setSDA(config.MS5611_SDA);
     // WIRE1
-    Wire1.setSCL(config.SHTC3_SCL);
-    Wire1.setSDA(config.SHTC3_SDA);
-    // WIRE2
-    Wire1.setSCL(config.ACC_SCL);
-    Wire1.setSDA(config.ACC_SDA);
+    Wire.setSCL(config.WIRE0_SCL);
+    Wire.setSDA(config.WIRE0_SDA);
     // GPS UART0
-    //_gps_serial = new SoftwareSerial(config.GPS_RX, config.GPS_TX);
     _gps_serial = &Serial1;
-    _gps_serial->addMemoryForRead(_serial_buffer, sizeof(_serial_buffer));
+    _gps_serial->setFIFOSize(256); // once had a prblem of not reading serial properly but this seemed to fix it
     _gps_serial->begin(config.GPS_BAUDRATE);
     _gps_initialized = true;
 
-    // MAGNETO WIRE0
-    // _magneto = Adafruit_LIS2MDL(12345);
-    // _magneto.enableAutoRange(true);
-    // if (!_magneto.begin(30U, &Wire))
-    // {
-    //     status += "Magneto error";
-    //     Serial.println("Magento turned off");
-    // }
-    // else
-    // {
-    //     _magneto_initialized = true;
-    // }
-
-    // GYRO WIRE0
-    // if (_gyro.I3G4250D_Init(0x0F, 0x00, 0x00, 0x00, 0x00, I3G4250D_SCALE_2000) != 0)
-    // {
-    //     status += "Gyro error";
-    //     Serial.println("Gyro turned off");
-    // }
-    // else
-    // {
-    //     uint8_t gyro_id = 0;
-    //     _gyro.readRegister(0x0F, &gyro_id, 1);
-
-    //     if (gyro_id != 0xD3)
-    //     {
-    //         status += "Gyro ID error";
-    //         Serial.println("Gyro turned off");
-    //     }
-    //     else
-    //     {
-    //         _gyro_initialized = true;
-    //     }
-    // }
-    // ACC WIRE2
-    _acc = new H3LIS100(123);
-    if (!_acc->begin(0x19, &Wire2))
-    {
-        status += "Acc error";
-        Serial.println("Acc turned off");
-    }
-    else
-    {
-        _acc_initialized = true;
-    }
-    // BARO WIRE0
+    // BARO WIRE1
     _baro = MS5611(config.MS5611_ADDRESS);
     if (!_baro.begin(&Wire))
     {
         status += " Baro error";
-        Serial.println("Baro turned off");
     }
     else
     {
         _baro_initialized = true;
     }
     // HUMIDITY WIRE1
-    if (!_humidity.begin(&Wire1))
+    if (!_humidity.begin(&Wire))
     {
         status += " Humidity error";
-        Serial.println("Humidity turned off");
     }
     else
     {
         _humidity_initialized = true;
     }
-    Serial.println(_baro_initialized);
+
+    // IMU WIRE1
+    _imu = Adafruit_BNO055(55, config.BNO055_ADDRESS, &Wire);
+    if (!_imu.begin())
+    {
+        status += " IMU error";
+    }
+    else
+    {
+        _imu_initialized = true;
+    }
+    // mybe need to set axis max range TODO
+    // RANGING lora
+    Config::Lora_device lora_cfg = config.LORA2400;
+    lora_cfg.SPI->setRX(lora_cfg.RX);
+    lora_cfg.SPI->setTX(lora_cfg.TX);
+    lora_cfg.SPI->setSCK(lora_cfg.SCK);
+    lora_cfg.SPI->begin();
+    int state = _lora.begin();
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        status += " SX1280 error (" + String(state) + ")";
+    }
+    else
+    {
+        // setting paramaters
+        _lora.setOutputPower(lora_cfg.TXPOWER);
+        _lora.setSpreadingFactor(lora_cfg.SPREADING);
+        _lora.setCodingRate(lora_cfg.CODING_RATE);
+        _lora.setBandwidth(lora_cfg.SIGNAL_BW);
+        _lora.setSyncWord(lora_cfg.SYNC_WORD);
+        _lora_initialized = true;
+
+        //
+        // _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS[0]);
+        // sx1280_lora_ranging = true;
+        // need to setup interupt
+        // _lora.setDio1Action(sx1280_ranging_end);
+        // need to wait for irq to be high
+    }
+    Serial.println("7");
     return status;
 }
+void Sensor_manager::enable_ranging(Config &config)
+{
+    if (sx1280_lora_ranging)
+    {
+        if (millis() >= _ranging_start_time + 1000)
+        {
+            sx1280_lora_ranging = false;
+            _lora.clearDio1Action();
+            _lora.finishTransmit();
+        }
+    }
+    if (!sx1280_lora_ranging)
+    {
+        // mybe add some sort of logging and timeout
+        int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
+        if (_lora_slave_address_index >= array_length - 1)
+        {
+            _lora_slave_address_index = 0;
+        }
+        else
+        {
+            _lora_slave_address_index++;
+        }
+        Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
 
+        _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        _lora.setDio1Action(sx1280_ranging_end);
+        _ranging_start_time = millis();
+        sx1280_lora_ranging = true;
+    }
+}
 void Sensor_manager::read_gps()
 {
     if (!_gps_initialized)
@@ -106,34 +126,16 @@ void Sensor_manager::read_gps()
     }
     while (_gps_serial->available() > 0)
     {
-        char result = _gps_serial->read();
-        // Serial.print(result);
-
-        _gps.encode(result);
+        _gps.encode(_gps_serial->read());
         if (_gps.location.isUpdated())
         {
-            data.time_since_last_gps = millis();
+            _last_gps_packet_time = millis();
             data.gps_lat = _gps.location.lat();
             data.gps_lng = _gps.location.lng();
             data.gps_height = _gps.altitude.meters();
             data.gps_sattelites = _gps.satellites.value();
         }
     }
-}
-void Sensor_manager::read_magneto()
-{
-    /* Get a new sensor event */
-    // if (!_magneto_initialized)
-    // {
-    //     return;
-    // }
-    // sensors_event_t event;
-    // _magneto.getEvent(&event);
-
-    // /* magnetic vector values are in micro-Tesla (uT)) */
-    // data.mag[0] = event.magnetic.x;
-    // data.mag[1] = event.magnetic.y;
-    // data.mag[2] = event.magnetic.z;
 }
 void Sensor_manager::read_baro(Config &config)
 {
@@ -151,6 +153,7 @@ void Sensor_manager::read_humidity()
 {
     if (!_humidity_initialized)
     {
+        Serial.println("Humidity not init.. returning");
         return;
     }
     sensors_event_t humidity, temp;
@@ -158,50 +161,37 @@ void Sensor_manager::read_humidity()
     data.humidity = humidity.relative_humidity;
 }
 
-void Sensor_manager::read_acc()
-{
-    if (!_acc_initialized)
-    {
-        return;
-    }
-    sensors_event_t event;
-    _acc->getEvent(&event);
-    data.acc[0] = event.acceleration.x;
-    data.acc[1] = event.acceleration.y;
-    data.acc[2] = event.acceleration.z;
-}
-void Sensor_manager::read_gyro()
-{
-    // if (!_gyro_initialized)
-    // {
-    //     return;
-    // }
-    // I3G4250D_DataScaled gyro_data = {0};
-    // gyro_data = _gyro.I3G4250D_GetScaledData();
-    // data.gyro[0] = gyro_data.x;
-    // data.gyro[1] = gyro_data.y;
-    // data.gyro[2] = gyro_data.z;
-}
-void Sensor_manager::read_light(Config &config)
-{
-    // analogReadResolution(12);
-    // data.light = analogRead(config.PHOTO_ADC);
-}
 void Sensor_manager::read_time()
 {
     data.time = millis();
-    data.time_since_last_gps = data.time - last_gps_packet_time;
+    data.time_since_last_gps = data.time - _last_gps_packet_time;
 }
+void Sensor_manager::read_imu()
+{
+    if (!_imu_initialized)
+    {
+        //  Serial.println("IMU not init.. returning");
+        return;
+    }
 
+    sensors_event_t gyroData, accData;
+    _imu.getEvent(&gyroData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+    _imu.getEvent(&accData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    data.acc[0] = accData.acceleration.x;
+    data.acc[1] = accData.acceleration.y;
+    data.acc[2] = accData.acceleration.z;
+
+    data.gyro[0] = accData.gyro.x;
+    data.gyro[1] = accData.gyro.x;
+    data.gyro[2] = accData.gyro.x;
+}
 void Sensor_manager::read_data(Config &config)
 {
-    // data = {0, 0, 0, 0, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 0, 0, 0, 0, 0, 0};
+
     read_gps();
-    // read_magneto();
     read_baro(config);
     read_humidity();
-    // read_light(config);
-    read_acc();
-    // read_gyro();
+    read_imu();
+    enable_ranging(config);
     read_time();
 }

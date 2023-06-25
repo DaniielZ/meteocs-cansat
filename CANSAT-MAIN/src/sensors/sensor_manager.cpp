@@ -76,6 +76,7 @@ String Sensor_manager::init(Config &config)
         _lora.setCodingRate(lora_cfg.CODING_RATE);
         _lora.setBandwidth(lora_cfg.SIGNAL_BW);
         _lora.setSyncWord(lora_cfg.SYNC_WORD);
+        _lora.setFrequency(lora_cfg.FREQUENCY);
         _lora_initialized = true;
 
         //
@@ -90,18 +91,38 @@ String Sensor_manager::init(Config &config)
 }
 void Sensor_manager::enable_ranging(Config &config)
 {
+    data.ranging_result = -1;
+    data.ranging_address = 0;
     if (sx1280_lora_ranging)
     {
-        if (millis() >= _ranging_start_time + 1000)
+        if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
         {
             sx1280_lora_ranging = false;
+            _lora_range_state = RADIOLIB_ERR_RANGING_TIMEOUT;
             _lora.clearDio1Action();
-            _lora.standby();
+            _lora.finishTransmit();
         }
     }
     if (!sx1280_lora_ranging)
     {
-        // mybe add some sort of logging and timeout
+
+        data.ranging_address = config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index];
+        // if available read result
+        if (_lora_range_state == RADIOLIB_ERR_NONE)
+        {
+            data.ranging_result = _lora.getRangingResult();
+            Serial.println("Range good: " + String(data.ranging_result));
+        }
+        else
+        {
+            data.ranging_result = -1;
+            Serial.println("Range bad");
+        }
+        _lora_range_state = -1;
+        _lora.clearDio1Action();
+        _lora.finishTransmit();
+
+        // increment next address
         int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
         if (_lora_slave_address_index >= array_length - 1)
         {
@@ -111,12 +132,12 @@ void Sensor_manager::enable_ranging(Config &config)
         {
             _lora_slave_address_index++;
         }
-        Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
-
-        _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        // Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
+        // start ranging
         _lora.setDio1Action(sx1280_ranging_end);
-        _ranging_start_time = millis();
         sx1280_lora_ranging = true;
+        _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        _ranging_start_time = millis();
     }
 }
 void Sensor_manager::read_gps()

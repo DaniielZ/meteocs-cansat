@@ -22,6 +22,7 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
     }
 
     // setting paramaters
+    _lora.setFrequency(lora_cfg.FREQUENCY);
     _lora.setOutputPower(lora_cfg.TXPOWER);
     _lora.setSpreadingFactor(lora_cfg.SPREADING);
     _lora.setCodingRate(lora_cfg.CODING_RATE);
@@ -154,10 +155,14 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     packet += ", ";
     packet += String(data.humidity, 2);
     packet += ", ";
+    packet += String(data.ranging_address, HEX);
+    packet += ", ";
+    packet += String(data.ranging_result, 2);
+    packet += ", ";
     packet += String(data.time_since_last_gps);
     packet += ", ";
     packet += String(data.time);
-
+    bool packet_sent = false;
     // sends data over lora if can be sent
     if (!rfm_lora_transmiting && _lora_initialized)
     {
@@ -174,6 +179,10 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
 
             Serial.println("Transmit error: " + String(state));
         }
+        else
+        {
+            packet_sent = true;
+        }
         _lora.setDio0Action(rfm_transmission_end, RISING);
     }
     // apend more data to packet string which will only show up on storage
@@ -185,7 +194,15 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     packet += String(data.acc[2], 2);
 
     // prints data
-    Serial.print("DATA: ");
+    if (packet_sent)
+    {
+        Serial.print("SEND DATA: ");
+    }
+    else
+    {
+        Serial.print("NOTT DATA: ");
+    }
+
     Serial.println(packet);
 
     // logs data to flash if apropriate state

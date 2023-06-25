@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
-int mosfet = 22;
-int buzzer = 6;
+int mosfet = 9;
+int buzzer = -1;
 void setup()
 {
     Serial.begin(9600);
