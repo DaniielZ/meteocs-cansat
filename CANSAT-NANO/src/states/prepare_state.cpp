@@ -26,15 +26,17 @@ void prepare_state(Cansat &cansat)
         }
         // read sensor data
         cansat.sensors.read_data(cansat.config);
-        if (incoming_msg != "")
-        {
-            delay(1000);
-        }
+        //cansat.log.data(cansat.sensors.data, true);
 
         // check send data check
         if (incoming_msg == cansat.config.DATA_SEND_MSG)
         {
-            cansat.log.data(cansat.sensors.data, true);
+            for (int i = 0; i < 10; i++)
+            {
+                cansat.sensors.read_data(cansat.config);
+                cansat.log.data(cansat.sensors.data, true);
+                delay(1000);
+            }
         }
         // check if should arm
         else if (incoming_msg == cansat.config.ARM_MSG)
@@ -66,6 +68,7 @@ void prepare_state(Cansat &cansat)
         unsigned long loop_time = millis() - loop_start;
         if (loop_time < cansat.config.MAX_LOOP_TIME)
         {
+            Serial.println("Waiting " + String(cansat.config.MAX_LOOP_TIME - loop_time));
             delay(cansat.config.MAX_LOOP_TIME - loop_time);
         }
     }

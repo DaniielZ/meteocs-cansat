@@ -23,6 +23,7 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
 
     // setting paramaters
     _lora.setFrequency(lora_cfg.FREQUENCY);
+    
     _lora.setOutputPower(lora_cfg.TXPOWER);
     _lora.setSpreadingFactor(lora_cfg.SPREADING);
     _lora.setCodingRate(lora_cfg.CODING_RATE);

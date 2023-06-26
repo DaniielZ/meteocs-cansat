@@ -11,7 +11,7 @@ public:
     };
     struct Lora_device
     {
-        long FREQUENCY;
+        float FREQUENCY;
         int CS;
         int RX;
         int TX;
@@ -24,7 +24,7 @@ public:
         int TXPOWER;
         int SPREADING;
         int CODING_RATE;
-        long SIGNAL_BW;
+        float SIGNAL_BW;
         SPIClassRP2040 *SPI;
     };
 
@@ -41,7 +41,7 @@ public:
 
     // LORA 433 SPI0
     Lora_device LORA433{
-        .FREQUENCY = (long)430.6E6,
+        .FREQUENCY = 434.5,
         .CS = 5,
         .RX = 4,
         .TX = 3, // only info changing pinx must be done manually in the code !!!
@@ -53,12 +53,12 @@ public:
         .TXPOWER = 14,
         .SPREADING = 9,
         .CODING_RATE = 6,
-        .SIGNAL_BW = (long)62.5E3,
+        .SIGNAL_BW = 125,
         .SPI = &SPI};
 
     // LORA 2.4 SPI1
     Lora_device LORA2400{
-        .FREQUENCY = (long)2405.6E6,
+        .FREQUENCY = 2405.6,
         .CS = 13,
         .RX = 12, // only info changing pinx must be done manually in the code !!!
         .TX = 11, // only info
@@ -66,14 +66,14 @@ public:
         .DIO0 = 16, // busy pin not programmable dont use
         .DIO1 = 15, // only use thsi
         .RESET = 14,
-        .SYNC_WORD = 0xF4,
+        .SYNC_WORD = 0xF5,
         .TXPOWER = 14,
         .SPREADING = 9,
         .CODING_RATE = 7,
-        .SIGNAL_BW = (long)1600E3,
+        .SIGNAL_BW = 1600,
         .SPI = &SPI1};
     long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
-    int RANGING_TIMEOUT = 3000;               // ms
+    int RANGING_TIMEOUT = 1000;               // ms
     int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
     // WIRE1 lines
     int WIRE1_SCL = 27;

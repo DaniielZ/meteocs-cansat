@@ -16,10 +16,13 @@ String Sensor_manager::init(Config &config)
 {
 
     String status;
+
     // WIRE1
     Wire.setSCL(config.WIRE0_SCL);
     Wire.setSDA(config.WIRE0_SDA);
     // GPS UART0
+    Serial1.setRX(config.GPS_RX);
+    Serial1.setTX(config.GPS_TX);
     _gps_serial = &Serial1;
     _gps_serial->setFIFOSize(256); // once had a prblem of not reading serial properly but this seemed to fix it
     _gps_serial->begin(config.GPS_BAUDRATE);
@@ -75,47 +78,96 @@ String Sensor_manager::init(Config &config)
         _lora.setCodingRate(lora_cfg.CODING_RATE);
         _lora.setBandwidth(lora_cfg.SIGNAL_BW);
         _lora.setSyncWord(lora_cfg.SYNC_WORD);
+        _lora.setFrequency(lora_cfg.FREQUENCY);
         _lora_initialized = true;
-
-        //
-        // _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS[0]);
-        // sx1280_lora_ranging = true;
-        // need to setup interupt
-        // _lora.setDio1Action(sx1280_ranging_end);
-        // need to wait for irq to be high
     }
-    Serial.println("7");
+
     return status;
 }
 void Sensor_manager::enable_ranging(Config &config)
 {
+    data.ranging_result = -1;
+    data.ranging_address = 0;
+    if (_lora_wait_for_othersat)
+    {
+        // check timer
+        // if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
+        // {
+        //     _lora_wait_for_othersat = false;
+        //     Serial.println("Switching back");
+        // }
+        // check incoming msg
+        String incoming_msg;
+        _lora.receive(incoming_msg);
+        if (incoming_msg == config.RANGE_DONE)
+        {
+            _lora_wait_for_othersat = false;
+            Serial.println("Switching back msg");
+        }
+        else if (incoming_msg != "")
+        {
+            Serial.println("ranging recieved noise: " + incoming_msg);
+        }
+        return;
+    }
     if (sx1280_lora_ranging)
     {
-        if (millis() >= _ranging_start_time + 1000)
+        if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
         {
             sx1280_lora_ranging = false;
+            _lora_range_state = RADIOLIB_ERR_RANGING_TIMEOUT;
             _lora.clearDio1Action();
             _lora.finishTransmit();
         }
     }
     if (!sx1280_lora_ranging)
     {
-        // mybe add some sort of logging and timeout
+
+        data.ranging_address = config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index];
+        // if available read result
+        if (_lora_range_state == RADIOLIB_ERR_NONE)
+        {
+            data.ranging_result = _lora.getRangingResult();
+            Serial.println("Range good: " + String(data.ranging_result));
+        }
+        else
+        {
+            data.ranging_result = -1;
+            Serial.println("Range bad" + String(_lora_range_state));
+        }
+        _lora_range_state = -1;
+
+        _lora.clearDio1Action();
+        _lora.finishTransmit();
+
+        // increment next address
         int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
         if (_lora_slave_address_index >= array_length - 1)
         {
             _lora_slave_address_index = 0;
+            // send command to nanosat
+            _lora.transmit(config.RANGE_DONE);
+            Serial.println("Switching");
+
+            _wait_for_othersat_start_time = millis();
+            _lora_wait_for_othersat = true;
+            // start timer
         }
         else
         {
             _lora_slave_address_index++;
         }
-        Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
-
-        _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        // Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
+        // start ranging
         _lora.setDio1Action(sx1280_ranging_end);
-        _ranging_start_time = millis();
         sx1280_lora_ranging = true;
+        _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+
+        if (_lora_range_state != RADIOLIB_ERR_NONE)
+        {
+            Serial.println("Ranging error");
+        }
+        _ranging_start_time = millis();
     }
 }
 void Sensor_manager::read_gps()
@@ -170,7 +222,7 @@ void Sensor_manager::read_imu()
 {
     if (!_imu_initialized)
     {
-        //  Serial.println("IMU not init.. returning");
+        // Serial.println("IMU not init.. returning");
         return;
     }
 

@@ -86,17 +86,26 @@ void Sensor_manager::enable_ranging(Config &config)
 {
     data.ranging_result = -1;
     data.ranging_address = 0;
-    if (_wait_for_othersat_start_time)
+    if (_lora_wait_for_othersat)
     {
         // check timer
         if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
         {
-            _wait_for_othersat_start_time = false;
+            _lora_wait_for_othersat = false;
+            Serial.println("Switching back");
         }
         // check incoming msg
         String incoming_msg;
         _lora.receive(incoming_msg);
-
+        if (incoming_msg == config.RANGE_DONE)
+        {
+            _lora_wait_for_othersat = false;
+            Serial.println("Switching back msg");
+        }
+        else if (incoming_msg != "")
+        {
+            Serial.println("ranging recieved noise: " + incoming_msg);
+        }
         return;
     }
     if (sx1280_lora_ranging)
@@ -122,9 +131,10 @@ void Sensor_manager::enable_ranging(Config &config)
         else
         {
             data.ranging_result = -1;
-            Serial.println("Range bad");
+            Serial.println("Range bad" + String(_lora_range_state));
         }
         _lora_range_state = -1;
+
         _lora.clearDio1Action();
         _lora.finishTransmit();
 
@@ -135,6 +145,10 @@ void Sensor_manager::enable_ranging(Config &config)
             _lora_slave_address_index = 0;
             // send command to nanosat
             _lora.transmit(config.RANGE_DONE);
+            Serial.println("Switching");
+
+            _wait_for_othersat_start_time = millis();
+            _lora_wait_for_othersat = true;
             // start timer
         }
         else
@@ -146,6 +160,11 @@ void Sensor_manager::enable_ranging(Config &config)
         _lora.setDio1Action(sx1280_ranging_end);
         sx1280_lora_ranging = true;
         _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+
+        if (_lora_range_state != RADIOLIB_ERR_NONE)
+        {
+            Serial.println("Ranging error");
+        }
         _ranging_start_time = millis();
     }
 }

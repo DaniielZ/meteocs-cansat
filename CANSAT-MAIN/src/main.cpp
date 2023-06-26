@@ -4,12 +4,6 @@
 #include <Wire.h>
 void setup()
 {
-    Serial.begin(115200);
-    while (!Serial)
-    {
-        delay(500);
-    }
-
     Cansat cansat;
     cansat.start_states(cansat);
 }

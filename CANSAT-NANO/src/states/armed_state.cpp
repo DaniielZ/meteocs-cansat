@@ -42,7 +42,7 @@ void armed_state(Cansat &cansat)
                 }
                 i--;
             }
-            if (all_values_over_threshold || data_buffer.size() > 23)
+            if (all_values_over_threshold) // || data_buffer.size() > 23
             {
                 // launch detected
                 // log buffer
