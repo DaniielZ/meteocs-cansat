@@ -50,7 +50,7 @@ public:
         .DIO1 = 8,
         .RESET = 6,
         .SYNC_WORD = 0xF4,
-        .TXPOWER = 10,
+        .TXPOWER = 14,
         .SPREADING = 9,
         .CODING_RATE = 6,
         .SIGNAL_BW = 125,
@@ -72,9 +72,10 @@ public:
         .CODING_RATE = 7,
         .SIGNAL_BW = 1600,
         .SPI = &SPI1};
-    long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
-    int RANGING_TIMEOUT = 1000;               // ms
-    int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
+    // long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
+    long RANGING_SLAVE_ADDRESS = 0x12345674;
+    int RANGING_TIMEOUT = 10000; // ms
+    // int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
 
     // WIRE lines
     int WIRE0_SCL = 1;
@@ -122,5 +123,6 @@ public:
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
     String SERVO_MSG = "servo_toggle";
+    String FORMAT_MSG = "format_flash";
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

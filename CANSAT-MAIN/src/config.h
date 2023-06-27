@@ -72,7 +72,7 @@ public:
         .CODING_RATE = 7,
         .SIGNAL_BW = 1600,
         .SPI = &SPI1};
-    long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
+    long RANGING_SLAVE_ADDRESS[4] = {0x12345671, 0x12345672, 0x12345673, 0x12345674};
     int RANGING_TIMEOUT = 500;                // ms
     int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
     // WIRE1 lines

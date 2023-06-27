@@ -1,4 +1,5 @@
 #include "sensors/sensor_manager.h"
+#include "string.h"
 
 volatile bool sx1280_lora_ranging = false; // yeah sadly wasnt able to move it into the class
 void sx1280_ranging_end(void)
@@ -126,7 +127,9 @@ void Sensor_manager::enable_ranging(Config &config)
         if (_lora_range_state == RADIOLIB_ERR_NONE)
         {
             data.ranging_result = _lora.getRangingResult();
-            Serial.println("Range good: " + String(data.ranging_result));
+            String address = String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index], HEX);
+            Serial.print(address);
+            Serial.println(" Range good: " + String(data.ranging_result));
         }
         else
         {
@@ -147,15 +150,15 @@ void Sensor_manager::enable_ranging(Config &config)
             // _lora.transmit(config.RANGE_DONE);
             // Serial.println("Switching");
 
-            // _wait_for_othersat_start_time = millis();
-            // _lora_wait_for_othersat = true;
+            _wait_for_othersat_start_time = millis();
+            _lora_wait_for_othersat = true;
             // start timer
         }
         else
         {
             _lora_slave_address_index++;
         }
-        // Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
+        //
         // start ranging
         _lora.setDio1Action(sx1280_ranging_end);
         sx1280_lora_ranging = true;

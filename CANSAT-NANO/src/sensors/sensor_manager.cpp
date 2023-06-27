@@ -88,28 +88,7 @@ void Sensor_manager::enable_ranging(Config &config)
 {
     data.ranging_result = -1;
     data.ranging_address = 0;
-    if (_lora_wait_for_othersat)
-    {
-        // check timer
-        // if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
-        // {
-        //     _lora_wait_for_othersat = false;
-        //     Serial.println("Switching back");
-        // }
-        // check incoming msg
-        String incoming_msg;
-        _lora.receive(incoming_msg);
-        if (incoming_msg == config.RANGE_DONE)
-        {
-            _lora_wait_for_othersat = false;
-            Serial.println("Switching back msg");
-        }
-        else if (incoming_msg != "")
-        {
-            Serial.println("ranging recieved noise: " + incoming_msg);
-        }
-        return;
-    }
+    
     if (sx1280_lora_ranging)
     {
         if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
@@ -123,7 +102,7 @@ void Sensor_manager::enable_ranging(Config &config)
     if (!sx1280_lora_ranging)
     {
 
-        data.ranging_address = config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index];
+        data.ranging_address = config.RANGING_SLAVE_ADDRESS;
         // if available read result
         if (_lora_range_state == RADIOLIB_ERR_NONE)
         {
@@ -141,33 +120,33 @@ void Sensor_manager::enable_ranging(Config &config)
         _lora.finishTransmit();
 
         // increment next address
-        int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
-        if (_lora_slave_address_index >= array_length - 1)
-        {
-            _lora_slave_address_index = 0;
-            // send command to nanosat
-            _lora.transmit(config.RANGE_DONE);
-            Serial.println("Switching");
+        // int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
+        // if (_lora_slave_address_index >= array_length - 1)
+        // {
+        //     _lora_slave_address_index = 0;
+        //     // send command to nanosat
+        //     _lora.transmit(config.RANGE_DONE);
+        //     Serial.println("Switching");
 
-            _wait_for_othersat_start_time = millis();
-            _lora_wait_for_othersat = true;
-            // start timer
-        }
-        else
-        {
-            _lora_slave_address_index++;
-        }
+        //     _wait_for_othersat_start_time = millis();
+        //     _lora_wait_for_othersat = true;
+        //     // start timer
+        // }
+        // else
+        // {
+        //     _lora_slave_address_index++;
+        // }
         // Serial.println("Current address ranging:" + String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]));
         // start ranging
         _lora.setDio1Action(sx1280_ranging_end);
-        sx1280_lora_ranging = true;
-        _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        // sx1280_lora_ranging = true;
+        _lora_range_state = _lora.startRanging(false, config.RANGING_SLAVE_ADDRESS);
 
         if (_lora_range_state != RADIOLIB_ERR_NONE)
         {
             Serial.println("Ranging error");
         }
-        _ranging_start_time = millis();
+        // _ranging_start_time = millis();
     }
 }
 void Sensor_manager::read_gps()
