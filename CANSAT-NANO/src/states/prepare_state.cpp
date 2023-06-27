@@ -26,7 +26,7 @@ void prepare_state(Cansat &cansat)
         }
         // read sensor data
         cansat.sensors.read_data(cansat.config);
-        //cansat.log.data(cansat.sensors.data, true);
+        // cansat.log.data(cansat.sensors.data, true);
 
         // check send data check
         if (incoming_msg == cansat.config.DATA_SEND_MSG)
@@ -56,6 +56,17 @@ void prepare_state(Cansat &cansat)
             {
                 cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_END);
                 servo_high = true;
+            }
+        }
+        else if (incoming_msg == cansat.config.FORMAT_MSG)
+        {
+            if (LittleFS.format())
+            {
+                cansat.log.info("Formating done");
+            }
+            else
+            {
+                cansat.log.info("Formating fail");
             }
         }
         else if (incoming_msg != "")

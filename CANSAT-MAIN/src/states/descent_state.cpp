@@ -5,9 +5,9 @@
 void descent_state(Cansat &cansat)
 {
     cansat.log.info("descent_state");
-    unsigned long solar_sail_open_time = millis();
-    unsigned long nanosat_ejection_time = solar_sail_open_time + cansat.config.TIME_AFTER_SOLAR_SAIL_TO_DEATACH_NANOSAT;
-    unsigned long landed_time = solar_sail_open_time + cansat.config.TIME_AFTER_SOLAR_SAIL_TO_LAND;
+    unsigned long mosfet_open_time = millis();
+    unsigned long mosfet_close_time = mosfet_open_time + cansat.config.TIME_TO_KEEP_MOSFET_ON;
+    unsigned long landed_time = mosfet_open_time + cansat.config.TIME_AFTER_SOLAR_SAIL_TO_LAND;
     while (true)
     {
         unsigned long loop_start = millis();
@@ -15,18 +15,17 @@ void descent_state(Cansat &cansat)
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, true);
 
-        if (millis() > solar_sail_open_time)
+        if (millis() > mosfet_open_time)
         {
             digitalWrite(cansat.config.MOSFET, HIGH);
         }
-        if (millis() > nanosat_ejection_time)
+        if (millis() > mosfet_close_time)
         {
-            cansat.ejection_servo.writeMicroseconds(cansat.config.SERVO_END);
+            digitalWrite(cansat.config.MOSFET, LOW);
         }
         if (millis() > landed_time)
         {
             // landed
-            digitalWrite(cansat.config.MOSFET, LOW);
             return;
         }
 

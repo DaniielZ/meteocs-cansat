@@ -30,8 +30,8 @@ public:
 
     // logging
     unsigned long PC_BAUDRATE = 115200;
-    bool WAIT_PC = true;
-    bool LOG_TO_STORAGE = false;
+    bool WAIT_PC = false;
+    bool LOG_TO_STORAGE = true;
     //
     bool START_RANGING_FIRST = true;
     // GPS UART0
@@ -41,7 +41,7 @@ public:
 
     // LORA 433 SPI0
     Lora_device LORA433{
-        .FREQUENCY = 434.5,
+        .FREQUENCY = 433.175,
         .CS = 5,
         .RX = 4,
         .TX = 3, // only info changing pinx must be done manually in the code !!!
@@ -73,7 +73,7 @@ public:
         .SIGNAL_BW = 1600,
         .SPI = &SPI1};
     long RANGING_SLAVE_ADDRESS[3] = {0x12345671, 0x12345672, 0x12345673};
-    int RANGING_TIMEOUT = 1000;               // ms
+    int RANGING_TIMEOUT = 500;                // ms
     int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
     // WIRE1 lines
     int WIRE1_SCL = 27;
@@ -102,7 +102,7 @@ public:
     int SERVO_END = 1790;
 
     // Parachute
-    int MOSFET = 22; // TBD
+    int MOSFET = 9;
 
     // Sea level Hpa for barometer height
     float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
@@ -113,13 +113,14 @@ public:
     const int DATA_POINTS_FOR_LAUNCH_DETECTION = 5;
     float LAUNCH_DETECTION_HEIGHT = 100; // delta m
 
-    int TIME_FROM_LAUNCH_TO_DETECT_EJECTION = 20000;      // ms
-    int TIME_AFTER_SOLAR_SAIL_TO_DEATACH_NANOSAT = 10000; // ms
-    int TIME_AFTER_SOLAR_SAIL_TO_LAND = 200000;           // ms
+    int TIME_FROM_LAUNCH_TO_DETECT_EJECTION = 20000; // ms
+    int TIME_TO_KEEP_MOSFET_ON = 5000;               // ms
+    int TIME_AFTER_SOLAR_SAIL_TO_LAND = 200000;      // ms
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String RANGE_DONE = "range_done"; // used by both sats to tell which one should be transmititing
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
     String SERVO_MSG = "servo_toggle";
+    String FORMAT_MSG = "format_flash";
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

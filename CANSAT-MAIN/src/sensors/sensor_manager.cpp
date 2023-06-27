@@ -86,28 +86,28 @@ void Sensor_manager::enable_ranging(Config &config)
 {
     data.ranging_result = -1;
     data.ranging_address = 0;
-    if (_lora_wait_for_othersat)
-    {
-        // check timer
-        if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
-        {
-            _lora_wait_for_othersat = false;
-            Serial.println("Switching back");
-        }
-        // check incoming msg
-        String incoming_msg;
-        _lora.receive(incoming_msg);
-        if (incoming_msg == config.RANGE_DONE)
-        {
-            _lora_wait_for_othersat = false;
-            Serial.println("Switching back msg");
-        }
-        else if (incoming_msg != "")
-        {
-            Serial.println("ranging recieved noise: " + incoming_msg);
-        }
-        return;
-    }
+    // if (_lora_wait_for_othersat)
+    // {
+    //     // check timer
+    //     if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
+    //     {
+    //         _lora_wait_for_othersat = false;
+    //         Serial.println("Switching back");
+    //     }
+    //     // check incoming msg
+    //     String incoming_msg;
+    //     _lora.receive(incoming_msg);
+    //     if (incoming_msg == config.RANGE_DONE)
+    //     {
+    //         _lora_wait_for_othersat = false;
+    //         Serial.println("Switching back msg");
+    //     }
+    //     else if (incoming_msg != "")
+    //     {
+    //         Serial.println("ranging recieved noise: " + incoming_msg);
+    //     }
+    //     return;
+    // }
     if (sx1280_lora_ranging)
     {
         if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
@@ -144,11 +144,11 @@ void Sensor_manager::enable_ranging(Config &config)
         {
             _lora_slave_address_index = 0;
             // send command to nanosat
-            _lora.transmit(config.RANGE_DONE);
-            Serial.println("Switching");
+            // _lora.transmit(config.RANGE_DONE);
+            // Serial.println("Switching");
 
-            _wait_for_othersat_start_time = millis();
-            _lora_wait_for_othersat = true;
+            // _wait_for_othersat_start_time = millis();
+            // _lora_wait_for_othersat = true;
             // start timer
         }
         else

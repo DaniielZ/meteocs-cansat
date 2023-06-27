@@ -30,7 +30,7 @@ public:
 
     // logging
     unsigned long PC_BAUDRATE = 115200;
-    bool WAIT_PC = true;
+    bool WAIT_PC = false;
     bool LOG_TO_STORAGE = false;
     //
     bool START_RANGING_FIRST = false;
@@ -41,7 +41,7 @@ public:
 
     // LORA 433 SPI0
     Lora_device LORA433{
-        .FREQUENCY = 433.75,
+        .FREQUENCY = 433.575,
         .CS = 5,
         .RX = 4,
         .TX = 3, // only info changing pinx must be done manually in the code !!!
