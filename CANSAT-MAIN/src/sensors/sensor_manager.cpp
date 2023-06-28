@@ -160,6 +160,38 @@ void Sensor_manager::enable_ranging(Config &config)
         }
         //
         // start ranging
+        _lora.reset();
+        int state = _lora.begin();
+        if (state != RADIOLIB_ERR_NONE)
+        {
+        }
+        else
+        {
+            // setting paramaters
+            _lora.setOutputPower(config.LORA2400.TXPOWER);
+            _lora.setSpreadingFactor(config.LORA2400.SPREADING);
+            _lora.setCodingRate(config.LORA2400.CODING_RATE);
+            _lora.setBandwidth(config.LORA2400.SIGNAL_BW);
+            _lora.setSyncWord(config.LORA2400.SYNC_WORD);
+            _lora.setFrequency(config.LORA2400.FREQUENCY);
+            _lora_initialized = true;
+        }
+        // if (_lora_slave_address_index == 0)
+        // {
+        //     _lora.setFrequency(config.LORA2400.FREQUENCY);
+        // }
+        // else if (_lora_slave_address_index == 1)
+        // {
+        //     _lora.setFrequency(config.LORA2400.FREQUENCY + 2.0);
+        // }
+        // else if (_lora_slave_address_index == 2)
+        // {
+        //     _lora.setFrequency(config.LORA2400.FREQUENCY + 4.0);
+        // }
+        // else if (_lora_slave_address_index == 3)
+        // {
+        //     _lora.setFrequency(config.LORA2400.FREQUENCY + 6.0);
+        // }
         _lora.setDio1Action(sx1280_ranging_end);
         sx1280_lora_ranging = true;
         _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);

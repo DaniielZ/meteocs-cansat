@@ -31,7 +31,7 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = false;
-    bool LOG_TO_STORAGE = false;
+    bool LOG_TO_STORAGE = true;
     //
     bool START_RANGING_FIRST = false;
     // GPS UART0
@@ -107,7 +107,7 @@ public:
     int MOSFET = -1; // TBD
 
     // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
+    float SEA_LEVEL_HPA = 1015.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
     const int MAX_LOOP_TIME = 100; // ms

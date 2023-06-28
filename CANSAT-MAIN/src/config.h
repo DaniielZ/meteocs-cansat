@@ -73,7 +73,7 @@ public:
         .SIGNAL_BW = 1600,
         .SPI = &SPI1};
     long RANGING_SLAVE_ADDRESS[4] = {0x12345671, 0x12345672, 0x12345673, 0x12345674};
-    int RANGING_TIMEOUT = 500;                // ms
+    int RANGING_TIMEOUT = 1000;               // ms
     int WAITING_FOR_OTHERSAT_TIMEOUT = 10000; // ms
     // WIRE1 lines
     int WIRE1_SCL = 27;
@@ -105,7 +105,7 @@ public:
     int MOSFET = 9;
 
     // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1026.0; // CHNAGE BEFORE FLIGHT;
+    float SEA_LEVEL_HPA = 1015.0; // CHNAGE BEFORE FLIGHT;
 
     // hard data rate limiter
     const int MAX_LOOP_TIME = 100; // ms

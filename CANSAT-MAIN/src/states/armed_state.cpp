@@ -31,7 +31,7 @@ void armed_state(Cansat &cansat)
             bool all_values_over_threshold = true;
             float height_delta_sum = 0;
             int i = data_buffer.size() - 1;
-            int i_last = data_buffer.size() - cansat.config.DATA_POINTS_FOR_LAUNCH_DETECTION - 1;
+            int i_last = i - cansat.config.DATA_POINTS_FOR_LAUNCH_DETECTION;
             while (i > i_last)
             {
                 float delta_height = data_buffer[i].baro_height - starting_height;
@@ -42,7 +42,7 @@ void armed_state(Cansat &cansat)
                 }
                 i--;
             }
-            if (all_values_over_threshold || data_buffer.size() > 23)
+            if (all_values_over_threshold)
             {
                 // launch detected
                 // log buffer
