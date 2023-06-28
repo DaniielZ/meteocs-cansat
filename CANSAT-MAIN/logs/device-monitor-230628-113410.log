@@ -1,0 +1,507 @@
+Range bad-901
+Range bad-901
+Range bad-901
+SEND DATA: 37.297127, -3.682935, 729.50, 4, 0.000, 0.00, 0.00, 0.00, 691.9, 934.47, 32.31, 34.37, 0, -1.00, 2753, 815489, 0.00, 0.00, 0.00
+12345672 Range good: 37.55
+SEND DATA: 37.297123, -3.682927, 730.90, 4, 0.000, 0.00, 0.00, 0.00, 692.6, 934.39, 32.33, 34.30, 12345672, 37.55, 32, 816586, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297123, -3.682927, 730.90, 4, 0.000, 0.00, 0.00, 0.00, 691.1, 934.56, 32.40, 34.50, 12345673, -1.00, 1130, 817684, 0.00, 0.00, 0.00
+12345674 Range good: 1.89
+SEND DATA: 37.297123, -3.682927, 730.90, 4, 0.000, 0.00, 0.00, 0.00, 687.3, 934.99, 32.38, 34.56, 12345674, 1.89, 2227, 818781, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297123, -3.682927, 730.90, 4, 0.000, 0.00, 0.00, 0.00, 688.3, 934.87, 32.33, 34.58, 12345671, -1.00, 3354, 819908, 0.00, 0.00, 0.00
+12345672 Range good: 44.17
+SEND DATA: 37.297062, -3.682907, 730.90, 4, 0.000, 0.00, 0.00, 0.00, 687.6, 934.95, 32.36, 34.61, 12345672, 44.17, 32, 820999, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297058, -3.682906, 733.80, 4, 0.000, 0.00, 0.00, 0.00, 688.3, 934.87, 32.33, 34.51, 12345673, -1.00, 31, 822089, 0.00, 0.00, 0.00
+12345674 Range good: 1.76
+SEND DATA: 37.297047, -3.682908, 733.70, 4, 0.000, 0.00, 0.00, 0.00, 693.9, 934.24, 32.31, 34.58, 12345674, 1.76, 32, 823184, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297039, -3.682913, 733.90, 4, 0.000, 0.00, 0.00, 0.00, 681.8, 935.61, 32.29, 34.46, 12345671, -1.00, 31, 824286, 0.00, 0.00, 0.00
+12345672 Range good: 49.17
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 687.3, 934.99, 32.49, 34.78, 12345672, 49.17, 31, 825389, 0.00, 0.00, 0.00
+Range bad-901
+12345674 Range good: 2.66
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 692.6, 934.39, 32.33, 36.11, 0, -1.00, 3816, 829174, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 688.3, 934.88, 32.54, 36.12, 12345672, -1.00, 4890, 830248, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 689.1, 934.79, 32.45, 35.83, 12345673, -1.00, 6000, 831358, 0.00, 0.00, 0.00
+12345674 Range good: 2.66
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 685.5, 935.19, 32.42, 35.30, 12345674, 2.66, 7071, 832429, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 688.3, 934.87, 32.38, 34.72, 12345671, -1.00, 8144, 833502, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 693.6, 934.28, 32.38, 34.08, 12345672, -1.00, 9218, 834576, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 682.0, 935.58, 32.38, 33.77, 12345673, -1.00, 10298, 835656, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 684.5, 935.30, 32.36, 33.56, 12345674, -1.00, 11377, 836735, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.297028, -3.682909, 734.20, 4, 0.000, 0.00, 0.00, 0.00, 691.5, 934.51, 32.38, 33.50, 12345671, -1.00, 12456, 837814, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296959, -3.682875, 734.20, 3, 0.000, 0.00, 0.00, 0.00, 690.5, 934.63, 32.38, 33.59, 12345672, -1.00, 31, 838897, 0.00, 0.00, 0.00
+Range bad-901
+12345674 Range good: 2.21
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.66
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.66
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.12
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 37.68
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.61
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 1.89
+Range bad-901
+12345672 Range good: 38.94
+SEND DATA: 37.296799, -3.683064, 694.70, 5, 0.000, 0.00, 0.00, 0.00, 684.9, 935.26, 32.29, 33.12, 0, -1.00, 271, 896323, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296806, -3.683061, 699.10, 5, 0.000, 0.00, 0.00, 0.00, 686.6, 935.07, 32.42, 33.07, 12345673, -1.00, 31, 897404, 0.00, 0.00, 0.00
+12345674 Range good: 2.25
+SEND DATA: 37.296806, -3.683062, 699.80, 5, 0.000, 0.00, 0.00, 0.00, 695.7, 934.04, 32.33, 33.26, 12345674, 2.25, 31, 898486, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296810, -3.683062, 700.30, 5, 0.000, 0.00, 0.00, 0.00, 686.9, 935.03, 32.35, 33.48, 12345671, -1.00, 31, 899576, 0.00, 0.00, 0.00
+12345672 Range good: 52.10
+SEND DATA: 37.296810, -3.683060, 701.70, 5, 0.000, 0.00, 0.00, 0.00, 688.3, 934.87, 32.33, 33.56, 12345672, 52.10, 32, 900662, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296810, -3.683060, 701.70, 5, 0.000, 0.00, 0.00, 0.00, 684.2, 935.34, 32.38, 33.68, 12345673, -1.00, 1122, 901752, 0.00, 0.00, 0.00
+12345674 Range good: 2.43
+SEND DATA: 37.296810, -3.683060, 701.70, 5, 0.000, 0.00, 0.00, 0.00, 681.3, 935.66, 32.47, 33.78, 12345674, 2.43, 2210, 902840, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296810, -3.683059, 701.70, 5, 0.000, 0.00, 0.00, 0.00, 686.9, 935.03, 32.45, 34.22, 12345671, -1.00, 31, 903925, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296810, -3.683059, 701.70, 5, 0.000, 0.00, 0.00, 0.00, 680.6, 935.74, 32.45, 34.36, 12345672, -1.00, 1159, 905053, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296814, -3.683052, 703.70, 5, 0.000, 0.00, 0.00, 0.00, 683.8, 935.38, 32.45, 34.38, 12345673, -1.00, 31, 906138, 0.00, 0.00, 0.00
+12345674 Range good: 2.52
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 1.94
+Range bad-901
+12345672 Range good: 45.75
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 37.09
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.21
+Range bad-901
+12345672 Range good: 46.83
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+12345672 Range good: 39.30
+Range bad-901
+12345674 Range good: 2.66
+Range bad-901
+12345672 Range good: 40.43
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 40.70
+Range bad-901
+12345674 Range good: 1.49
+Range bad-901
+12345672 Range good: 39.66
+Range bad-901
+12345674 Range good: 2.12
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 40.25
+Range bad-901
+12345674 Range good: 2.52
+Range bad-901
+12345672 Range good: 40.43
+Range bad-901
+12345674 Range good: 2.57
+Range bad-901
+12345672 Range good: 41.42
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+12345672 Range good: 40.97
+Range bad-901
+12345674 Range good: 2.07
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+12345672 Range good: 35.83
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.12
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+12345672 Range good: 41.69
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 44.76
+Range bad-901
+12345674 Range good: 2.07
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.84
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 41.78
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+12345672 Range good: 41.20
+Range bad-901
+12345674 Range good: 2.52
+Range bad-901
+12345672 Range good: 41.33
+Range bad-901
+12345674 Range good: 2.21
+Range bad-901
+12345672 Range good: 42.64
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+12345672 Range good: 39.35
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+12345672 Range good: 40.20
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.61
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.07
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.88
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.12
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.21
+Range bad-901
+12345672 Range good: 37.68
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 41.60
+Range bad-901
+12345674 Range good: 1.94
+Range bad-901
+12345672 Range good: 42.23
+Range bad-901
+12345674 Range good: 2.16
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 44.53
+Range bad-901
+12345674 Range good: 2.84
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+12345672 Range good: 37.68
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+12345672 Range good: 44.89
+Range bad-901
+12345674 Range good: 1.98
+Range bad-901
+12345672 Range good: 39.93
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 33.53
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 1.94
+Range bad-901
+12345672 Range good: 48.99
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 47.69
+Range bad-901
+12345674 Range good: 2.57
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.52
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+12345672 Range good: 35.97
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.12
+Range bad-901
+12345672 Range good: 39.44
+Range bad-901
+12345674 Range good: 2.43
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+12345672 Range good: 38.76
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+12345672 Range good: 40.66
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 39.57
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+12345672 Range good: 38.04
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+12345672 Range good: 40.34
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+12345672 Range good: 39.71
+Range bad-901
+12345674 Range good: 1.26
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 1.98
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 30.92
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.70
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+12345672 Range good: 37.05
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.48
+Range bad-901
+12345672 Range good: 41.11
+Range bad-901
+12345674 Range good: 2.07
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.75
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.25
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.66
+Range bad-901
+12345672 Range good: 36.78
+Range bad-901
+12345674 Range good: 2.30
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.66
+Range bad-901
+12345672 Range good: 36.01
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.21
+Range bad-901
+12345672 Range good: 39.57
+Range bad-901
+12345674 Range good: 2.39
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.25
+Range bad-901
+12345672 Range good: 45.30
+Range bad-901
+12345674 Range good: 2.34
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.03
+Range bad-901
+Range bad-901
+Range bad-901
+12345674 Range good: 2.61
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+Range bad-901
+SEND DATA: 37.296978, -3.682886, 745.30, 5, 0.000, 0.00, 0.00, 0.00, 685.9, 935.15, 33.57, 31.17, 0, -1.00, 1036, 1284762, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296978, -3.682886, 745.30, 5, 0.000, 0.00, 0.00, 0.00, 688.3, 934.87, 33.56, 31.00, 12345673, -1.00, 2130, 1285856, 0.00, 0.00, 0.00
+12345674 Range good: 2.75
+SEND DATA: 37.296978, -3.682885, 745.30, 5, 0.000, 0.00, 0.00, 0.00, 685.9, 935.15, 33.63, 30.73, 12345674, 2.75, 32, 1286945, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296978, -3.682884, 745.30, 5, 0.000, 0.00, 0.00, 0.00, 689.1, 934.79, 33.63, 30.68, 12345671, -1.00, 31, 1288036, 0.00, 0.00, 0.00
+12345672 Range good: 32.77
+SEND DATA: 37.296978, -3.682879, 745.80, 5, 0.000, 0.00, 0.00, 0.00, 685.9, 935.15, 33.57, 30.67, 12345672, 32.77, 32, 1289132, 0.00, 0.00, 0.00
+Range bad-901
+SEND DATA: 37.296978, -3.682879, 745.80, 5, 0.000, 0.00, 0.00, 0.00, 690.7, 934.60, 33.65, 30.61, 12345673, -1.00, 1124, 1290224, 0.00, 0.00, 0.00
+12345674 Range good: 2.30
+SEND DATA: 
