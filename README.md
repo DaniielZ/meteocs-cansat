@@ -1,5 +1,6 @@
 # meteocs-cansat
 The flow block diagram of the code can be found here: https://drive.google.com/file/d/1hDMlhlLcdeDGHhbZly0Bg1h5nYsYx1YS/view?usp=sharing
+And the final presentation can be viewed here: https://fb.watch/ltn5Kg6NAa/    (3h 38min)
 
 # MainSat
 Is responsible for gathering and logging data and transmitting it over 433 Lora to the base station. Also, the MainSat ejects NanoSat and opens the air brake by firing the MOSFET at the appropriate time after launch.
