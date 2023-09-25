@@ -1,7 +1,7 @@
 #include "states/descent_state.h"
 #include <core/gnc_math.h>
 #include <Arduino.h>
-
+bool turned_on = false;
 void descent_state(Cansat &cansat)
 {
     cansat.log.info("descent_state");
@@ -15,12 +15,21 @@ void descent_state(Cansat &cansat)
         cansat.sensors.read_data(cansat.config);
         cansat.log.data(cansat.sensors.data, true);
 
+        // if (millis() > mosfet_open_time && !turned_on)
+        // {
+        //     Serial.println("ONNNNN");
+        //     pinMode(cansat.config.MOSFET, OUTPUT_12MA);
+        //     digitalWrite(cansat.config.MOSFET, HIGH);
+        //     turned_on = true;
+        // }
         if (millis() > mosfet_open_time)
         {
+            Serial.println("ONNNNN");
             digitalWrite(cansat.config.MOSFET, HIGH);
         }
         if (millis() > mosfet_close_time)
         {
+            Serial.println("OFFFFF");
             digitalWrite(cansat.config.MOSFET, LOW);
         }
         if (millis() > landed_time)

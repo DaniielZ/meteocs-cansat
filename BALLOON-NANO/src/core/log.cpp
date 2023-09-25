@@ -1,5 +1,6 @@
 #include "core/log.h"
-#include <LittleFS.h>
+#include <SDFS.h>
+#include <SDFS.h>
 volatile bool rfm_lora_transmiting = false; // yeah sadly wasnt able to move it into the class
 void rfm_transmission_end(void)
 {
@@ -9,11 +10,6 @@ void rfm_transmission_end(void)
 void Log::init_lora(Config::Lora_device &lora_cfg)
 {
     // platform specific
-    lora_cfg.SPI->setRX(lora_cfg.RX);
-    lora_cfg.SPI->setTX(lora_cfg.TX);
-    lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    lora_cfg.SPI->begin();
-
     int state = _lora.begin();
     if (state != RADIOLIB_ERR_NONE)
     {
@@ -23,7 +19,7 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
 
     // setting paramaters
     _lora.setFrequency(lora_cfg.FREQUENCY);
-    
+
     _lora.setOutputPower(lora_cfg.TXPOWER);
     _lora.setSpreadingFactor(lora_cfg.SPREADING);
     _lora.setCodingRate(lora_cfg.CODING_RATE);
@@ -33,14 +29,22 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
     _lora.setDio0Action(rfm_transmission_end, RISING);
     _lora_initialized = true;
 }
+bool Log::format_storage()
+{
+    return SDFS.format();
+}
 void Log::init_flash(Config &config)
 {
     if (!config.LOG_TO_STORAGE)
     {
         return;
     }
+    SDFSConfig sd_config;
+    sd_config.setCSPin(config.SD_CARD_CS);
+    sd_config.setSPI(*config.SD_CARD_SPI);
+    SDFS.setConfig(sd_config);
     // initilise flash
-    if (LittleFS.begin())
+    if (SDFS.begin())
     {
         Serial.println("FileSystem init success");
     }
@@ -51,13 +55,13 @@ void Log::init_flash(Config &config)
 
     // determine nr for final path
     int log_file_name_nr = 0;
-    while (LittleFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
+    while (SDFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
     {
         log_file_name_nr++;
     }
     _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
     // print header
-    File file = LittleFS.open(_log_file_path_final, "a+");
+    File file = SDFS.open(_log_file_path_final, "a+");
     file.println("DATA");
     if (!file)
     {
@@ -66,27 +70,14 @@ void Log::init_flash(Config &config)
     file.close();
     Serial.println("Final path: " + _log_file_path_final);
     FSInfo64 fsinfo;
-    LittleFS.info64(fsinfo);
+    SDFS.info64(fsinfo);
     Serial.println("Current size:" + String((unsigned long)fsinfo.usedBytes / 1024) + "/" + String((unsigned long)fsinfo.totalBytes / 1024));
 
     _flash_initialized = true;
 }
-void Log::init_pcserial(Config &config)
-{
-    // initilise pc serial
-    Serial.begin(config.PC_BAUDRATE);
-    if (config.WAIT_PC)
-    {
-        while (!Serial)
-        {
-            delay(500);
-        }
-    }
-}
+
 void Log::init(Config &config)
 {
-
-    init_pcserial(config);
     init_flash(config);
     init_lora(config.LORA433);
     String status = " INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_lora_initialized);
@@ -102,7 +93,7 @@ void Log::info(String msg)
         while (rfm_lora_transmiting)
         {
             // Serial.println("waiting for lora ... ");
-            delay(2);
+            delay(10);
         }
         _lora.finishTransmit();
         rfm_lora_transmiting = true;
@@ -119,7 +110,7 @@ void Log::info(String msg)
     if (_flash_initialized)
     {
         // write to flash
-        File file = LittleFS.open(_log_file_path_final, "a+");
+        File file = SDFS.open(_log_file_path_final, "a+");
         if (!file)
         {
             Serial.println("Failed opening flash file");
@@ -128,7 +119,7 @@ void Log::info(String msg)
         file.close();
     }
 }
-void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
+void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool transmit)
 {
 
     String packet;
@@ -140,14 +131,14 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     packet += ", ";
     packet += String(data.gps_sattelites);
     packet += ", ";
-    packet += String(data.total_acc, 3);
-    packet += ", ";
-    packet += String(data.gyro[0], 2);
-    packet += ", ";
-    packet += String(data.gyro[1], 2);
-    packet += ", ";
-    packet += String(data.gyro[2], 2);
-    packet += ", ";
+    // packet += String(data.total_acc, 3);
+    // packet += ", ";
+    // packet += String(data.gyro[0], 2);
+    // packet += ", ";
+    // packet += String(data.gyro[1], 2);
+    // packet += ", ";
+    // packet += String(data.gyro[2], 2);
+    // packet += ", ";
     packet += String(data.baro_height, 1);
     packet += ", ";
     packet += String(data.pressure, 2);
@@ -165,7 +156,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     packet += String(data.time);
     bool packet_sent = false;
     // sends data over lora if can be sent
-    if (!rfm_lora_transmiting && _lora_initialized)
+    if (!rfm_lora_transmiting && _lora_initialized && transmit)
     {
 
         rfm_lora_transmiting = true;
@@ -187,12 +178,12 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
         _lora.setDio0Action(rfm_transmission_end, RISING);
     }
     // apend more data to packet string which will only show up on storage
-    packet += ", ";
-    packet += String(data.acc[0], 2);
-    packet += ", ";
-    packet += String(data.acc[1], 2);
-    packet += ", ";
-    packet += String(data.acc[2], 2);
+    // packet += ", ";
+    // packet += String(data.acc[0], 2);
+    // packet += ", ";
+    // packet += String(data.acc[1], 2);
+    // packet += ", ";
+    // packet += String(data.acc[2], 2);
 
     // prints data
     if (packet_sent)
@@ -201,7 +192,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     }
     else
     {
-        Serial.print("NOTT DATA: ");
+        Serial.print("NOT DATA: ");
     }
 
     Serial.println(packet);
@@ -209,7 +200,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage)
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
     {
-        File file = LittleFS.open(_log_file_path_final, "a+");
+        File file = SDFS.open(_log_file_path_final, "a+");
         if (!file)
         {
             Serial.println("File open failed");

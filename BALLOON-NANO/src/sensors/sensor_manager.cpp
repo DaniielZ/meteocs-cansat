@@ -1,5 +1,4 @@
 #include "sensors/sensor_manager.h"
-#include "string.h"
 
 volatile bool sx1280_lora_ranging = false; // yeah sadly wasnt able to move it into the class
 void sx1280_ranging_end(void)
@@ -17,19 +16,11 @@ String Sensor_manager::init(Config &config)
 {
 
     String status;
-
-    // WIRE1
-    Wire1.setSCL(config.WIRE1_SCL);
-    Wire1.setSDA(config.WIRE1_SDA);
-    // GPS UART0
-    _gps_serial = &Serial1;
-    _gps_serial->setFIFOSize(256); // once had a prblem of not reading serial properly but this seemed to fix it
-    _gps_serial->begin(config.GPS_BAUDRATE);
     _gps_initialized = true;
 
     // BARO WIRE1
     _baro = MS5611(config.MS5611_ADDRESS);
-    if (!_baro.begin(&Wire1))
+    if (!_baro.begin(&Wire))
     {
         status += " Baro error";
     }
@@ -38,7 +29,7 @@ String Sensor_manager::init(Config &config)
         _baro_initialized = true;
     }
     // HUMIDITY WIRE1
-    if (!_humidity.begin(&Wire1))
+    if (!_humidity.begin(&Wire))
     {
         status += " Humidity error";
     }
@@ -48,7 +39,7 @@ String Sensor_manager::init(Config &config)
     }
 
     // IMU WIRE1
-    _imu = Adafruit_BNO055(55, config.BNO055_ADDRESS, &Wire1);
+    _imu = Adafruit_BNO055(55, config.BNO055_ADDRESS, &Wire);
     if (!_imu.begin())
     {
         status += " IMU error";
@@ -60,10 +51,7 @@ String Sensor_manager::init(Config &config)
     // mybe need to set axis max range TODO
     // RANGING lora
     Config::Lora_device lora_cfg = config.LORA2400;
-    lora_cfg.SPI->setRX(lora_cfg.RX);
-    lora_cfg.SPI->setTX(lora_cfg.TX);
-    lora_cfg.SPI->setSCK(lora_cfg.SCK);
-    lora_cfg.SPI->begin();
+
     int state = _lora.begin();
     if (state != RADIOLIB_ERR_NONE)
     {
@@ -84,36 +72,11 @@ String Sensor_manager::init(Config &config)
     return status;
 }
 
-// After testing it turned out to change the ranging address we needed to reaset the lora before every request
-
-void Sensor_manager::enable_ranging(Config &config)
+void Sensor_manager::read_ranging(Config &config)
 {
-    data.ranging_result = -1;
-    data.ranging_address = 0;
-    // if (_lora_wait_for_othersat)
-    // {
-    //     // check timer
-    //     if (millis() >= _wait_for_othersat_start_time + config.WAITING_FOR_OTHERSAT_TIMEOUT)
-    //     {
-    //         _lora_wait_for_othersat = false;
-    //         Serial.println("Switching back");
-    //     }
-    //     // check incoming msg
-    //     String incoming_msg;
-    //     _lora.receive(incoming_msg);
-    //     if (incoming_msg == config.RANGE_DONE)
-    //     {
-    //         _lora_wait_for_othersat = false;
-    //         Serial.println("Switching back msg");
-    //     }
-    //     else if (incoming_msg != "")
-    //     {
-    //         Serial.println("ranging recieved noise: " + incoming_msg);
-    //     }
-    //     return;
-    // }
     if (sx1280_lora_ranging)
     {
+        // check if should timeout
         if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
         {
             sx1280_lora_ranging = false;
@@ -148,21 +111,15 @@ void Sensor_manager::enable_ranging(Config &config)
         int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
         if (_lora_slave_address_index >= array_length - 1)
         {
+            // reset index
             _lora_slave_address_index = 0;
-            // send command to nanosat
-            // _lora.transmit(config.RANGE_DONE);
-            // Serial.println("Switching");
-
-            _wait_for_othersat_start_time = millis();
-            _lora_wait_for_othersat = true;
-            // start timer
         }
         else
         {
             _lora_slave_address_index++;
         }
-        //
-        // start ranging
+
+        // start ranging but first reset lora
         _lora.reset();
         int state = _lora.begin();
         if (state != RADIOLIB_ERR_NONE)
@@ -179,23 +136,8 @@ void Sensor_manager::enable_ranging(Config &config)
             _lora.setFrequency(config.LORA2400.FREQUENCY);
             _lora_initialized = true;
         }
-        // didn't work
-        // if (_lora_slave_address_index == 0)
-        // {
-        //     _lora.setFrequency(config.LORA2400.FREQUENCY);
-        // }
-        // else if (_lora_slave_address_index == 1)
-        // {
-        //     _lora.setFrequency(config.LORA2400.FREQUENCY + 2.0);
-        // }
-        // else if (_lora_slave_address_index == 2)
-        // {
-        //     _lora.setFrequency(config.LORA2400.FREQUENCY + 4.0);
-        // }
-        // else if (_lora_slave_address_index == 3)
-        // {
-        //     _lora.setFrequency(config.LORA2400.FREQUENCY + 6.0);
-        // }
+
+        // setup interrupt
         _lora.setDio1Action(sx1280_ranging_end);
         sx1280_lora_ranging = true;
         _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
@@ -257,22 +199,22 @@ void Sensor_manager::read_time()
 }
 void Sensor_manager::read_imu()
 {
-    if (!_imu_initialized)
-    {
-        Serial.println("IMU not init.. returning");
-        return;
-    }
+    // if (!_imu_initialized)
+    // {
+    //     // Serial.println("IMU not init.. returning");
+    //     return;
+    // }
 
-    sensors_event_t gyroData, accData;
-    _imu.getEvent(&gyroData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-    _imu.getEvent(&accData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-    data.acc[0] = accData.acceleration.x;
-    data.acc[1] = accData.acceleration.y;
-    data.acc[2] = accData.acceleration.z;
+    // sensors_event_t gyroData, accData;
+    // _imu.getEvent(&gyroData, Adafruit_BNO055::VECTOR_GYROSCOPE);
+    // _imu.getEvent(&accData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    // data.acc[0] = accData.acceleration.x;
+    // data.acc[1] = accData.acceleration.y;
+    // data.acc[2] = accData.acceleration.z;
 
-    data.gyro[0] = accData.gyro.x;
-    data.gyro[1] = accData.gyro.x;
-    data.gyro[2] = accData.gyro.x;
+    // data.gyro[0] = accData.gyro.x;
+    // data.gyro[1] = accData.gyro.x;
+    // data.gyro[2] = accData.gyro.x;
 }
 void Sensor_manager::read_data(Config &config)
 {
@@ -281,6 +223,6 @@ void Sensor_manager::read_data(Config &config)
     read_baro(config);
     read_humidity();
     read_imu();
-    enable_ranging(config);
+    read_ranging(config);
     read_time();
 }
