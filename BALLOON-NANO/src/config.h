@@ -80,10 +80,19 @@ public:
         .CODING_RATE = 7,
         .SIGNAL_BW = 1600,
         .SPI = &SPI1};
+    struct Ranging_slave
+    {
+        float lng;
+        float lat;
+        float height;
+        long address;
+    };
 
-    long RANGING_SLAVE_ADDRESS[4] = {0x12345671, 0x12345672, 0x12345673};
+    Ranging_slave RANGING_SLAVE_LOCATION[3] = {{.lng = 0, .lat = 0, .height = 0, .address = 0x12345671},
+                                               {.lng = 0, .lat = 0, .height = 0, .address = 0x12345672},
+                                               {.lng = 0, .lat = 0, .height = 0, .address = 0x12345673}};
+
     int RANGING_TIMEOUT = 100; // ms
-
     int SD_CARD_CS = -1;
     SPIClassRP2040 *SD_CARD_SPI = &SPI1;
 

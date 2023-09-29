@@ -71,7 +71,9 @@ String Sensor_manager::init(Config &config)
 
     return status;
 }
-
+void Sensor_manager::Ranging_data position_calculation()
+{
+}
 void Sensor_manager::read_ranging(Config &config)
 {
     if (sx1280_lora_ranging)
@@ -94,13 +96,10 @@ void Sensor_manager::read_ranging(Config &config)
         {
             data.ranging_result = _lora.getRangingResult();
             String address = String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index], HEX);
-            Serial.print(address);
-            Serial.println(" Range good: " + String(data.ranging_result));
         }
         else
         {
             data.ranging_result = -1;
-            Serial.println("Range bad" + String(_lora_range_state));
         }
         _lora_range_state = -1;
 

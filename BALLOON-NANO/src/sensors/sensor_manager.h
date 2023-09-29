@@ -8,6 +8,7 @@
 #include <Adafruit_BNO055.h>
 #include <SoftwareSerial.h>
 #include <RadioLib.h>
+#include <Array.h>
 #include "config.h"
 class Sensor_manager
 {
@@ -59,6 +60,20 @@ public:
         float ranging_result = 0;
         unsigned long time = 0; // ms
         unsigned long time_since_last_gps = 0;
+    };
+    struct Ranging_data
+    {
+        struct Ranging_result
+        {
+            float data = 0;
+            int time = 0;
+        };
+
+        Ranging_result ranging_result[3];
+        void position_calculation();
+
+        float ranging_lng = 0;
+        float ranging_lat = 0;
     };
 
     //[F] = not sent over lora
