@@ -22,5 +22,8 @@ Quite straightforward:
   According to the commands specified in the code type the needed sequence in the console 
   Data will be sent over a console so you might need to have a console that can either show a long history of coms or have a console that logs2file. To do that in platform.io add log2file in the monitor_filers tab
 
+# Ballon payload
+block diagram: https://drive.google.com/file/d/1JWPtqqIjti7fqFCMI8yH3zY4sfTKfGcq/view?usp=sharing
+
 
 
