@@ -1,5 +1,5 @@
 #include "core/gnc_math.h"
-
+// averages a value over time
 // float average_value(data_point current_data_point, unsigned long time_span, Array<data_point> &data_points)
 // {
 //     data_points.push_back(current_data_point);

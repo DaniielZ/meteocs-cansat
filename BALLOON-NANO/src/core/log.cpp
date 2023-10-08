@@ -1,13 +1,13 @@
 #include "core/log.h"
 #include <SDFS.h>
-#include <SDFS.h>
+
 volatile bool rfm_lora_transmiting = false; // yeah sadly wasnt able to move it into the class
 void rfm_transmission_end(void)
 {
     rfm_lora_transmiting = false;
 }
 
-void Log::init_lora(Config::Lora_device &lora_cfg)
+void Log::init_lora(Ranging_Wrapper::Lora_Device &lora_cfg)
 {
     // platform specific
     int state = _lora.begin();
@@ -29,9 +29,11 @@ void Log::init_lora(Config::Lora_device &lora_cfg)
     _lora.setDio0Action(rfm_transmission_end, RISING);
     _lora_initialized = true;
 }
-bool Log::format_storage()
+bool Log::format_storage(Config &config)
 {
-    return SDFS.format();
+    bool result = _flash->format();
+    init_flash(config);
+    return;
 }
 void Log::init_flash(Config &config)
 {
@@ -39,12 +41,13 @@ void Log::init_flash(Config &config)
     {
         return;
     }
+    _flash = config.FILE_SYSTEM;
     SDFSConfig sd_config;
     sd_config.setCSPin(config.SD_CARD_CS);
     sd_config.setSPI(*config.SD_CARD_SPI);
-    SDFS.setConfig(sd_config);
+    _flash->setConfig(sd_config);
     // initilise flash
-    if (SDFS.begin())
+    if (_flash->begin())
     {
         Serial.println("FileSystem init success");
     }
@@ -55,13 +58,13 @@ void Log::init_flash(Config &config)
 
     // determine nr for final path
     int log_file_name_nr = 0;
-    while (SDFS.exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
+    while (_flash->exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
     {
         log_file_name_nr++;
     }
     _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
     // print header
-    File file = SDFS.open(_log_file_path_final, "a+");
+    File file = _flash->open(_log_file_path_final, "a+");
     file.println("DATA");
     if (!file)
     {
@@ -70,7 +73,7 @@ void Log::init_flash(Config &config)
     file.close();
     Serial.println("Final path: " + _log_file_path_final);
     FSInfo64 fsinfo;
-    SDFS.info64(fsinfo);
+    _flash->info64(fsinfo);
     Serial.println("Current size:" + String((unsigned long)fsinfo.usedBytes / 1024) + "/" + String((unsigned long)fsinfo.totalBytes / 1024));
 
     _flash_initialized = true;
@@ -81,7 +84,7 @@ void Log::init(Config &config)
     init_flash(config);
     init_lora(config.LORA433);
     String status = " INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_lora_initialized);
-    this->info(status);
+    info(status);
 }
 void Log::info(String msg)
 {
@@ -110,7 +113,7 @@ void Log::info(String msg)
     if (_flash_initialized)
     {
         // write to flash
-        File file = SDFS.open(_log_file_path_final, "a+");
+        File file = _flash->open(_log_file_path_final, "a+");
         if (!file)
         {
             Serial.println("Failed opening flash file");
@@ -126,34 +129,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
     packet += String(data.gps_lat, 6);
     packet += ", ";
     packet += String(data.gps_lng, 6);
-    packet += ", ";
-    packet += String(data.gps_height);
-    packet += ", ";
-    packet += String(data.gps_sattelites);
-    packet += ", ";
-    // packet += String(data.total_acc, 3);
-    // packet += ", ";
-    // packet += String(data.gyro[0], 2);
-    // packet += ", ";
-    // packet += String(data.gyro[1], 2);
-    // packet += ", ";
-    // packet += String(data.gyro[2], 2);
-    // packet += ", ";
-    packet += String(data.baro_height, 1);
-    packet += ", ";
-    packet += String(data.pressure, 2);
-    packet += ", ";
-    packet += String(data.temperature, 2);
-    packet += ", ";
-    packet += String(data.humidity, 2);
-    packet += ", ";
-    packet += String(data.ranging_address, HEX);
-    packet += ", ";
-    packet += String(data.ranging_result, 2);
-    packet += ", ";
-    packet += String(data.time_since_last_gps);
-    packet += ", ";
-    packet += String(data.time);
+
     bool packet_sent = false;
     // sends data over lora if can be sent
     if (!rfm_lora_transmiting && _lora_initialized && transmit)
@@ -168,7 +144,6 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
         if (state != RADIOLIB_ERR_NONE)
         {
             rfm_lora_transmiting = false;
-
             Serial.println("Transmit error: " + String(state));
         }
         else
@@ -192,7 +167,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
     }
     else
     {
-        Serial.print("NOT DATA: ");
+        Serial.print("NOT  DATA: ");
     }
 
     Serial.println(packet);
@@ -200,7 +175,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
     {
-        File file = SDFS.open(_log_file_path_final, "a+");
+        File file = _flash->open(_log_file_path_final, "a+");
         if (!file)
         {
             Serial.println("File open failed");

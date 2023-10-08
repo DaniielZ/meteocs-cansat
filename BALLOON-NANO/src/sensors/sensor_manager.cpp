@@ -1,11 +1,5 @@
 #include "sensors/sensor_manager.h"
 
-volatile bool sx1280_lora_ranging = false; // can't be moved inside class. Shows if lora is actively doing ranging
-void sx1280_ranging_end(void)
-{
-    sx1280_lora_ranging = false;
-}
-
 float get_altitude(float pressure_hPa, float sea_level_hPa)
 {
     float altitude;
@@ -19,15 +13,32 @@ String Sensor_manager::init(Config &config)
     _gps_initialized = true;
 
     // BARO WIRE1
-    _baro = MS5611(config.MS5611_ADDRESS);
-    if (!_baro.begin(&Wire))
+    _outter_baro = MS5611(config.MS5611_ADDRESS);
+    if (!_outter_baro.begin(&Wire))
     {
-        status += " Baro error";
+        status += " Outter Baro error";
     }
     else
     {
-        _baro_initialized = true;
+        _outter_baro_initialized = true;
     }
+
+    // Inner baro
+    _inner_baro = Adafruit_BMP280(&Wire);
+    if (!_inner_baro.begin(config.BMP280_ADDRESS_I2C))
+    {
+        status += " Inner Baro error";
+    }
+    else
+    {
+        _inner_baro_initialized = true;
+        _inner_baro.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                                Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                                Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                                Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                                Adafruit_BMP280::STANDBY_MS_125); /* Standby time. */
+    }
+
     // HUMIDITY WIRE1
     if (!_humidity.begin(&Wire))
     {
@@ -39,142 +50,60 @@ String Sensor_manager::init(Config &config)
     }
 
     // IMU WIRE1
-    _imu = Adafruit_BNO055(55, config.BNO055_ADDRESS, &Wire);
-    if (!_imu.begin())
+    if (!_imu.init())
     {
         status += " IMU error";
     }
     else
     {
         _imu_initialized = true;
+        _imu.enableDefault();
     }
-    // INNER TEMP WIRE1
-    _inner_temp = ClosedCube::Sensor::STS35(config.STS35_ADDRESS, &Wire);
-    // OUTTER TEMP ANALOG
+    // TEMP PROBE
+    _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
+    _inner_temp_probe.address(config.STS35_ADDRESS);
+    _inner_temp_probe_initialized = true;
 
-    // mybe need to set axis max range TODO
+    // TEMP CALCULATOR
+    _temp_manager.init(config.HEATER_MOSFET, config.P, config.I, config.D);
+
     // RANGING lora
-    Config::Lora_device lora_cfg = config.LORA2400;
-
-    int state = _lora.begin();
-    if (state != RADIOLIB_ERR_NONE)
-    {
-        status += " SX1280 error (" + String(state) + ")";
-    }
-    else
-    {
-        // setting paramaters
-        _lora.setOutputPower(lora_cfg.TXPOWER);
-        _lora.setSpreadingFactor(lora_cfg.SPREADING);
-        _lora.setCodingRate(lora_cfg.CODING_RATE);
-        _lora.setBandwidth(lora_cfg.SIGNAL_BW);
-        _lora.setSyncWord(lora_cfg.SYNC_WORD);
-        _lora.setFrequency(lora_cfg.FREQUENCY);
-        _lora_initialized = true;
-    }
+    status += _lora.init(config.LORA2400_MODE, config.LORA2400);
 
     return status;
 }
 void Sensor_manager::position_calculation(Config &config)
 {
-
-    // set global space
-    float global_bs_pos_lat[3];
-    float global_bs_pos_lng[3];
-    float global_bs_pos_height[3];
-    for (int i = 0; i < 3; i++)
+    Ranging_Wrapper::Positon result;
+    if (!_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
     {
-        global_bs_pos_lat[i] = config.RANGING_SLAVES[i].lat;
-        global_bs_pos_lng[i] = config.RANGING_SLAVES[i].lng;
-        global_bs_pos_height[i] = config.RANGING_SLAVES[i].height;
+        return;
     }
-
-    // global space to local space
-    float local_bs_pos_lat[3];
-    float local_bs_pos_lng[3];
-    float local_bs_pos_height[3];
-
-    // calculate pos in local space
-
-    // local space to global space
-
-    // set results
-    data.ranging_height = 0;
-    data.ranging_lat = 0;
-    data.ranging_lng = 0;
+    // mybe do more processing
+    data.ranging_position = result;
+    _last_ranging_pos_time = millis();
 }
 
 void Sensor_manager::read_ranging(Config &config)
 {
-    if (sx1280_lora_ranging)
+    Ranging_Wrapper::Ranging_Result result;
+    if (!_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
     {
-        // check if should timeout
-        if (millis() >= _ranging_start_time + config.RANGING_TIMEOUT)
-        {
-            sx1280_lora_ranging = false;
-            _lora_range_state = RADIOLIB_ERR_RANGING_TIMEOUT;
-            _lora.clearDio1Action();
-            _lora.finishTransmit();
-        }
         return;
     }
-    if (!sx1280_lora_ranging)
+
+    data.ranging_results[_slave_index] = result;
+
+    // increment next address
+    int array_length = sizeof(config.RANGING_SLAVES) / sizeof(Ranging_Wrapper::Ranging_Slave);
+    if (_slave_index >= array_length - 1)
     {
-
-        // if available read result
-        if (_lora_range_state == RADIOLIB_ERR_NONE)
-        {
-            data.ranging_result[_lora_slave_index].distance = _lora.getRangingResult();
-            data.ranging_result[_lora_slave_index].time = millis();
-        }
-
-        // clean up
-        _lora.clearDio1Action();
-        _lora.finishTransmit();
-        _lora_range_state = -1;
-
-        // increment next address
-        int array_length = sizeof(config.RANGING_SLAVES) / sizeof(Config::Ranging_slave);
-        if (_lora_slave_index >= array_length - 1)
-        {
-            // reset index
-            _lora_slave_index = 0;
-        }
-        else
-        {
-            _lora_slave_index++;
-        }
-
-        // start ranging but first reset lora
-        _lora.reset();
-        int state = _lora.begin();
-        if (state != RADIOLIB_ERR_NONE)
-        {
-            Serial.println("Ranging not init.. returning");
-            return;
-        }
-        else
-        {
-            // setting paramaters
-            _lora.setOutputPower(config.LORA2400.TXPOWER);
-            _lora.setSpreadingFactor(config.LORA2400.SPREADING);
-            _lora.setCodingRate(config.LORA2400.CODING_RATE);
-            _lora.setBandwidth(config.LORA2400.SIGNAL_BW);
-            _lora.setSyncWord(config.LORA2400.SYNC_WORD);
-            _lora.setFrequency(config.LORA2400.FREQUENCY);
-            _lora_initialized = true;
-        }
-
-        // setup interrupt
-        _lora.setDio1Action(sx1280_ranging_end);
-        sx1280_lora_ranging = true;
-        _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVES[_lora_slave_index].address);
-
-        if (_lora_range_state != RADIOLIB_ERR_NONE)
-        {
-            Serial.println("Ranging error");
-        }
-        _ranging_start_time = millis();
+        // reset index
+        _slave_index = 0;
+    }
+    else
+    {
+        _slave_index++;
     }
 }
 void Sensor_manager::read_gps()
@@ -196,23 +125,30 @@ void Sensor_manager::read_gps()
         }
     }
 }
-void Sensor_manager::read_baro(Config &config)
+void Sensor_manager::read_outter_baro(Config &config)
 {
-    if (_baro_initialized != true)
+    if (_outter_baro_initialized != true)
     {
-        Serial.println("Baro not init.. returning");
         return;
     }
-    _baro.read(); // note no error checking => "optimistic".
-    data.pressure = _baro.getPressure();
-    data.baro_height = get_altitude(data.pressure, config.SEA_LEVEL_HPA);
-    data.outer_tempeature = _baro.getTemperature();
+    _outter_baro.read(); // note no error checking => "optimistic".
+    data.outter_baro_pressure = _outter_baro.getPressure();
+    data.outter_baro_height = get_altitude(data.outter_baro_pressure, config.SEA_LEVEL_HPA);
+    data.outter_baro_temp = _outter_baro.getTemperature();
+}
+void Sensor_manager::read_inner_baro(Config &config)
+{
+    if (_inner_baro_initialized != true)
+    {
+        return;
+    }
+    data.inner_baro_pressure = _inner_baro.readPressure();
+    data.inner_baro_temp = _inner_baro.readTemperature();
 }
 void Sensor_manager::read_humidity()
 {
     if (!_humidity_initialized)
     {
-        Serial.println("Humidity not init.. returning");
         return;
     }
     sensors_event_t humidity, temp;
@@ -224,38 +160,45 @@ void Sensor_manager::read_time()
 {
     data.time = millis();
     data.time_since_last_gps = data.time - _last_gps_packet_time;
+    data.time_since_last_ranging_pos = data.time - _last_ranging_pos_time;
+    for (int i = 0; i <= 2;)
+    {
+        data.times_since_last_ranging_result[i] = data.time - data.ranging_results[i].time;
+        i++;
+    }
 }
 void Sensor_manager::read_imu()
 {
-    // if (!_imu_initialized)
-    // {
-    //     // Serial.println("IMU not init.. returning");
-    //     return;
-    // }
+    if (!_imu_initialized)
+    {
+        return;
+    }
+    _imu.read();
 
-    // sensors_event_t gyroData, accData;
-    // _imu.getEvent(&gyroData, Adafruit_BNO055::VECTOR_GYROSCOPE);
-    // _imu.getEvent(&accData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-    // data.acc[0] = accData.acceleration.x;
-    // data.acc[1] = accData.acceleration.y;
-    // data.acc[2] = accData.acceleration.z;
+    data.acc[0] = _imu.a.x;
+    data.acc[1] = _imu.a.y;
+    data.acc[2] = _imu.a.z;
 
-    // data.gyro[0] = accData.gyro.x;
-    // data.gyro[1] = accData.gyro.x;
-    // data.gyro[2] = accData.gyro.x;
+    data.gyro[0] = _imu.g.x;
+    data.gyro[1] = _imu.g.x;
+    data.gyro[2] = _imu.g.x;
 }
-void Sensor_manager::read_inner_temperature()
+void Sensor_manager::read_temps(Config &config)
 {
-    _inner_temp._inner_temp.readTemperature() l;
+    // average values first and take into account temp limits
+    data.average_inner_temp = data.inner_temp_probe;
+    data.average_outter_temp = data.outter_temp_thermistor;
+
+    _temp_manager.calculate_heater_power(data.average_inner_temp, data.average_outter_temp);
 }
-void Sensor_manager::read_outter_tempeature(Config &config)
-{
-}
+
 void Sensor_manager::read_data(Config &config)
 {
 
     read_gps();
-    read_baro(config);
+    read_inner_baro(config);
+    read_outter_baro(config);
+    read_temps(config);
     read_humidity();
     read_imu();
     read_ranging(config);
