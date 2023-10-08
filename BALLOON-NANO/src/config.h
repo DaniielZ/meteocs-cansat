@@ -82,15 +82,15 @@ public:
         .SPI = &SPI1};
     struct Ranging_slave
     {
-        float lng;
         float lat;
+        float lng;
         float height;
         long address;
     };
 
-    Ranging_slave RANGING_SLAVE_LOCATION[3] = {{.lng = 0, .lat = 0, .height = 0, .address = 0x12345671},
-                                               {.lng = 0, .lat = 0, .height = 0, .address = 0x12345672},
-                                               {.lng = 0, .lat = 0, .height = 0, .address = 0x12345673}};
+    Ranging_slave RANGING_SLAVES[3] = {{.lat = 0, .lng = 0, .height = 0, .address = 0x12345671},
+                                       {.lat = 0, .lng = 0, .height = 0, .address = 0x12345672},
+                                       {.lat = 0, .lng = 0, .height = 0, .address = 0x12345673}};
 
     int RANGING_TIMEOUT = 100; // ms
     int SD_CARD_CS = -1;
@@ -104,6 +104,12 @@ public:
 
     // BNO055 WIRE0
     int BNO055_ADDRESS = 0x29; // or 29
+
+    // INNER TEMP WIRE0
+    int STS35_ADDRESS = 0x48;
+
+    // OUTTTER TEMP ANALOG
+    int THERMISTOR_PIN = -1;
 
     // BUZZER
     int BUZZER = -1;

@@ -6,6 +6,7 @@
 #include <Adafruit_SHTC3.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
+#include "ClosedCube_STS35.h"
 #include <SoftwareSerial.h>
 #include <RadioLib.h>
 #include <Array.h>
@@ -27,15 +28,19 @@ class Sensor_manager
     // IMU WIRE1
     Adafruit_BNO055 _imu;
     bool _imu_initialized = false;
+    // INNER TEMPERATURE WIRE1
+    ClosedCube::Sensor::STS35 _inner_temp;
+    // OUTTER TEMP
+
     // RANGING LORA SPI1
     SX1280 _lora = new Module(13, 15, 14, 18, SPI1);
     bool _lora_initialized = false;
     bool _lora_wait_for_othersat = false;
     unsigned long _ranging_start_time = 0;
-    unsigned long _wait_for_othersat_start_time = 0;
-    int _lora_slave_address_index = 0;
+    int _lora_slave_index = 0;
     int _lora_range_state;
 
+    void position_calculation(Config &config);
     void read_ranging(Config &config);
     void read_gps();
     void read_magneto();
@@ -43,37 +48,40 @@ class Sensor_manager
     void read_humidity();
     void read_imu();
     void read_time();
+    void read_inner_temperature();
+    void read_outter_tempeature(Config &config);
 
 public:
+    struct Ranging_result
+    {
+        float distance = 0;
+        int time = 0;
+    };
+
     struct Sensor_data
     {
         // array data is ordered: x y z
-        float gps_lng = 0;
         float gps_lat = 0;
+        float gps_lng = 0;
         float gps_height = 0; // m
         int gps_sattelites = 0;
+
         float baro_height = 0; // m
         float pressure = 0;    // Pa
-        float temperature = 0; // C
-        float humidity = 0;    // %
-        long ranging_address = 0;
-        float ranging_result = 0;
-        unsigned long time = 0; // ms
-        unsigned long time_since_last_gps = 0;
-    };
-    struct Ranging_data
-    {
-        struct Ranging_result
-        {
-            float data = 0;
-            int time = 0;
-        };
+
+        float inner_temperature = 0; // C
+        float outer_tempeature = 0;  // C
+
+        float humidity = 0; // %
 
         Ranging_result ranging_result[3];
-        void position_calculation();
-
-        float ranging_lng = 0;
         float ranging_lat = 0;
+        float ranging_lng = 0;
+        float ranging_height = 0;
+
+        unsigned long time = 0; // ms
+        unsigned long time_since_last_gps = 0;
+        unsigned long time_since_last_ranging_pos = 0;
     };
 
     //[F] = not sent over lora

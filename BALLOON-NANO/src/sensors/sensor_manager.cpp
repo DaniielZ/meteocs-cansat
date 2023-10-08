@@ -1,6 +1,6 @@
 #include "sensors/sensor_manager.h"
 
-volatile bool sx1280_lora_ranging = false; // yeah sadly wasnt able to move it into the class
+volatile bool sx1280_lora_ranging = false; // can't be moved inside class. Shows if lora is actively doing ranging
 void sx1280_ranging_end(void)
 {
     sx1280_lora_ranging = false;
@@ -48,6 +48,10 @@ String Sensor_manager::init(Config &config)
     {
         _imu_initialized = true;
     }
+    // INNER TEMP WIRE1
+    _inner_temp = ClosedCube::Sensor::STS35(config.STS35_ADDRESS, &Wire);
+    // OUTTER TEMP ANALOG
+
     // mybe need to set axis max range TODO
     // RANGING lora
     Config::Lora_device lora_cfg = config.LORA2400;
@@ -71,9 +75,35 @@ String Sensor_manager::init(Config &config)
 
     return status;
 }
-void Sensor_manager::Ranging_data position_calculation()
+void Sensor_manager::position_calculation(Config &config)
 {
+
+    // set global space
+    float global_bs_pos_lat[3];
+    float global_bs_pos_lng[3];
+    float global_bs_pos_height[3];
+    for (int i = 0; i < 3; i++)
+    {
+        global_bs_pos_lat[i] = config.RANGING_SLAVES[i].lat;
+        global_bs_pos_lng[i] = config.RANGING_SLAVES[i].lng;
+        global_bs_pos_height[i] = config.RANGING_SLAVES[i].height;
+    }
+
+    // global space to local space
+    float local_bs_pos_lat[3];
+    float local_bs_pos_lng[3];
+    float local_bs_pos_height[3];
+
+    // calculate pos in local space
+
+    // local space to global space
+
+    // set results
+    data.ranging_height = 0;
+    data.ranging_lat = 0;
+    data.ranging_lng = 0;
 }
+
 void Sensor_manager::read_ranging(Config &config)
 {
     if (sx1280_lora_ranging)
@@ -86,36 +116,33 @@ void Sensor_manager::read_ranging(Config &config)
             _lora.clearDio1Action();
             _lora.finishTransmit();
         }
+        return;
     }
     if (!sx1280_lora_ranging)
     {
 
-        data.ranging_address = config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index];
         // if available read result
         if (_lora_range_state == RADIOLIB_ERR_NONE)
         {
-            data.ranging_result = _lora.getRangingResult();
-            String address = String(config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index], HEX);
+            data.ranging_result[_lora_slave_index].distance = _lora.getRangingResult();
+            data.ranging_result[_lora_slave_index].time = millis();
         }
-        else
-        {
-            data.ranging_result = -1;
-        }
-        _lora_range_state = -1;
 
+        // clean up
         _lora.clearDio1Action();
         _lora.finishTransmit();
+        _lora_range_state = -1;
 
         // increment next address
-        int array_length = sizeof(config.RANGING_SLAVE_ADDRESS) / sizeof(long);
-        if (_lora_slave_address_index >= array_length - 1)
+        int array_length = sizeof(config.RANGING_SLAVES) / sizeof(Config::Ranging_slave);
+        if (_lora_slave_index >= array_length - 1)
         {
             // reset index
-            _lora_slave_address_index = 0;
+            _lora_slave_index = 0;
         }
         else
         {
-            _lora_slave_address_index++;
+            _lora_slave_index++;
         }
 
         // start ranging but first reset lora
@@ -123,6 +150,8 @@ void Sensor_manager::read_ranging(Config &config)
         int state = _lora.begin();
         if (state != RADIOLIB_ERR_NONE)
         {
+            Serial.println("Ranging not init.. returning");
+            return;
         }
         else
         {
@@ -139,7 +168,7 @@ void Sensor_manager::read_ranging(Config &config)
         // setup interrupt
         _lora.setDio1Action(sx1280_ranging_end);
         sx1280_lora_ranging = true;
-        _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVE_ADDRESS[_lora_slave_address_index]);
+        _lora_range_state = _lora.startRanging(true, config.RANGING_SLAVES[_lora_slave_index].address);
 
         if (_lora_range_state != RADIOLIB_ERR_NONE)
         {
@@ -177,7 +206,7 @@ void Sensor_manager::read_baro(Config &config)
     _baro.read(); // note no error checking => "optimistic".
     data.pressure = _baro.getPressure();
     data.baro_height = get_altitude(data.pressure, config.SEA_LEVEL_HPA);
-    data.temperature = _baro.getTemperature();
+    data.outer_tempeature = _baro.getTemperature();
 }
 void Sensor_manager::read_humidity()
 {
@@ -215,6 +244,13 @@ void Sensor_manager::read_imu()
     // data.gyro[1] = accData.gyro.x;
     // data.gyro[2] = accData.gyro.x;
 }
+void Sensor_manager::read_inner_temperature()
+{
+    _inner_temp._inner_temp.readTemperature() l;
+}
+void Sensor_manager::read_outter_tempeature(Config &config)
+{
+}
 void Sensor_manager::read_data(Config &config)
 {
 
@@ -223,5 +259,6 @@ void Sensor_manager::read_data(Config &config)
     read_humidity();
     read_imu();
     read_ranging(config);
+    position_calculation(config);
     read_time();
 }
