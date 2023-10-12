@@ -70,9 +70,9 @@ public:
 
     Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::MASTER;
 
-    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {.lat = 0, .lng = 0, .height = 0}, .address = 0x12345671},
-                                                        {.position = {.lat = 0, .lng = 0, .height = 0}, .address = 0x12345672},
-                                                        {.position = {.lat = 0, .lng = 0, .height = 0}, .address = 0x12345673}};
+    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345671},
+                                                        {.position = {0, 0, 0}, .address = 0x12345672},
+                                                        {.position = {0, 0, 0}, .address = 0x12345673}};
 
     int RANGING_TIMEOUT = 200; // ms
     int SD_CARD_CS = -1;

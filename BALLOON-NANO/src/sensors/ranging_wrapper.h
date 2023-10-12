@@ -10,25 +10,28 @@ public:
         SLAVE,
         MASTER
     };
-
+    struct Position;
     struct Position_Local
     {
         double x = 0;
         double y = 0;
         double z = 0;
         double length();
-        Position_Local operator-(Position_Local &other);
-        Position_Local operator+(Position_Local &other);
+        Ranging_Wrapper::Position to_geodetic();
+        Position_Local cross(Position_Local other);
+        Position_Local operator-(Position_Local const &other);
+        Position_Local operator+(Position_Local const &other);
+        Position_Local operator*(double const &other);
+        double _earth_radius = 6378000; // m
     };
-
     struct Position
     {
+        // Position() = default;
+        Position(double lat_ = 0, double lng_ = 0, double height_ = 0) : lat(lat_), lng(lng_), height(height_) {}
         double lat = 0;
         double lng = 0;
         double height = 0;
         Position_Local to_absolute_cartesian();
-
-    private:
         double _earth_radius = 6378000; // m
     };
     struct Ranging_Slave
@@ -67,8 +70,7 @@ private:
     Mode _mode;
     Lora_Device _config;
     double distance_between_earth_cordinates_m(Position p1, Position p2);
-
-    void local_point_to_global_space(Position_Local movable_point, Position p[3], Position &result);
+    Position local_point_to_global_space(Position_Local movable_point, Position p[3], Position_Local p_local[3]);
 
 public:
     String init(Mode mode, Lora_Device config);

@@ -6,13 +6,28 @@ void sx1280_ranging_end(void)
 {
     sx1280_lora_ranging = false;
 }
-
+Ranging_Wrapper::Position Ranging_Wrapper::Position_Local::to_geodetic()
+{
+    Position result;
+    result.lat = asin(this->z / _earth_radius);
+    result.lng = atan2(this->y, this->x);
+    result.height = this->length() - _earth_radius;
+    return result;
+}
 double Ranging_Wrapper::Position_Local::length()
 {
     return sqrt(pow(this->x, 2) + pow(this->x, 2) + pow(this->x, 2));
 }
+Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::cross(Position_Local other)
+{
+    Position_Local result;
+    result.x = (this->y * other.z) - (this->z * other.y);
+    result.y = (this->z * other.x) - (this->x * other.z);
+    result.z = (this->x * other.y) - (this->y * other.x);
+    return result;
+}
 
-Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator-(Position_Local &other)
+Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator-(Position_Local const &other)
 {
     Position_Local result;
     result.x = this->x - other.x;
@@ -20,12 +35,21 @@ Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator-(Posit
     result.z = this->z - other.z;
     return result;
 }
-Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator+(Position_Local &other)
+Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator+(Position_Local const &other)
 {
     Position_Local result;
     result.x = this->x + other.x;
     result.y = this->y + other.y;
     result.z = this->z + other.z;
+    return result;
+}
+
+Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator*(double const &other)
+{
+    Position_Local result;
+    result.x = this->x * other;
+    result.y = this->y * other;
+    result.z = this->z * other;
     return result;
 }
 
@@ -114,15 +138,56 @@ void Ranging_Wrapper::slave_reenable()
     }
 }
 
-void Ranging_Wrapper::local_point_to_global_space(Position_Local movable_point, Position p[3], Position &result)
+Ranging_Wrapper::Position Ranging_Wrapper::local_point_to_global_space(Position_Local movable_point, Position p[3], Position_Local p_local[3])
 {
-    // calculate plane angles
 
-    // make transformation matrix
+    // convert fixed global points to cartesian
+    Position_Local p_cartesian[3];
+    p_cartesian[0] = p[0].to_absolute_cartesian();
+    p_cartesian[1] = p[1].to_absolute_cartesian();
+    p_cartesian[2] = p[2].to_absolute_cartesian();
 
-    // apply transformation matrix
-    result;
+    Position_Local result_local;
+    // move the global point along the local points x axis
+    Position_Local d_1_0 = p_cartesian[1] - p_cartesian[0];
+    double d_1_0_scale = movable_point.x / d_1_0.length();
+    Position_Local x_offset = d_1_0 * d_1_0_scale;
+
+    // move the global point along the local y axis
+    // first make a point that will make a perpendicular movment along local y axis when moving from the new point torwards p2
+    Position_Local d_1_0_mid = p_cartesian[1] - p_cartesian[0];
+    double d_1_0_mid_scale = p_local[2].x / p_local[1].x;
+    Position_Local y_offset = d_1_0_mid * d_1_0_mid_scale;
+
+    // use this point to move torwards p2
+    Position_Local d_mid_2 = p_cartesian[2] - d_1_0_mid;
+    double d_mid_2_scale = movable_point.y / p_local[2].y;
+    d_mid_2 = d_mid_2 * d_mid_2_scale;
+
+    // calculate cross product and move torwords the Z direction (check that the cross product has the right sequance by checking which turns out in the right direction)
+    Position_Local d_2_0 = p_cartesian[2] - p_cartesian[0];
+
+    Position_Local z_normalied;
+    if ((d_1_0.cross(d_2_0)).to_geodetic().height > 0)
+    {
+        // we can use this cross product
+        z_normalied = d_1_0.cross(d_2_0);
+    }
+    else
+    {
+        // use other cross product
+        z_normalied = d_2_0.cross(d_1_0);
+    }
+    // divide to normalize
+    z_normalied = z_normalied * pow(z_normalied.length(), -1);
+    // to get the z offset multiply normalized vector by the local space z value
+    Position_Local z_offset = z_normalied * p_local->z;
+
+    // apply offsets
+    Position_Local result = p_cartesian[0] + x_offset + y_offset + z_offset;
+    return result.to_geodetic();
 }
+
 // the x-axis goes through long,lat (0,0), so longitude 0 meets the equator;
 // the y - axis goes through(0, 90);
 // and the z - axis goes through the poles
@@ -132,8 +197,8 @@ Ranging_Wrapper::Position_Local Ranging_Wrapper::Position::to_absolute_cartesian
     double lat = this->lat * DEG_TO_RAD;
     double lng = this->lng * DEG_TO_RAD;
 
-    result.x = _earth_radius * cos(lat) * sin(lng);
-    result.y = _earth_radius * cos(lat) * sin(lng);
+    result.x = (_earth_radius + this->height) * cos(lat) * sin(lng);
+    result.y = (_earth_radius + this->height) * cos(lat) * sin(lng);
     result.z = (_earth_radius + this->height) * sin(lat);
 
     return result;
@@ -141,33 +206,17 @@ Ranging_Wrapper::Position_Local Ranging_Wrapper::Position::to_absolute_cartesian
 
 double Ranging_Wrapper::distance_between_earth_cordinates_m(Position p1, Position p2)
 {
-    // Position d_pos = {};
-    // d_pos.lat = DEG_TO_RAD * (p2.lat - p1.lat);
-    // d_pos.lng = DEG_TO_RAD * (p2.lng - p1.lng);
-    // d_pos.height = p2.height - p1.height;
-
-    // p1.lat = DEG_TO_RAD * p1.lat;
-    // p2.lat = DEG_TO_RAD * p2.lat;
-
-    // double a = sin(d_pos.lat / 2.0) * sin(d_pos.lat / 2.0) + sin(d_pos.lng / 2.0) * sin(d_pos.lng / 2.0) * cos(p1.lat) * cos(p2.lat);
-    // double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
-    // double xy_distance = c * _earth_radius;
-
-    // double xyz_distance = sqrt(pow(xy_distance, 2) + pow(d_pos.height, 2));
-
-    return;
+    Position_Local d_pos = (p1.to_absolute_cartesian()) - (p2.to_absolute_cartesian());
+    double result = d_pos.length();
+    return result;
 }
 
 bool Ranging_Wrapper::trilaterate_position(Ranging_Result readings[3], Ranging_Slave slaves[3], Position &result)
 {
-    /// set global space
     Position global_bs_pos[3];
-
-    for (int i = 0; i < 3; i++)
-    {
-        global_bs_pos[i] = slaves[i].position;
-    }
-
+    global_bs_pos[0] = slaves[0].position;
+    global_bs_pos[1] = slaves[1].position;
+    global_bs_pos[2] = slaves[2].position;
     /// global space to local space
     Position_Local local_bs_pos[3];
     // lets set the 0, 0, 0 as the first index and base everything of that
@@ -191,12 +240,7 @@ bool Ranging_Wrapper::trilaterate_position(Ranging_Result readings[3], Ranging_S
     calculated_local_pos.z = sqrt(pow(readings[1].distance, 2) - pow(calculated_local_pos.x, 2) - pow(calculated_local_pos.y, 2)); // this can be either positive or negative
 
     /// local space to global space
-    Position calculated_global_pos;
-    // calculate transofrmation matrix to do that first you need to calculate local space angles relative to global
-    // x
-    // y
-    // z
-
+    Position calculated_global_pos = local_point_to_global_space(calculated_local_pos, global_bs_pos, local_bs_pos);
     /// set results
     result = calculated_global_pos;
     return true;
