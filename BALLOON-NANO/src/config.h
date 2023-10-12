@@ -116,7 +116,7 @@ public:
     // detection parameters
 
     int TIME_FROM_LAUNCH_TO_EJECT = 20000; // ms
-    int MOSFET_ON_TIME = 10000; // ms
+    int MOSFET_ON_TIME = 10000;            // ms
 
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String RANGE_DONE = "range_done"; // used by both sats to tell which one should be transmititing

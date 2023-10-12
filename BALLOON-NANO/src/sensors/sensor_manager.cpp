@@ -13,15 +13,15 @@ String Sensor_manager::init(Config &config)
     _gps_initialized = true;
 
     // BARO WIRE1
-    _outter_baro = MS5611(config.MS5611_ADDRESS);
-    if (!_outter_baro.begin(&Wire))
-    {
-        status += " Outter Baro error";
-    }
-    else
-    {
-        _outter_baro_initialized = true;
-    }
+    // _outter_baro = MS5611(config.MS5611_ADDRESS);
+    // if (!_outter_baro.begin(&Wire))
+    // {
+    //     status += " Outter Baro error";
+    // }
+    // else
+    // {
+    //     _outter_baro_initialized = true;
+    // }
 
     // Inner baro
     _inner_baro = Adafruit_BMP280(&Wire);
@@ -72,17 +72,17 @@ String Sensor_manager::init(Config &config)
 
     return status;
 }
-void Sensor_manager::position_calculation(Config &config)
-{
-    Ranging_Wrapper::Positon result;
-    if (!_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
-    {
-        return;
-    }
-    // mybe do more processing
-    data.ranging_position = result;
-    _last_ranging_pos_time = millis();
-}
+// void Sensor_manager::position_calculation(Config &config)
+// {
+//     Ranging_Wrapper::Position result;
+//     if (!_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
+//     {
+//         return;
+//     }
+//     // mybe do more processing
+//     data.ranging_position = result;
+//     _last_ranging_pos_time = millis();
+// }
 
 void Sensor_manager::read_ranging(Config &config)
 {
@@ -122,20 +122,21 @@ void Sensor_manager::read_gps()
             data.gps_lng = _gps.location.lng();
             data.gps_height = _gps.altitude.meters();
             data.gps_sattelites = _gps.satellites.value();
+            data.gps_time = _gps.time.value();
         }
     }
 }
-void Sensor_manager::read_outter_baro(Config &config)
-{
-    if (_outter_baro_initialized != true)
-    {
-        return;
-    }
-    _outter_baro.read(); // note no error checking => "optimistic".
-    data.outter_baro_pressure = _outter_baro.getPressure();
-    data.outter_baro_height = get_altitude(data.outter_baro_pressure, config.SEA_LEVEL_HPA);
-    data.outter_baro_temp = _outter_baro.getTemperature();
-}
+// void Sensor_manager::read_outter_baro(Config &config)
+// {
+//     if (_outter_baro_initialized != true)
+//     {
+//         return;
+//     }
+//     _outter_baro.read(); // note no error checking => "optimistic".
+//     data.outter_baro_pressure = _outter_baro.getPressure();
+//     data.outter_baro_height = get_altitude(data.outter_baro_pressure, config.SEA_LEVEL_HPA);
+//     data.outter_baro_temp = _outter_baro.getTemperature();
+// }
 void Sensor_manager::read_inner_baro(Config &config)
 {
     if (_inner_baro_initialized != true)
@@ -197,7 +198,7 @@ void Sensor_manager::read_data(Config &config)
 
     read_gps();
     read_inner_baro(config);
-    read_outter_baro(config);
+    // read_outter_baro(config);
     read_temps(config);
     read_humidity();
     read_imu();

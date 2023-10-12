@@ -1,6 +1,7 @@
 #pragma once
 #include "config.h"
-#include "states/armed_state.h"
+#include "states/ascent_state.h"
+#include "states/descent_state.h"
 #include "states/prepare_state.h"
 #include "core/log.h"
 #include "core/sound.h"
@@ -17,7 +18,8 @@ public:
     enum State
     {
         PREP,
-        ARMED,
+        ASCENT,
+        DESCENT,
     };
 
     State current_state = State::PREP;

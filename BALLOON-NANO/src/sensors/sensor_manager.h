@@ -62,9 +62,9 @@ public:
         float gps_height = 0; // m
         int gps_sattelites = 0;
 
-        float outter_baro_height = 0; // m
-        float outter_baro_temp = 0;
-        float outter_baro_pressure = 0; // Pa
+        // float outter_baro_height = 0; // m
+        // float outter_baro_temp = 0;
+        // float outter_baro_pressure = 0; // Pa
 
         float inner_baro_pressure = 0;
         float inner_baro_temp = 0;
@@ -82,12 +82,13 @@ public:
         float gyro[3];
 
         Ranging_Wrapper::Ranging_Result ranging_results[3];
-        Ranging_Wrapper::Positon ranging_position;
+        Ranging_Wrapper::Position ranging_position;
 
         unsigned long time = 0; // ms
         unsigned long time_since_last_gps = 0;
         unsigned long times_since_last_ranging_result[3];
         unsigned long time_since_last_ranging_pos = 0;
+        unsigned long gps_time = 0;
     };
 
     //[F] = not sent over lora

@@ -6,6 +6,6 @@
 // or enabling debug output
 
 #define RADIOLIB_DEBUG
-//#define RADIOLIB_VERBOSE
+// #define RADIOLIB_VERBOSE
 
 #endif

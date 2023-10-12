@@ -33,7 +33,7 @@ bool Log::format_storage(Config &config)
 {
     bool result = _flash->format();
     init_flash(config);
-    return;
+    return result;
 }
 void Log::init_flash(Config &config)
 {
@@ -124,11 +124,10 @@ void Log::info(String msg)
 }
 void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool transmit)
 {
+    String sendable_packet;
+    String logable_packet;
 
-    String packet;
-    packet += String(data.gps_lat, 6);
-    packet += ", ";
-    packet += String(data.gps_lng, 6);
+    data_to_packet(data, sendable_packet, logable_packet);
 
     bool packet_sent = false;
     // sends data over lora if can be sent
@@ -140,7 +139,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
         // Serial.println("size of packet:" + String(packet.length()));
 
         rfm_lora_transmiting = true;
-        int state = _lora.startTransmit(packet);
+        int state = _lora.startTransmit(sendable_packet);
         if (state != RADIOLIB_ERR_NONE)
         {
             rfm_lora_transmiting = false;
@@ -152,13 +151,6 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
         }
         _lora.setDio0Action(rfm_transmission_end, RISING);
     }
-    // apend more data to packet string which will only show up on storage
-    // packet += ", ";
-    // packet += String(data.acc[0], 2);
-    // packet += ", ";
-    // packet += String(data.acc[1], 2);
-    // packet += ", ";
-    // packet += String(data.acc[2], 2);
 
     // prints data
     if (packet_sent)
@@ -170,7 +162,7 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
         Serial.print("NOT  DATA: ");
     }
 
-    Serial.println(packet);
+    Serial.println(logable_packet);
 
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
@@ -181,9 +173,75 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
             Serial.println("File open failed");
         }
 
-        file.println(packet);
+        file.println(logable_packet);
         file.close();
     }
+}
+void data_to_packet(Sensor_manager::Sensor_data &data, String &result_log, String &result_sent)
+{
+    String packet;
+    packet += String(data.gps_lat, 6);
+    packet += ", ";
+    packet += String(data.gps_lng, 6);
+    packet += ", ";
+    packet += String(data.gps_height, 2);
+    packet += ", ";
+    packet += String(data.gps_sattelites);
+    packet += ", ";
+    packet += String(data.ranging_results[0].distance, 2);
+    packet += ", ";
+    packet += String(data.ranging_results[1].distance, 2);
+    packet += ", ";
+    packet += String(data.ranging_results[2].distance, 2);
+    packet += ", ";
+    packet += String(data.times_since_last_ranging_result[0]);
+    packet += ", ";
+    packet += String(data.times_since_last_ranging_result[1]);
+    packet += ", ";
+    packet += String(data.times_since_last_ranging_result[2]);
+    packet += ", ";
+    packet += String(data.ranging_position.lat, 6);
+    packet += ", ";
+    packet += String(data.ranging_position.lng, 6);
+    packet += ", ";
+    packet += String(data.ranging_position.height, 2);
+    packet += ", ";
+    packet += String(data.time_since_last_ranging_pos);
+    packet += ", ";
+    packet += String(data.inner_baro_pressure, 3);
+    packet += ", ";
+    packet += String(data.average_inner_temp, 2);
+    packet += ", ";
+    packet += String(data.average_outter_temp, 2);
+    packet += ", ";
+    packet += String(data.heater_power);
+    packet += ", ";
+    packet += String(data.acc[0], 4);
+    packet += ", ";
+    packet += String(data.acc[1], 4);
+    packet += ", ";
+    packet += String(data.acc[2], 4);
+    packet += ", ";
+    packet += String(data.time);
+
+    result_sent = packet;
+
+    packet += ", ";
+    packet += String(data.gps_time);
+    packet += ", ";
+    packet += String(data.gyro[0]);
+    packet += ", ";
+    packet += String(data.gyro[1]);
+    packet += ", ";
+    packet += String(data.gyro[2]);
+    packet += ", ";
+    packet += String(data.outter_temp_thermistor);
+    packet += ", ";
+    packet += String(data.inner_baro_temp);
+    packet += ", ";
+    packet += String(data.inner_temp_probe);
+
+    result_log = packet;
 }
 void Log::read(String &msg)
 {

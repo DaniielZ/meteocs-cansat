@@ -14,6 +14,7 @@ class Log
     bool _flash_initialized = false;
     void init_flash(Config &config);
     void init_lora(Ranging_Wrapper::Lora_Device &lora_cfg);
+    void data_to_packet(Sensor_manager::Sensor_data &data, String &result_log, String &result_sent);
 
 public:
     void init(Config &config);

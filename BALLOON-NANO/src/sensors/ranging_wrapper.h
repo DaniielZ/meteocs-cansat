@@ -10,15 +10,30 @@ public:
         SLAVE,
         MASTER
     };
-    struct Positon
+
+    struct Position_Local
     {
-        float lat = 0;
-        float lng = 0;
-        float height = 0;
+        double x = 0;
+        double y = 0;
+        double z = 0;
+        double length();
+        Position_Local operator-(Position_Local &other);
+        Position_Local operator+(Position_Local &other);
+    };
+
+    struct Position
+    {
+        double lat = 0;
+        double lng = 0;
+        double height = 0;
+        Position_Local to_absolute_cartesian();
+
+    private:
+        double _earth_radius = 6378000; // m
     };
     struct Ranging_Slave
     {
-        Positon position;
+        Position position; // in degrees
         long address;
     };
     struct Lora_Device
@@ -38,7 +53,7 @@ public:
     };
     struct Ranging_Result
     {
-        float distance = 0;
+        double distance = 0;
         int time = 0;
     };
 
@@ -51,10 +66,13 @@ private:
 
     Mode _mode;
     Lora_Device _config;
+    double distance_between_earth_cordinates_m(Position p1, Position p2);
+
+    void local_point_to_global_space(Position_Local movable_point, Position p[3], Position &result);
 
 public:
     String init(Mode mode, Lora_Device config);
     bool master_read(Ranging_Slave slave, Ranging_Result &result, long int timeout);
     void slave_reenable();
-    bool trilaterate_position(Ranging_Result readings[3], Ranging_Slave slaves[3], Positon &result);
+    bool trilaterate_position(Ranging_Result readings[3], Ranging_Slave slaves[3], Position &result);
 };
