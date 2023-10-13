@@ -5,7 +5,7 @@ class Temperature_Manager
 {
     // Heating
     int _heater_pin;
-    int _desired_temp;
+    float _desired_temp; // in C
     const int _pwm_min = 0;
     const int _pwm_max = 255;
 
@@ -28,7 +28,7 @@ class Temperature_Manager
     // Special PID constants
     const float _allowed_overshoot = 0.05;
     const float _integral_penalty = 5;
-    
+
     // Timing
     unsigned long int _last_pid_calculation_time = 0;
 

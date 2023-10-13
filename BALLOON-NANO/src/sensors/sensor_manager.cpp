@@ -65,7 +65,7 @@ String Sensor_manager::init(Config &config)
     _inner_temp_probe_initialized = true;
 
     // TEMP CALCULATOR
-    _temp_manager.init(config.HEATER_MOSFET, config.P, config.I, config.D);
+    _temp_manager.init(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
 
     // RANGING lora
     status += _lora.init(config.LORA2400_MODE, config.LORA2400);

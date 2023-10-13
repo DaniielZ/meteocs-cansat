@@ -101,10 +101,12 @@ public:
     int BUZZER_ERROR_BEEPS = 20;
 
     // HEATER
-    int HEATER_MOSFET = 1; // TBD
-    float P = 0;
-    float I = 0;
-    float D = 0;
+    int HEATER_MOSFET = 1;            // TBD
+    float DESIRED_HEATER_TEMP = 35.0; // in C
+    // float P = 0; // set in temp manager.h
+    // float I = 0;
+    // float D = 0;
+
     // Parachute
     int PARACHUTE_MOSFET = -1;   // TBD
     int LAUNCH_RAIL_SWITCH = -1; // TBD
