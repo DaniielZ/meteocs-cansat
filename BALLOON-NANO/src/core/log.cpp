@@ -91,6 +91,7 @@ void Log::init(Config &config)
 void Log::info(String msg)
 {
     // prints message to serial
+    msg = "!" + msg;
     Serial.println(msg);
     // sends message over lora
     if (_lora_initialized)
@@ -156,17 +157,19 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
     }
 
     // prints data
-    if (packet_sent)
-    {
-        Serial.print("SEND DATA: ");
-    }
-    else
-    {
-        Serial.print("NOT  DATA: ");
-    }
+    // if (packet_sent)
+    // {
+    //     Serial.print("SEND DATA: ");
+    // }
+    // else
+    // {
+    //     Serial.print("NOT  DATA: ");
+    // }
 
-    Serial.println(logable_packet);
-
+    // Serial.println(logable_packet);
+    Serial.print("/*");
+    Serial.print(sendable_packet);
+    Serial.println("*/");
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
     {
@@ -184,68 +187,71 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
 void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_log, String &result_sent)
 {
     String packet;
-    packet += String(data.gps_lat, 6);
+    packet += String(data.gps_lat, 6); // 1
     packet += ", ";
-    packet += String(data.gps_lng, 6);
+    packet += String(data.gps_lng, 6); // 2
     packet += ", ";
-    packet += String(data.gps_height, 2);
+    packet += String(data.gps_height, 2); // 3
     packet += ", ";
-    packet += String(data.gps_sattelites);
+    packet += String(data.gps_sattelites); // 4
     packet += ", ";
-    packet += String(data.ranging_results[0].distance, 2);
+    packet += String(data.ranging_results[0].distance, 2); // 5
     packet += ", ";
-    packet += String(data.ranging_results[1].distance, 2);
+    packet += String(data.ranging_results[1].distance, 2); // 6
     packet += ", ";
-    packet += String(data.ranging_results[2].distance, 2);
+    packet += String(data.ranging_results[2].distance, 2); // 7
     packet += ", ";
-    packet += String(data.times_since_last_ranging_result[0]);
+    packet += String(data.times_since_last_ranging_result[0]); // 8
     packet += ", ";
-    packet += String(data.times_since_last_ranging_result[1]);
+    packet += String(data.times_since_last_ranging_result[1]); // 9
     packet += ", ";
-    packet += String(data.times_since_last_ranging_result[2]);
+    packet += String(data.times_since_last_ranging_result[2]); // 10
     packet += ", ";
-    packet += String(data.ranging_position.lat, 6);
+    packet += String(data.ranging_position.lat, 6); // 11
     packet += ", ";
-    packet += String(data.ranging_position.lng, 6);
+    packet += String(data.ranging_position.lng, 6); // 12
     packet += ", ";
-    packet += String(data.ranging_position.height, 2);
+    packet += String(data.ranging_position.height, 2); // 13
     packet += ", ";
-    packet += String(data.time_since_last_ranging_pos);
+    packet += String(data.time_since_last_ranging_pos); // 14
     packet += ", ";
-    packet += String(data.inner_baro_pressure, 3);
+    packet += String(data.inner_baro_pressure, 3); // 15
     packet += ", ";
-    packet += String(data.average_inner_temp, 2);
+    packet += String(data.average_inner_temp, 2); // 16
     packet += ", ";
-    packet += String(data.average_outter_temp, 2);
+    packet += String(data.average_outter_temp, 2); // 17
     packet += ", ";
-    packet += String(data.heater_power);
+    packet += String(data.heater_power); // 18
     packet += ", ";
-    packet += String(data.acc[0], 4);
+    packet += String(data.acc[0], 4); // 19
     packet += ", ";
-    packet += String(data.acc[1], 4);
+    packet += String(data.acc[1], 4); // 20
     packet += ", ";
-    packet += String(data.acc[2], 4);
+    packet += String(data.acc[2], 4); // 21
     packet += ", ";
-    packet += String(data.time);
+    packet += String(data.time_since_last_gps); // 22
+    packet += ", ";
+    packet += String(data.time); // 23
 
     result_sent = packet;
 
-    packet += ", ";
-    packet += String(data.gps_time);
-    packet += ", ";
-    packet += String(data.gyro[0]);
-    packet += ", ";
-    packet += String(data.gyro[1]);
-    packet += ", ";
-    packet += String(data.gyro[2]);
-    packet += ", ";
-    packet += String(data.outter_temp_thermistor);
-    packet += ", ";
-    packet += String(data.inner_baro_temp);
-    packet += ", ";
-    packet += String(data.inner_temp_probe);
+    String log_packet = packet;
+    log_packet += ", ";
+    log_packet += String(data.gps_time); // 24
+    log_packet += ", ";
+    log_packet += String(data.gyro[0]); // 25
+    log_packet += ", ";
+    log_packet += String(data.gyro[1]); // 26
+    log_packet += ", ";
+    log_packet += String(data.gyro[2]); // 27
+    log_packet += ", ";
+    log_packet += String(data.outter_temp_thermistor); // 28
+    log_packet += ", ";
+    log_packet += String(data.inner_baro_temp); // 29
+    log_packet += ", ";
+    log_packet += String(data.inner_temp_probe); // 30
 
-    result_log = packet;
+    result_log = log_packet;
 }
 void Log::read(String &msg)
 {

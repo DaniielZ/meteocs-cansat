@@ -79,24 +79,31 @@ void Sensor_manager::position_calculation(Config &config)
 
 void Sensor_manager::read_ranging(Config &config)
 {
-    Ranging_Wrapper::Ranging_Result result;
-    if (!_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
-    {
-        return;
-    }
-
-    data.ranging_results[_slave_index] = result;
-
     // increment next address
-    int array_length = sizeof(config.RANGING_SLAVES) / sizeof(Ranging_Wrapper::Ranging_Slave);
-    if (_slave_index >= array_length - 1)
+    Ranging_Wrapper::Ranging_Result result = {0, 0};
+    bool move_to_next_slave = false;
+    if (_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
     {
-        // reset index
-        _slave_index = 0;
+        move_to_next_slave = true;
     }
-    else
+    // check if something was read
+    if (result.distance != 0 && result.time != 0)
     {
+        data.ranging_results[_slave_index] = result;
+        Serial.println(_slave_index);
+    }
+    // check if should move to next slave
+    if (move_to_next_slave)
+    {
+        int array_length = 3;
         _slave_index++;
+        if (_slave_index > array_length - 1)
+        {
+            // reset index
+            _slave_index = 0;
+        }
+        // enable ranging for next lora already
+        _lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT);
     }
 }
 void Sensor_manager::read_gps()
@@ -158,22 +165,30 @@ void Sensor_manager::read_imu()
         return;
     }
     _imu.read();
+    // set and devide by range
+    double acc_conversion_factor = 0.061 / 1000; // mg/LSB this changes if the total range changes  currently 2g after that devide by 1000 to get m/s^2
+    data.acc[0] = _imu.a.x * acc_conversion_factor;
+    data.acc[1] = _imu.a.y * acc_conversion_factor;
+    data.acc[2] = _imu.a.z * acc_conversion_factor;
 
-    data.acc[0] = _imu.a.x;
-    data.acc[1] = _imu.a.y;
-    data.acc[2] = _imu.a.z;
-
-    data.gyro[0] = _imu.g.x;
-    data.gyro[1] = _imu.g.x;
-    data.gyro[2] = _imu.g.x;
+    double gyro_conversion_factor = 8.75 / 1000; // mdps/LSB at 250dps after that devide by 1000 to get dps
+    data.gyro[0] = _imu.g.x * gyro_conversion_factor;
+    data.gyro[1] = _imu.g.y * gyro_conversion_factor;
+    data.gyro[2] = _imu.g.z * gyro_conversion_factor;
 }
 void Sensor_manager::read_temps(Config &config)
 {
     // average values first and take into account temp limits
+    if (_inner_temp_probe_initialized)
+    {
+        data.inner_temp_probe = _inner_temp_probe.readTemperature();
+    }
+
     data.average_inner_temp = data.inner_temp_probe;
     data.average_outter_temp = data.outter_temp_thermistor;
 
     _temp_manager.calculate_heater_power(data.average_inner_temp);
+    data.heater_power = _temp_manager.get_heater_power();
 }
 
 void Sensor_manager::read_data(Config &config)

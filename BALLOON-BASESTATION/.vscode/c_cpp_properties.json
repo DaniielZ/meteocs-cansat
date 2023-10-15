@@ -8,10 +8,10 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/include",
-                "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/src",
-                "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/RadioLib/src",
-                "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/LoRa/src",
+                "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/include",
+                "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/src",
+                "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/RangingWrapper/src",
+                "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/RadioLib/src",
                 "C:/Users/danie/.platformio/packages/framework-arduinopico/libraries/SPI/src",
                 "C:/Users/danie/.platformio/packages/framework-arduinopico/cores/rp2040",
                 "C:/Users/danie/.platformio/packages/framework-arduinopico/cores/rp2040/api/deprecated",
@@ -69,10 +69,10 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/include",
-                    "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/src",
-                    "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/RadioLib/src",
-                    "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/LoRa/src",
+                    "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/include",
+                    "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/src",
+                    "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/RangingWrapper/src",
+                    "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/libdeps/pico/RadioLib/src",
                     "C:/Users/danie/.platformio/packages/framework-arduinopico/libraries/SPI/src",
                     "C:/Users/danie/.platformio/packages/framework-arduinopico/cores/rp2040",
                     "C:/Users/danie/.platformio/packages/framework-arduinopico/cores/rp2040/api/deprecated",

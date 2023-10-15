@@ -1,79 +1,98 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <LoRa.h>
-
-long MAIN_FREQUENCY = 430.6E6;
-uint8_t SPI_MAIN_CS = 5;  // 7
-uint8_t SPI_MAIN_RX = 4;  // 6 miso
-uint8_t SPI_MAIN_TX = 3;  // 5 mosi
-uint8_t SPI_MAIN_SCK = 2; // 4
-LoRaClass LoRaMain;
+#include "ranging_wrapper.h"
+#include "RFM_wrapper.h"
+bool transmiting_mode = false; // dont change
 
 String ARM_MSG = "arm_confirm";
 String DATA_MSG = "data_send";
 
-bool transmiting_mode = false; // dont change
-void init_LoRa_main()
-{
-    Serial.println("Starting LoRa main......!");
+RFM_Wrapper com_lora;
+RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 433.575,
+                                       .CS = 7,
+                                       .DIO0 = 5,
+                                       .DIO1 = 4,
+                                       .RESET = 6,
+                                       .SYNC_WORD = 0xF4,
+                                       .TXPOWER = 14,
+                                       .SPREADING = 9,
+                                       .CODING_RATE = 6,
+                                       .SIGNAL_BW = 125,
+                                       .SPI = &SPI1};
 
-    // SPI LoRa pins
-    SPI.setRX(SPI_MAIN_RX);
-    SPI.setTX(SPI_MAIN_TX);
-    SPI.setSCK(SPI_MAIN_SCK);
-
-    LoRaMain.setPins(SPI_MAIN_CS, 0, 0);
-    LoRaMain.setSPI(SPI);
-
-    if (!LoRaMain.begin(MAIN_FREQUENCY))
-    {
-        Serial.println("Starting LoRa main failed!");
-        return;
-    }
-
-    // setting paramaters
-    LoRaMain.setTxPower(99);
-    LoRaMain.setSpreadingFactor(10);
-    LoRaMain.setCodingRate4(7);
-    LoRaMain.setSignalBandwidth(62.5E3);
-    Serial.println("LoRa main! Running");
-}
+Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::SLAVE;
+Ranging_Wrapper ranging_lora;
+Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x12345671}; // pos not important rn;
+Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
+                                               .CS = 17,
+                                               .DIO0 = 22, // busy
+                                               .DIO1 = 21,
+                                               .RESET = 20,
+                                               .SYNC_WORD = 0xF5,
+                                               .TXPOWER = 14,
+                                               .SPREADING = 9,
+                                               .CODING_RATE = 7,
+                                               .SIGNAL_BW = 1600,
+                                               .SPI = &SPI};
 
 void read_main_lora()
 {
-    // try to parse packet
-    int packetSize = LoRaMain.parsePacket();
-    if (packetSize)
+    String msg;
+    if (!com_lora.recieve(msg))
     {
-        // received a packet
-        Serial.print("Main received packet '");
+        return;
+    }
 
-        // read packet
-        while (LoRaMain.available())
-        {
-            Serial.print((char)LoRaMain.read());
-        }
-
-        // print RSSI of packet
-        Serial.print("' with RSSI ");
-        Serial.println(LoRaMain.packetRssi());
+    if (msg.charAt(0) == '!')
+    {
+        Serial.println(msg);
+    }
+    else
+    {
+        // format for visualiser
+        Serial.print("/*");
+        Serial.print(msg);
+        Serial.println("*/");
     }
 }
 
 void send_main_lora(String msg)
 {
-    while (LoRaMain.beginPacket() == 0)
+    while (com_lora.send(msg) == false)
     {
-        Serial.print("waiting for main lora ... ");
         delay(50);
     }
-    // send packet
-    LoRaMain.beginPacket();
-    LoRaMain.print(msg);
-    Serial.print("Main lora transmited: " + msg + " ....");
-    LoRaMain.endPacket();
-    Serial.println("done!");
+
+    return;
 }
+
+void init_LoRa_main(RFM_Wrapper::Lora_Device lora_cfg)
+{
+    // delete &lora;
+    String status = com_lora.init(true, com_config);
+    if (status == "")
+    {
+        Serial.println("RFM lora good");
+    }
+    else
+    {
+        Serial.println(status);
+    }
+}
+
+void int_LoRa_ranging(Ranging_Wrapper::Lora_Device lora_cfg)
+{
+    String status = ranging_lora.init(LORA2400_MODE, lora_cfg);
+    if (status == "")
+    {
+        Serial.println("Ranging lora good");
+    }
+    else
+    {
+        Serial.println(status);
+    }
+}
+
 void setup()
 {
     Serial.begin(115200); // initialize serial
@@ -81,7 +100,18 @@ void setup()
     {
         delay(100);
     }
-    init_LoRa_main();
+    SPI1.setSCK(10);
+    SPI1.setRX(12);
+    SPI1.setTX(11);
+    SPI1.begin();
+    SPI.setSCK(18);
+    SPI.setRX(16);
+    SPI.setTX(19);
+    SPI.begin();
+
+    init_LoRa_main(com_config);
+    int_LoRa_ranging(ranging_device);
+    Serial.println("base station setup done");
 }
 
 void loop()
@@ -131,5 +161,12 @@ void loop()
                 Serial.println("Unexpected input : " + incoming_msg);
             }
         }
+    }
+
+    /// enable raning slave
+    bool result = ranging_lora.slave_reenable(10000, RANGING_SLAVE);
+    if (result == true)
+    {
+        Serial.println("ping recieved");
     }
 }

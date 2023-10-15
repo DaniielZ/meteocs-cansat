@@ -3,7 +3,7 @@
 #include <SPI.h>
 #include <LittleFS.h>
 #include <SDFS.h>
-#include "sensors/ranging_wrapper.h"
+#include <ranging_wrapper.h>
 class Config
 {
 public:
@@ -90,7 +90,7 @@ public:
     int BMP180_ADDRESS_I2C = 0x77; // or 0x76 :D
 
     // INNER TEMP WIRE0
-    int STS35_ADDRESS = 0x4A; // I2C Address: either 0x4A or 0x04B
+    int STS35_ADDRESS = 0x4B; // I2C Address: either 0x4A or 0x04B
 
     // OUTTTER TEMP ANALOG
     int THERMISTOR_PIN = -1;

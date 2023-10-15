@@ -39,5 +39,6 @@ class Temperature_Manager
 
 public:
     void calculate_heater_power(float inner_temp);
+    double get_heater_power();
     void init(int heater_pin, int desired_temp);
 };

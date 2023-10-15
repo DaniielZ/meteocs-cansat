@@ -1,6 +1,6 @@
 {
-    "name": "Ranging Wrapper",
-    "version": "1.0.0",
+    "name": "RangingWrapper",
+    "version": "1.0.1",
     "description": "repository for easier and better operation of sx1280 lora bases trilateration ",
     "repository": {
         "type": "git",

@@ -39,7 +39,10 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
     // Save last PID calculation time for time delta calculations
     _last_pid_calculation_time = millis();
 }
-
+double Temperature_Manager::get_heater_power()
+{
+    return _heater_power;
+}
 void Temperature_Manager::set_heater_power()
 {
     // Set heater PWM value

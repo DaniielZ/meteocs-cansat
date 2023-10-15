@@ -1,3 +1,4 @@
+#pragma once
 #include "ranging_wrapper.h"
 #include <math.h>
 
@@ -79,12 +80,13 @@ String Ranging_Wrapper::init(Mode mode, Lora_Device config)
 
     return status;
 }
+// will return result from previous slave
 bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, long int timeout)
 {
-    bool result_read = false;
+    bool slave_done = false; // either timedout or result read
     if (_mode != Mode::MASTER || !_lora_initialized)
     {
-        return result_read;
+        return slave_done;
     }
 
     if (sx1280_lora_ranging)
@@ -96,8 +98,9 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
             _lora_range_state = RADIOLIB_ERR_RANGING_TIMEOUT;
             _lora.clearDio1Action();
             _lora.finishTransmit();
+            slave_done = true;
+            return slave_done;
         }
-        return result_read;
     }
     if (!sx1280_lora_ranging)
     {
@@ -106,9 +109,19 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
         if (_lora_range_state == RADIOLIB_ERR_NONE)
         {
             result.distance = _lora.getRangingResult();
+            // Serial.print("Good: " + String(result.distance) + " Addr: ");
+            // Serial.println(slave.address, HEX);
             result.time = millis();
-            result_read = true;
+            _lora_range_state = -1;
+            slave_done = true;
+            return slave_done;
         }
+        else
+        {
+            // Serial.print("Ranging failed: " + String(_lora_range_state) + " Addr: ");
+            // Serial.println(slave.address, HEX);
+        }
+
         // clean up
         _lora.clearDio1Action();
         _lora.finishTransmit();
@@ -128,7 +141,7 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
             Serial.println("Ranging error: " + String(_lora_range_state));
         }
     }
-    return result_read;
+    return slave_done;
 }
 bool Ranging_Wrapper::slave_reenable(long int timeout, Ranging_Slave slave)
 {

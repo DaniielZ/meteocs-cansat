@@ -1,3 +1,4 @@
+#pragma once
 #include <RadioLib.h>
 
 class Ranging_Wrapper

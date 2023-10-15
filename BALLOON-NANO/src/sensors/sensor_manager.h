@@ -10,6 +10,7 @@
 #include <SoftwareSerial.h>
 #include <RadioLib.h>
 #include "temperature_manager.h"
+#include <ranging_wrapper.h>
 #include <Array.h>
 #include "config.h"
 class Sensor_manager
@@ -36,7 +37,7 @@ class Sensor_manager
     Temperature_Manager _temp_manager;
     // ranging lora
     Ranging_Wrapper _lora;
-    unsigned long _last_ranging_pos_time;
+    unsigned long _last_ranging_pos_time = 0;
     int _slave_index = 0;
 
     void position_calculation(Config &config);
@@ -54,9 +55,9 @@ public:
     struct Sensor_data
     {
         // array data is ordered: x y z
-        float gps_lat = 0;
-        float gps_lng = 0;
-        float gps_height = 0; // m
+        float gps_lat = 56.946298;
+        float gps_lng = 24.107142;
+        float gps_height = 100; // m
         int gps_sattelites = 0;
 
         // float outter_baro_height = 0; // m
@@ -79,7 +80,7 @@ public:
         float gyro[3];
 
         Ranging_Wrapper::Ranging_Result ranging_results[3];
-        Ranging_Wrapper::Position ranging_position;
+        Ranging_Wrapper::Position ranging_position = Ranging_Wrapper::Position(57.946298, 25.107142, 50);
 
         unsigned long time = 0; // ms
         unsigned long time_since_last_gps = 0;
