@@ -26,6 +26,7 @@ void prepare_state_loop(Cansat &cansat)
             cansat.sensors.read_data(cansat.config);
             cansat.log.data(cansat.sensors.data, true, true);
             delay(cansat.config.MAX_LOOP_TIME);
+            delay(1000);
         }
     }
     // check if should arm

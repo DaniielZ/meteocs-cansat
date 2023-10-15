@@ -10,7 +10,15 @@ String Sensor_manager::init(Config &config)
 {
 
     String status;
-    _gps_initialized = true;
+    _gps_serial = &Serial1;
+    if (_gps_serial)
+    {
+        _gps_initialized = true;
+    }
+    else
+    {
+        status += " gps error";
+    }
 
     // BARO WIRE1
     // _outter_baro = MS5611(config.MS5611_ADDRESS);
@@ -24,29 +32,14 @@ String Sensor_manager::init(Config &config)
     // }
 
     // Inner baro
-    _inner_baro = Adafruit_BMP280(&Wire);
-    if (!_inner_baro.begin(config.BMP280_ADDRESS_I2C))
+    _inner_baro = Adafruit_BMP085();
+    if (!_inner_baro.begin(config.BMP180_ADDRESS_I2C, &Wire))
     {
-        status += " Inner Baro error";
+        status += " baro error";
     }
     else
     {
         _inner_baro_initialized = true;
-        _inner_baro.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                                Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                                Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                                Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                                Adafruit_BMP280::STANDBY_MS_125); /* Standby time. */
-    }
-
-    // HUMIDITY WIRE1
-    if (!_humidity.begin(&Wire))
-    {
-        status += " Humidity error";
-    }
-    else
-    {
-        _humidity_initialized = true;
     }
 
     // IMU WIRE1
@@ -72,17 +65,17 @@ String Sensor_manager::init(Config &config)
 
     return status;
 }
-// void Sensor_manager::position_calculation(Config &config)
-// {
-//     Ranging_Wrapper::Position result;
-//     if (!_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
-//     {
-//         return;
-//     }
-//     // mybe do more processing
-//     data.ranging_position = result;
-//     _last_ranging_pos_time = millis();
-// }
+void Sensor_manager::position_calculation(Config &config)
+{
+    Ranging_Wrapper::Position result;
+    if (!_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
+    {
+        return;
+    }
+    // mybe do more processing
+    data.ranging_position = result;
+    _last_ranging_pos_time = millis();
+}
 
 void Sensor_manager::read_ranging(Config &config)
 {
@@ -146,16 +139,6 @@ void Sensor_manager::read_inner_baro(Config &config)
     data.inner_baro_pressure = _inner_baro.readPressure();
     data.inner_baro_temp = _inner_baro.readTemperature();
 }
-void Sensor_manager::read_humidity()
-{
-    if (!_humidity_initialized)
-    {
-        return;
-    }
-    sensors_event_t humidity, temp;
-    _humidity.getEvent(&humidity, &temp); // populate temp and humidity objects with fresh data
-    data.humidity = humidity.relative_humidity;
-}
 
 void Sensor_manager::read_time()
 {
@@ -190,17 +173,15 @@ void Sensor_manager::read_temps(Config &config)
     data.average_inner_temp = data.inner_temp_probe;
     data.average_outter_temp = data.outter_temp_thermistor;
 
-    _temp_manager.calculate_heater_power(data.average_inner_temp, data.average_outter_temp);
+    _temp_manager.calculate_heater_power(data.average_inner_temp);
 }
 
 void Sensor_manager::read_data(Config &config)
 {
-
     read_gps();
     read_inner_baro(config);
     // read_outter_baro(config);
     read_temps(config);
-    read_humidity();
     read_imu();
     read_ranging(config);
     position_calculation(config);

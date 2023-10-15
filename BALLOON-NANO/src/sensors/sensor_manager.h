@@ -5,7 +5,7 @@
 #include <MS5611.h>
 #include <Adafruit_SHTC3.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h>
+#include <Adafruit_BMP085.h>
 #include <LSM6.h>
 #include <SoftwareSerial.h>
 #include <RadioLib.h>
@@ -24,11 +24,8 @@ class Sensor_manager
     MS5611 _outter_baro;
     bool _outter_baro_initialized = false;
     // BARO WIRE0
-    Adafruit_BMP280 _inner_baro;
+    Adafruit_BMP085 _inner_baro;
     bool _inner_baro_initialized = false;
-    // HUMIDITY WIRE0
-    Adafruit_SHTC3 _humidity;
-    bool _humidity_initialized = false;
     // IMU WIRE0
     LSM6 _imu;
     bool _imu_initialized = false;

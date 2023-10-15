@@ -213,6 +213,9 @@ double Ranging_Wrapper::distance_between_earth_cordinates_m(Position p1, Positio
 
 bool Ranging_Wrapper::trilaterate_position(Ranging_Result readings[3], Ranging_Slave slaves[3], Position &result)
 {
+    // becuase not finished yet return false;
+    return false;
+
     Position global_bs_pos[3];
     global_bs_pos[0] = slaves[0].position;
     global_bs_pos[1] = slaves[1].position;

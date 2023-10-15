@@ -69,6 +69,8 @@ void Log::init_flash(Config &config)
     if (!file)
     {
         Serial.println("Failed opening flash file");
+        _flash_initialized = false;
+        return;
     }
     file.close();
     Serial.println("Final path: " + _log_file_path_final);
@@ -117,6 +119,7 @@ void Log::info(String msg)
         if (!file)
         {
             Serial.println("Failed opening flash file");
+            return;
         }
         file.println(msg);
         file.close();
@@ -171,13 +174,14 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
         if (!file)
         {
             Serial.println("File open failed");
+            return;
         }
 
         file.println(logable_packet);
         file.close();
     }
 }
-void data_to_packet(Sensor_manager::Sensor_data &data, String &result_log, String &result_sent)
+void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_log, String &result_sent)
 {
     String packet;
     packet += String(data.gps_lat, 6);
