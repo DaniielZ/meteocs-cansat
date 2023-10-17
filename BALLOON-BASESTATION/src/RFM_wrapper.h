@@ -35,4 +35,5 @@ public:
     String init(bool transmit_first, Lora_Device config);
     bool send(String msg);
     bool recieve(String &msg);
+    bool get_init_status();
 };

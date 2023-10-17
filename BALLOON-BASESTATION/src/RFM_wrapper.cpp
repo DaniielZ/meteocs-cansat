@@ -7,8 +7,14 @@ void set_flag(void)
     action_done = true;
 }
 
+bool RFM_Wrapper::get_init_status()
+{
+    return _lora_initialized;
+}
+
 String RFM_Wrapper::init(bool transmit_first, Lora_Device config)
 {
+    _lora_initialized = false;
     _lora = new Module(config.CS, config.DIO0, config.RESET, config.DIO1, *config.SPI);
     int state = _lora.begin();
     if (state != RADIOLIB_ERR_NONE)
