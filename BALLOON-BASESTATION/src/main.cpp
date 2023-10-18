@@ -15,8 +15,8 @@ RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 433.575,
                                        .RESET = 6,
                                        .SYNC_WORD = 0xF4,
                                        .TXPOWER = 14,
-                                       .SPREADING = 9,
-                                       .CODING_RATE = 6,
+                                       .SPREADING = 10,
+                                       .CODING_RATE = 7,
                                        .SIGNAL_BW = 125,
                                        .SPI = &SPI1};
 
@@ -30,9 +30,9 @@ Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .RESET = 20,
                                                .SYNC_WORD = 0xF5,
                                                .TXPOWER = 14,
-                                               .SPREADING = 9,
+                                               .SPREADING = 12,
                                                .CODING_RATE = 7,
-                                               .SIGNAL_BW = 1600,
+                                               .SIGNAL_BW = 400,
                                                .SPI = &SPI};
 
 void read_main_lora()

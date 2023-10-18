@@ -117,7 +117,6 @@ int16_t SX1272::setBandwidth(float bw) {
     // calculate symbol length and set low data rate optimization, if auto-configuration is enabled
     if(this->ldroAuto) {
       float symbolLength = (float)(uint32_t(1) << SX127x::spreadingFactor) / (float)SX127x::bandwidth;
-      RADIOLIB_DEBUG_PRINTLN("Symbol length: %f ms", symbolLength);
       if(symbolLength >= 16.0) {
         state = this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_MODEM_CONFIG_1, RADIOLIB_SX1272_LOW_DATA_RATE_OPT_ON, 0, 0);
       } else {
@@ -171,7 +170,6 @@ int16_t SX1272::setSpreadingFactor(uint8_t sf) {
     // calculate symbol length and set low data rate optimization, if auto-configuration is enabled
     if(this->ldroAuto) {
     float symbolLength = (float)(uint32_t(1) << SX127x::spreadingFactor) / (float)SX127x::bandwidth;
-      RADIOLIB_DEBUG_PRINTLN("Symbol length: %f ms", symbolLength);
       if(symbolLength >= 16.0) {
         state = this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_MODEM_CONFIG_1, RADIOLIB_SX1272_LOW_DATA_RATE_OPT_ON, 0, 0);
       } else {
@@ -218,6 +216,39 @@ int16_t SX1272::setCodingRate(uint8_t cr) {
 
 int16_t SX1272::setBitRate(float br) {
   return(SX127x::setBitRateCommon(br, RADIOLIB_SX1272_REG_BIT_RATE_FRAC));
+}
+
+int16_t SX1272::setDataRate(DataRate_t dr) {
+  int16_t state = RADIOLIB_ERR_UNKNOWN;
+
+  // select interpretation based on active modem
+  uint8_t modem = this->getActiveModem();
+  if(modem == RADIOLIB_SX127X_FSK_OOK) {
+    // set the bit rate
+    state = this->setBitRate(dr.fsk.bitRate);
+    RADIOLIB_ASSERT(state);
+
+    // set the frequency deviation
+    state = this->setFrequencyDeviation(dr.fsk.freqDev);
+
+  } else if(modem == RADIOLIB_SX127X_LORA) {
+    // set the spreading factor
+    state = this->setSpreadingFactor(dr.lora.spreadingFactor);
+    RADIOLIB_ASSERT(state);
+
+    // set the bandwidth
+    state = this->setBandwidth(dr.lora.bandwidth);
+    RADIOLIB_ASSERT(state);
+
+    // set the coding rate
+    state = this->setCodingRate(dr.lora.codingRate);
+  }
+
+  return(state);
+}
+
+int16_t SX1272::setOutputPower(int8_t power) {
+  return(this->setOutputPower(power, false));
 }
 
 int16_t SX1272::setOutputPower(int8_t power, bool useRfo) {
@@ -365,9 +396,9 @@ int16_t SX1272::setCRC(bool enable, bool mode) {
     // set LoRa CRC
     SX127x::crcEnabled = enable;
     if(enable) {
-      return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_MODEM_CONFIG_2, RADIOLIB_SX1272_RX_CRC_MODE_ON, 2, 2));
+      return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_MODEM_CONFIG_1, RADIOLIB_SX1272_RX_CRC_MODE_ON, 1, 1));
     } else {
-      return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_MODEM_CONFIG_2, RADIOLIB_SX1272_RX_CRC_MODE_OFF, 2, 2));
+      return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_MODEM_CONFIG_1, RADIOLIB_SX1272_RX_CRC_MODE_OFF, 1, 1));
     }
   } else {
     // set FSK CRC

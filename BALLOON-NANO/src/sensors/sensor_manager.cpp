@@ -68,13 +68,13 @@ String Sensor_manager::init(Config &config)
 void Sensor_manager::position_calculation(Config &config)
 {
     Ranging_Wrapper::Position result;
-    if (!_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
+    if (_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
     {
-        return;
-    }
+        data.ranging_position = result;
+        _last_ranging_pos_time = millis();
+        }
     // mybe do more processing
-    data.ranging_position = result;
-    _last_ranging_pos_time = millis();
+    return;
 }
 
 void Sensor_manager::read_ranging(Config &config)

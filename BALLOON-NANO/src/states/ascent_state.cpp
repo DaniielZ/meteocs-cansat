@@ -1,14 +1,14 @@
 #include "states/ascent_state.h"
 
-unsigned long int last_data_transmit_time = 0;
-void send_data(Cansat &cansat)
+unsigned long int last_data_transmit_time_ascent = 0;
+void send_data_ascent(Cansat &cansat)
 {
 
     bool data_needs_to_be_sent = false;
-    if (millis() > last_data_transmit_time + cansat.config.LORA_DATAPACKET_COOLDOWN)
+    if (millis() > last_data_transmit_time_ascent + cansat.config.LORA_DATAPACKET_COOLDOWN)
     {
         cansat.log.data(cansat.sensors.data, true, true);
-        last_data_transmit_time = millis();
+        last_data_transmit_time_ascent = millis();
     }
     else
     {
@@ -23,7 +23,7 @@ void ascent_state(Cansat &cansat)
     {
         unsigned long loop_start = millis();
 
-        send_data(cansat);
+        send_data_ascent(cansat);
         cansat.sensors.read_data(cansat.config);
 
         if (digitalRead(cansat.config.LAUNCH_RAIL_SWITCH))
