@@ -56,6 +56,7 @@ Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator*(doubl
 
 String Ranging_Wrapper::init(Mode mode, Lora_Device config)
 {
+    _lora_initialized = false;
     _lora = new Module(config.CS, config.DIO1, config.RESET, config.DIO0, *config.SPI);
     _mode = mode;
     _config = config;
@@ -302,4 +303,9 @@ bool Ranging_Wrapper::trilaterate_position(Ranging_Result readings[3], Ranging_S
     /// set results
     result = calculated_global_pos;
     return true;
+}
+
+bool Ranging_Wrapper::get_init_status()
+{
+    return _lora_initialized;
 }

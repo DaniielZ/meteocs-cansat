@@ -65,7 +65,6 @@ void prepare_state(Cansat &cansat)
 {
     cansat.init_all_com_bus(cansat.config);
     cansat.log.init(cansat.config);
-    Serial.println("log init done");
     String status = String("sensor status ") + cansat.sensors.init(cansat.config);
     cansat.log.info(status);
     cansat.log.info("init done, waiting for arm");

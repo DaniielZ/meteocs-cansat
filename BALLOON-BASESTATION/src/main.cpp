@@ -15,8 +15,8 @@ RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 433.575,
                                        .RESET = 6,
                                        .SYNC_WORD = 0xF4,
                                        .TXPOWER = 14,
-                                       .SPREADING = 9,
-                                       .CODING_RATE = 6,
+                                       .SPREADING = 10,
+                                       .CODING_RATE = 7,
                                        .SIGNAL_BW = 125,
                                        .SPI = &SPI1};
 
@@ -30,13 +30,17 @@ Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .RESET = 20,
                                                .SYNC_WORD = 0xF5,
                                                .TXPOWER = 14,
-                                               .SPREADING = 9,
+                                               .SPREADING = 12,
                                                .CODING_RATE = 7,
-                                               .SIGNAL_BW = 1600,
+                                               .SIGNAL_BW = 400,
                                                .SPI = &SPI};
 
 void read_main_lora()
 {
+    if (!com_lora.get_init_status())
+    {
+        return;
+    }
     String msg;
     if (!com_lora.recieve(msg))
     {
@@ -58,6 +62,10 @@ void read_main_lora()
 
 void send_main_lora(String msg)
 {
+    if (!com_lora.get_init_status())
+    {
+        return;
+    }
     while (com_lora.send(msg) == false)
     {
         delay(50);
@@ -70,7 +78,7 @@ void init_LoRa_main(RFM_Wrapper::Lora_Device lora_cfg)
 {
     // delete &lora;
     String status = com_lora.init(true, com_config);
-    if (status == "")
+    if (com_lora.get_init_status())
     {
         Serial.println("RFM lora good");
     }
@@ -83,7 +91,7 @@ void init_LoRa_main(RFM_Wrapper::Lora_Device lora_cfg)
 void int_LoRa_ranging(Ranging_Wrapper::Lora_Device lora_cfg)
 {
     String status = ranging_lora.init(LORA2400_MODE, lora_cfg);
-    if (status == "")
+    if (ranging_lora.get_init_status())
     {
         Serial.println("Ranging lora good");
     }
@@ -164,9 +172,12 @@ void loop()
     }
 
     /// enable raning slave
-    bool result = ranging_lora.slave_reenable(10000, RANGING_SLAVE);
-    if (result == true)
+    if (ranging_lora.get_init_status())
     {
-        Serial.println("ping recieved");
+        bool result = ranging_lora.slave_reenable(10000, RANGING_SLAVE);
+        if (result == true)
+        {
+            Serial.println("ping recieved");
+        }
     }
 }

@@ -1,5 +1,21 @@
 #include "states/descent_state.h"
 
+unsigned long int last_data_transmit_time_descent = 0;
+void send_data_descent(Cansat &cansat)
+{
+
+    bool data_needs_to_be_sent = false;
+    if (millis() > last_data_transmit_time_descent + cansat.config.LORA_DATAPACKET_COOLDOWN)
+    {
+        cansat.log.data(cansat.sensors.data, true, true);
+        last_data_transmit_time_descent = millis();
+    }
+    else
+    {
+        cansat.log.data(cansat.sensors.data, true, false);
+    }
+}
+
 void descent_state(Cansat &cansat)
 {
     unsigned long state_start_time = millis();
@@ -11,7 +27,7 @@ void descent_state(Cansat &cansat)
         unsigned long loop_start = millis();
 
         cansat.sensors.read_data(cansat.config);
-        cansat.log.data(cansat.sensors.data, true, true);
+        send_data_descent(cansat);
 
         if (millis() >= parachute_ejection_time && !mosfet_on_triggered)
         {

@@ -25,8 +25,8 @@ public:
         .RESET = 6,
         .SYNC_WORD = 0xF4,
         .TXPOWER = 14,
-        .SPREADING = 9,
-        .CODING_RATE = 6,
+        .SPREADING = 10,
+        .CODING_RATE = 7,
         .SIGNAL_BW = 125,
         .SPI = &SPI};
 
@@ -39,9 +39,9 @@ public:
         .RESET = 14, // 10
         .SYNC_WORD = 0xF5,
         .TXPOWER = 14,
-        .SPREADING = 9,
+        .SPREADING = 12,
         .CODING_RATE = 7,
-        .SIGNAL_BW = 1600,
+        .SIGNAL_BW = 400,
         .SPI = &SPI1};
 
     // Sea level Hpa for barometer height
@@ -79,7 +79,7 @@ public:
 
     Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::MASTER;
 
-    int RANGING_TIMEOUT = 200; // ms
+    int RANGING_TIMEOUT = 500; // ms
     int SD_CARD_CS = 20;
 
     SPIClassRP2040 *SD_CARD_SPI = &SPI1;

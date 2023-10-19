@@ -77,4 +77,5 @@ public:
     bool master_read(Ranging_Slave slave, Ranging_Result &result, long int timeout);
     bool slave_reenable(long int timeout, Ranging_Slave slave);
     bool trilaterate_position(Ranging_Result readings[3], Ranging_Slave slaves[3], Position &result);
+    bool get_init_status();
 };
