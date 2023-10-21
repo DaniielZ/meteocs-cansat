@@ -46,6 +46,7 @@ double Temperature_Manager::get_heater_power()
 void Temperature_Manager::set_heater_power()
 {
     // Set heater PWM value
+    pinMode(_heater_pin, OUTPUT_12MA);
     analogWrite(_heater_pin, _heater_power);
 }
 

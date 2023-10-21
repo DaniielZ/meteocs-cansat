@@ -9,7 +9,7 @@ class Config
 public:
     //------------ OFTEN CHANGED ------------------
 
-    bool WAIT_PC = true;
+    bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
 
     Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345671},
@@ -82,7 +82,7 @@ public:
     int RANGING_TIMEOUT = 500; // ms
     int SD_CARD_CS = 20;
 
-    SPIClassRP2040 *SD_CARD_SPI = &SPI1;
+    SPIClassRP2040 *SD_CARD_SPI = &SPI;
 
     // BARO WIRE0
     int MS5611_ADDRESS = 0x76; // 77 or 76 (77 is the real one)
@@ -93,13 +93,21 @@ public:
     int STS35_ADDRESS = 0x4B; // I2C Address: either 0x4A or 0x04B
 
     // OUTTTER TEMP ANALOG
-    int THERMISTOR_PIN = -1;
+    int THERMISTOR_PIN = 26;
+    float THERMISTOR_REFERENCE_R = 10000;
+    float THERMISTOR_NOMINAL_R = 10000;
+    float THERMISTOR_NOMINAL_T = 25;
+    float THERMISTOR_B = -4050;
+
+    // Battery voltage
+    float BATT_SENS_CONVERSION_FACTOR = 3.3 * 0.3357;
+    float BATT_SENS_PIN = 28;
 
     // HEATER
-    int HEATER_MOSFET = 27; // TBD
+    int HEATER_MOSFET = 22; // mosfet 1
 
     // Parachute
-    int PARACHUTE_MOSFET = 26;   // TBD
+    int PARACHUTE_MOSFET = 27;   // mosfet 2
     int LAUNCH_RAIL_SWITCH = -1; // TBD
 
     // hard data rate limiter

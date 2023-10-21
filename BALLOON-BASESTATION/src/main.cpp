@@ -177,7 +177,7 @@ void loop()
         bool result = ranging_lora.slave_reenable(10000, RANGING_SLAVE);
         if (result == true)
         {
-            Serial.println("ping recieved");
+            Serial.println("ranging ping recieved");
         }
     }
 }

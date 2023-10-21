@@ -307,6 +307,20 @@
                     "units": "ms",
                     "value": "%14",
                     "widget": ""
+                },
+                {
+                    "alarm": 8,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 8,
+                    "min": 0,
+                    "title": "batt_voltage",
+                    "units": "V",
+                    "value": "%24",
+                    "widget": "gauge"
                 }
             ],
             "title": "Times/Other",

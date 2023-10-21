@@ -45,7 +45,14 @@ void Log::init_flash(Config &config)
     SDFSConfig sd_config;
     sd_config.setCSPin(config.SD_CARD_CS);
     sd_config.setSPI(*config.SD_CARD_SPI);
-    _flash->setConfig(sd_config);
+    if (_flash->setConfig(sd_config))
+    {
+        Serial.println("config set");
+    }
+    else
+    {
+        Serial.println("config not set");
+    }
     // initilise flash
     if (_flash->begin())
     {
@@ -232,24 +239,26 @@ void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_log, 
     packet += String(data.time_since_last_gps); // 22
     packet += ", ";
     packet += String(data.time); // 23
+    packet += ", ";
+    packet += String(data.batt_votage); // 24
 
     result_sent = packet;
 
     String log_packet = packet;
     log_packet += ", ";
-    log_packet += String(data.gps_time); // 24
+    log_packet += String(data.gps_time); // 25
     log_packet += ", ";
-    log_packet += String(data.gyro[0]); // 25
+    log_packet += String(data.gyro[0]); // 26
     log_packet += ", ";
-    log_packet += String(data.gyro[1]); // 26
+    log_packet += String(data.gyro[1]); // 27
     log_packet += ", ";
-    log_packet += String(data.gyro[2]); // 27
+    log_packet += String(data.gyro[2]); // 28
     log_packet += ", ";
-    log_packet += String(data.outter_temp_thermistor); // 28
+    log_packet += String(data.outter_temp_thermistor); // 29
     log_packet += ", ";
-    log_packet += String(data.inner_baro_temp); // 29
+    log_packet += String(data.inner_baro_temp); // 30
     log_packet += ", ";
-    log_packet += String(data.inner_temp_probe); // 30
+    log_packet += String(data.inner_temp_probe); // 31
 
     result_log = log_packet;
 }

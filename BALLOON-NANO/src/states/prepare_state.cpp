@@ -20,13 +20,12 @@ void prepare_state_loop(Cansat &cansat)
     if (incoming_msg == cansat.config.DATA_SEND_MSG)
     {
         unsigned long data_send_start_time = millis();
-        unsigned long data_send_end_time = data_send_start_time + 30000;
+        unsigned long data_send_end_time = data_send_start_time + 1800000;
         while (millis() <= data_send_end_time)
         {
             cansat.sensors.read_data(cansat.config);
             cansat.log.data(cansat.sensors.data, true, true);
             delay(cansat.config.MAX_LOOP_TIME);
-            delay(1000);
         }
     }
     // check if should arm
