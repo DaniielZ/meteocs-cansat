@@ -7,7 +7,7 @@ class Temperature_Manager
     int _heater_pin;
     float _desired_temp; // in C
     const int _pwm_min = 0;
-    const int _pwm_max = 255;
+    const int _pwm_max = 50;
 
     // PID coefficients
     const float _Kp = 15;       // Proportional (Best between 12 and 20)

@@ -4,7 +4,10 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
 {
     // Time since last pid update
     float dt = (millis() - _last_pid_calculation_time);
-
+    if (dt < 100)
+    {
+        return;
+    }
     // Proportional term
     _proportional_term = _desired_temp - inner_temp;
 

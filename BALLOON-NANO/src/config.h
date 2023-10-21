@@ -100,7 +100,7 @@ public:
     float THERMISTOR_B = -4050;
 
     // Battery voltage
-    float BATT_SENS_CONVERSION_FACTOR = 3.3 * 0.3357;
+    float BATT_SENS_CONVERSION_FACTOR = 3.3 * (1 / 0.3357);
     float BATT_SENS_PIN = 28;
 
     // HEATER

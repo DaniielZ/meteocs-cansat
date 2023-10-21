@@ -226,6 +226,7 @@ void Sensor_manager::read_data(Config &config)
     read_temps(config);
     read_imu();
     read_ranging(config);
+    read_batt_voltage(config);
     position_calculation(config);
     read_time();
 }
