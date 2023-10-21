@@ -41,7 +41,7 @@ public:
         .TXPOWER = 14,
         .SPREADING = 12,
         .CODING_RATE = 7,
-        .SIGNAL_BW = 400,
+        .SIGNAL_BW = 200,
         .SPI = &SPI1};
 
     // Sea level Hpa for barometer height

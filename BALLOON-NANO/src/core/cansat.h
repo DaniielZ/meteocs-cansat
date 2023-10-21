@@ -26,7 +26,6 @@ public:
     Config config;
     Sensor_manager sensors;
     Log log;
-    Servo ejection_servo;
     void init_all_com_bus(Config &config);
     void start_states(Cansat &cansat);
 };
