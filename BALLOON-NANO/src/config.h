@@ -44,9 +44,6 @@ public:
         .SIGNAL_BW = 200,
         .SPI = &SPI1};
 
-    // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1015.0; // only used by outter baro
-
     float DESIRED_HEATER_TEMP = 35.0; // in C
     // float P = 0; // set in temp manager.h
     // float I = 0;
@@ -79,13 +76,10 @@ public:
 
     Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::MASTER;
 
-    int RANGING_TIMEOUT = 500; // ms
+    int RANGING_TIMEOUT = 500; // ms  might need to adjust this if lora parameters change
     int SD_CARD_CS = 20;
 
     SPIClassRP2040 *SD_CARD_SPI = &SPI;
-
-    // BARO WIRE0
-    int MS5611_ADDRESS = 0x76; // 77 or 76 (77 is the real one)
 
     int BMP180_ADDRESS_I2C = 0x77; // or 0x76 :D
 

@@ -20,17 +20,6 @@ String Sensor_manager::init(Config &config)
         status += " gps error";
     }
 
-    // BARO WIRE1
-    // _outter_baro = MS5611(config.MS5611_ADDRESS);
-    // if (!_outter_baro.begin(&Wire))
-    // {
-    //     status += " Outter Baro error";
-    // }
-    // else
-    // {
-    //     _outter_baro_initialized = true;
-    // }
-
     // Inner baro
     _inner_baro = Adafruit_BMP085();
     if (!_inner_baro.begin(config.BMP180_ADDRESS_I2C, &Wire))
@@ -55,9 +44,8 @@ String Sensor_manager::init(Config &config)
     // TEMP PROBE
     _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
     _inner_temp_probe.address(config.STS35_ADDRESS);
-    //_inner_temp_probe.setRepeatability(ClosedCube::Sensor::STS35::STS35_REPEATABILITY_LOW);
     _inner_temp_probe_initialized = true;
-    // test
+    // Test temp probe to see if its working
     float test = _inner_temp_probe.readTemperature();
     if (test > 100.00 || test < -100.0 || test == 0.00)
     {
@@ -65,6 +53,7 @@ String Sensor_manager::init(Config &config)
         status += "Inner probe error";
     }
 
+    // Outter temp probe
     analogReadResolution(12);
     _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
     _outer_thermistor_initialized = true;
@@ -146,17 +135,7 @@ void Sensor_manager::read_gps()
         }
     }
 }
-// void Sensor_manager::read_outter_baro(Config &config)
-// {
-//     if (_outter_baro_initialized != true)
-//     {
-//         return;
-//     }
-//     _outter_baro.read(); // note no error checking => "optimistic".
-//     data.outter_baro_pressure = _outter_baro.getPressure();
-//     data.outter_baro_height = get_altitude(data.outter_baro_pressure, config.SEA_LEVEL_HPA);
-//     data.outter_baro_temp = _outter_baro.getTemperature();
-// }
+
 void Sensor_manager::read_inner_baro(Config &config)
 {
     if (_inner_baro_initialized != true)
@@ -222,7 +201,6 @@ void Sensor_manager::read_data(Config &config)
 
     read_gps();
     read_inner_baro(config);
-    // read_outter_baro(config);
     read_temps(config);
     read_imu();
     read_ranging(config);

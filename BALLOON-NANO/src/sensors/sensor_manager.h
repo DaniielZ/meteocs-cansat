@@ -14,6 +14,11 @@
 #include <ranging_wrapper.h>
 #include <Array.h>
 #include "config.h"
+
+/**
+ * @brief A class responsible for initializing, managing and reading data from all the diferent sensors and controllers. All the data is stored in the data struct
+ *
+ */
 class Sensor_manager
 {
     unsigned long _last_gps_packet_time = 0;
@@ -60,40 +65,36 @@ public:
     struct Sensor_data
     {
         // array data is ordered: x y z
-        float gps_lat = 0;
-        float gps_lng = 0;
-        float gps_height = 0; // m
-        int gps_sattelites = 0;
+        float gps_lat = 0;      // deg
+        float gps_lng = 0;      // deg
+        float gps_height = 0;   // m
+        int gps_sattelites = 0; // count
 
-        // float outter_baro_height = 0; // m
-        // float outter_baro_temp = 0;
-        // float outter_baro_pressure = 0; // Pa
+        float inner_baro_pressure = 0; // Pa
+        float inner_baro_temp = 0;     // C
 
-        float inner_baro_pressure = 0;
-        float inner_baro_temp = 0;
-
-        float inner_temp_probe = 0;
+        float inner_temp_probe = 0; // C
         float outter_temp_thermistor = 0;
 
-        float average_inner_temp = 0;  // C  averaged
-        float average_outter_temp = 0; // C averaged
-        float heater_power = 0;        // TBD
+        float average_inner_temp = 0;  // C
+        float average_outter_temp = 0; // C
+        float heater_power = 0;        // 0-255
 
         float humidity = 0; // %
 
-        float acc[3] = {0, 0, 0};
-        float gyro[3] = {0, 0, 0};
+        float acc[3] = {0, 0, 0};  // m/s^2
+        float gyro[3] = {0, 0, 0}; // dps
 
         Ranging_Wrapper::Ranging_Result ranging_results[3];
         Ranging_Wrapper::Position ranging_position = Ranging_Wrapper::Position(0, 0, 0);
 
-        float batt_votage = 0;
+        float batt_votage = 0; // V
 
-        unsigned long time = 0; // ms
-        unsigned long time_since_last_gps = 0;
-        unsigned long times_since_last_ranging_result[3];
-        unsigned long time_since_last_ranging_pos = 0;
-        unsigned long gps_time = 0;
+        unsigned long time = 0;                           // ms
+        unsigned long time_since_last_gps = 0;            // ms
+        unsigned long times_since_last_ranging_result[3]; // ms
+        unsigned long time_since_last_ranging_pos = 0;    // ms
+        unsigned long gps_time = 0;                       // ms
     };
 
     //[F] = not sent over lora
