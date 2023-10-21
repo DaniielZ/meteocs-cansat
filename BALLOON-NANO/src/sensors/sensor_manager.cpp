@@ -55,7 +55,19 @@ String Sensor_manager::init(Config &config)
     // TEMP PROBE
     _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
     _inner_temp_probe.address(config.STS35_ADDRESS);
+    //_inner_temp_probe.setRepeatability(ClosedCube::Sensor::STS35::STS35_REPEATABILITY_LOW);
     _inner_temp_probe_initialized = true;
+    // test
+    float test = _inner_temp_probe.readTemperature();
+    if (test > 100.00 || test < -100.0 || test == 0.00)
+    {
+        _inner_temp_probe_initialized = false;
+        status += "Inner probe error";
+    }
+
+    analogReadResolution(12);
+    _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
+    _outer_thermistor_initialized = true;
 
     // TEMP CALCULATOR
     _temp_manager.init(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
@@ -65,6 +77,14 @@ String Sensor_manager::init(Config &config)
 
     return status;
 }
+
+void Sensor_manager::read_batt_voltage(Config &config)
+{
+    pinMode(config.BATT_SENS_PIN, INPUT);
+    analogReadResolution(12);
+    float adc_reading = analogRead(config.BATT_SENS_PIN);
+    data.batt_votage = (adc_reading / 4095.0) * config.BATT_SENS_CONVERSION_FACTOR;
+}
 void Sensor_manager::position_calculation(Config &config)
 {
     Ranging_Wrapper::Position result;
@@ -72,7 +92,7 @@ void Sensor_manager::position_calculation(Config &config)
     {
         data.ranging_position = result;
         _last_ranging_pos_time = millis();
-        }
+    }
     // mybe do more processing
     return;
 }
@@ -182,23 +202,31 @@ void Sensor_manager::read_temps(Config &config)
     if (_inner_temp_probe_initialized)
     {
         data.inner_temp_probe = _inner_temp_probe.readTemperature();
+        data.average_inner_temp = data.inner_temp_probe;
+    }
+    if (_outer_thermistor_initialized)
+    {
+        data.outter_temp_thermistor = _outer_thermistor.readCelsius();
     }
 
-    data.average_inner_temp = data.inner_temp_probe;
     data.average_outter_temp = data.outter_temp_thermistor;
 
     _temp_manager.calculate_heater_power(data.average_inner_temp);
+    _temp_manager.set_heater_power();
+
     data.heater_power = _temp_manager.get_heater_power();
 }
 
 void Sensor_manager::read_data(Config &config)
 {
+
     read_gps();
     read_inner_baro(config);
     // read_outter_baro(config);
     read_temps(config);
     read_imu();
     read_ranging(config);
+    read_batt_voltage(config);
     position_calculation(config);
     read_time();
 }

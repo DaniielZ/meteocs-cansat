@@ -7,7 +7,7 @@ class Temperature_Manager
     int _heater_pin;
     float _desired_temp; // in C
     const int _pwm_min = 0;
-    const int _pwm_max = 255;
+    const int _pwm_max = 50;
 
     // PID coefficients
     const float _Kp = 15;       // Proportional (Best between 12 and 20)
@@ -35,9 +35,8 @@ class Temperature_Manager
     float _inner_temp = 0;
     float _heater_power = 0;
 
-    void set_heater_power();
-
 public:
+    void set_heater_power();
     void calculate_heater_power(float inner_temp);
     double get_heater_power();
     void init(int heater_pin, int desired_temp);

@@ -8,6 +8,7 @@
 #include <Adafruit_BMP085.h>
 #include <LSM6.h>
 #include <SoftwareSerial.h>
+#include <NTC_Thermistor.h>
 #include <RadioLib.h>
 #include "temperature_manager.h"
 #include <ranging_wrapper.h>
@@ -24,7 +25,7 @@ class Sensor_manager
     // BARO WIRE0
     MS5611 _outter_baro;
     bool _outter_baro_initialized = false;
-    // BARO WIRE0
+    // BARO WIRE0 currently not in use
     Adafruit_BMP085 _inner_baro;
     bool _inner_baro_initialized = false;
     // IMU WIRE0
@@ -33,6 +34,9 @@ class Sensor_manager
     // TEMPERATURE WIRE0
     ClosedCube::Sensor::STS35 _inner_temp_probe;
     bool _inner_temp_probe_initialized = false;
+    // TEMPREATURE NTC
+    NTC_Thermistor _outer_thermistor = NTC_Thermistor(0, 0, 0, 0, 0);
+    bool _outer_thermistor_initialized = false;
     // temp manager
     Temperature_Manager _temp_manager;
     // ranging lora
@@ -50,6 +54,7 @@ class Sensor_manager
     void read_imu();
     void read_time();
     void read_temps(Config &config);
+    void read_batt_voltage(Config &config);
 
 public:
     struct Sensor_data
@@ -76,11 +81,13 @@ public:
 
         float humidity = 0; // %
 
-        float acc[3];
-        float gyro[3];
+        float acc[3] = {0, 0, 0};
+        float gyro[3] = {0, 0, 0};
 
         Ranging_Wrapper::Ranging_Result ranging_results[3];
         Ranging_Wrapper::Position ranging_position = Ranging_Wrapper::Position(0, 0, 0);
+
+        float batt_votage = 0;
 
         unsigned long time = 0; // ms
         unsigned long time_since_last_gps = 0;

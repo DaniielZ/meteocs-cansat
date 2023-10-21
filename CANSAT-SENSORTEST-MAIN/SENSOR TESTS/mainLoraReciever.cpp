@@ -33,11 +33,10 @@ void setup()
 
 void loop()
 {
-    Serial.print(F("[RF69] Waiting for incoming transmission ... "));
+    Serial.print(F("[SX1278] Waiting for incoming transmission ... "));
 
     // you can receive data as an Arduino String
     String str;
-
     int state = radio.receive(str);
 
     // you can also receive data as byte array
@@ -52,14 +51,26 @@ void loop()
         Serial.println(F("success!"));
 
         // print the data of the packet
-        Serial.print(F("[RF69] Data:\t\t"));
+        Serial.print(F("[SX1278] Data:\t\t\t"));
         Serial.println(str);
 
-        // print RSSI (Received Signal Strength Indicator)
+        // print the RSSI (Received Signal Strength Indicator)
         // of the last received packet
-        Serial.print(F("[RF69] RSSI:\t\t"));
+        Serial.print(F("[SX1278] RSSI:\t\t\t"));
         Serial.print(radio.getRSSI());
         Serial.println(F(" dBm"));
+
+        // print the SNR (Signal-to-Noise Ratio)
+        // of the last received packet
+        Serial.print(F("[SX1278] SNR:\t\t\t"));
+        Serial.print(radio.getSNR());
+        Serial.println(F(" dB"));
+
+        // print frequency error
+        // of the last received packet
+        Serial.print(F("[SX1278] Frequency error:\t"));
+        Serial.print(radio.getFrequencyError());
+        Serial.println(F(" Hz"));
     }
     else if (state == RADIOLIB_ERR_RX_TIMEOUT)
     {

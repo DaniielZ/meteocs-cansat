@@ -4,7 +4,10 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
 {
     // Time since last pid update
     float dt = (millis() - _last_pid_calculation_time);
-
+    if (dt < 100)
+    {
+        return;
+    }
     // Proportional term
     _proportional_term = _desired_temp - inner_temp;
 
@@ -46,6 +49,7 @@ double Temperature_Manager::get_heater_power()
 void Temperature_Manager::set_heater_power()
 {
     // Set heater PWM value
+    pinMode(_heater_pin, OUTPUT_12MA);
     analogWrite(_heater_pin, _heater_power);
 }
 
