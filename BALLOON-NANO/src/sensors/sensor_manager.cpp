@@ -207,9 +207,8 @@ void Sensor_manager::read_temps(Config &config)
     if (_outer_thermistor_initialized)
     {
         data.outter_temp_thermistor = _outer_thermistor.readCelsius();
+        data.average_outter_temp = data.outter_temp_thermistor;
     }
-
-    data.average_outter_temp = data.outter_temp_thermistor;
 
     _temp_manager.calculate_heater_power(data.average_inner_temp);
     _temp_manager.set_heater_power();
@@ -219,7 +218,6 @@ void Sensor_manager::read_temps(Config &config)
 
 void Sensor_manager::read_data(Config &config)
 {
-
     read_gps();
     read_inner_baro(config);
     // read_outter_baro(config);

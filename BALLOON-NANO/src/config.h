@@ -48,9 +48,6 @@ public:
     float SEA_LEVEL_HPA = 1015.0; // only used by outter baro
 
     float DESIRED_HEATER_TEMP = 35.0; // in C
-    // float P = 0; // set in temp manager.h
-    // float I = 0;
-    // float D = 0;
 
     const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
