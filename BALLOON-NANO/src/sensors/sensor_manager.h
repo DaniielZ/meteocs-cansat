@@ -21,12 +21,13 @@
  */
 class Sensor_manager
 {
-    unsigned long _last_gps_packet_time = 0;
+    
     // SENSOR OBJECTS AND Comunication
     // GPS UART0
     TinyGPSPlus _gps;
     SerialUART *_gps_serial;
     bool _gps_initialized = false;
+    unsigned long _last_gps_packet_time = 0;
     // BARO WIRE0
     MS5611 _outter_baro;
     bool _outter_baro_initialized = false;
@@ -94,7 +95,7 @@ public:
         unsigned long time_since_last_gps = 0;            // ms
         unsigned long times_since_last_ranging_result[3]; // ms
         unsigned long time_since_last_ranging_pos = 0;    // ms
-        unsigned long gps_time = 0;                       // ms
+        unsigned long gps_time = 0;                       // 
     };
 
     //[F] = not sent over lora
