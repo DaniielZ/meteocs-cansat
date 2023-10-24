@@ -4,33 +4,39 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
 {
     // Time since last pid update
     float dt = (millis() - _last_pid_calculation_time);
-    if (dt < 100)
-    {
-        return;
-    }
-    // Proportional term
-    _proportional_term = _desired_temp - inner_temp;
 
-    // Integral term
-    // NOT SURE IF REALLY REQUIRED, MORE TESTING WITH MORE EXTREME TEMPERATURES IS NEEDED
-    // If the temperature is starting to go over the desired temperature,
-    // add a penalty to integral term calculation to try and quickly eliminate temperature overshoot
-    if (_proportional_term >= -_allowed_overshoot)
+    // If the temperature is 0.1 degree below or above the safe temp, reset the timer
+    if ((_safe_temp - 0.1) > inner_temp || inner_temp > (_safe_temp + 0.1))
     {
-        _integral_term += _proportional_term * dt;
+        _time_at_safe_temp_start = millis();
     }
+
+    // Calculate proportional term based on the state 
+    if (_safe_temp == _desired_temp)
+    {
+        _proportional_term = _desired_temp - inner_temp;
+    } 
     else
     {
-        _integral_term += _integral_penalty * _proportional_term * dt;
+        // If the temperature has stayed at the safe temp for 15 seconds, increase the safe temperature
+        if ((millis() - _time_at_safe_temp_start) > 15000)
+        {
+            _safe_temp += 1;
+            _time_at_safe_temp_start = millis();
+        }
+        _proportional_term = _safe_temp - inner_temp;
     }
+
+    // Integral term
+    _integral_term += _proportional_term * dt;
 
     // Derivative term
     _derivative_term = (_proportional_term - _last_proportional_term) / dt;
 
     // Heater power is the sum of all the individual values multiplied by their coefficients
     // The values need to be constrained to not become too extreme
-    _heater_power = constrain(_Kp * _proportional_term, -_proportional_limit, _proportional_limit);
-    _heater_power += constrain(_Ki * _integral_term, -_integral_limit, _integral_limit);
+    _heater_power = constrain(_Kp * _proportional_term, 0, _proportional_limit);
+    _heater_power += constrain(_Ki * _integral_term, 0, _integral_limit);
     _heater_power += constrain(_Kd * _derivative_term, -_derivative_limit, 0);
 
     // Constrain the final sum to PWM output range
