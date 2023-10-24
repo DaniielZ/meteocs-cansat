@@ -21,7 +21,7 @@
  */
 class Sensor_manager
 {
-    
+
     // SENSOR OBJECTS AND Comunication
     // GPS UART0
     TinyGPSPlus _gps;
@@ -63,6 +63,7 @@ class Sensor_manager
     void read_batt_voltage(Config &config);
 
 public:
+    // TODO make a different struct for sendable data and raw data
     struct Sensor_data
     {
         // array data is ordered: x y z
@@ -95,7 +96,7 @@ public:
         unsigned long time_since_last_gps = 0;            // ms
         unsigned long times_since_last_ranging_result[3]; // ms
         unsigned long time_since_last_ranging_pos = 0;    // ms
-        unsigned long gps_time = 0;                       // 
+        unsigned long gps_time = 0;                       //
     };
 
     //[F] = not sent over lora

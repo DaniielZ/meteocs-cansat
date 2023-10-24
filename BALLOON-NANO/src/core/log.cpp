@@ -163,20 +163,11 @@ void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool tran
         _lora.setDio0Action(rfm_transmission_end, RISING);
     }
 
-    // prints data
-    // if (packet_sent)
-    // {
-    //     Serial.print("SEND DATA: ");
-    // }
-    // else
-    // {
-    //     Serial.print("NOT  DATA: ");
-    // }
-
-    // Serial.println(logable_packet);
     Serial.print("/*");
-    Serial.print(sendable_packet);
+    // Serial.print(sendable_packet);
+    Serial.println(logable_packet);
     Serial.println("*/");
+
     // logs data to flash if apropriate state
     if (log_to_storage && _flash_initialized)
     {
