@@ -8,6 +8,7 @@ Time_Averaging_Filter<T>::Time_Averaging_Filter(unsigned int capacity, unsigned 
     _values = new T[capacity];
     _timestamps = new unsigned long[capacity];
     set_averaging_time(averaging_time_ms);
+    reset_data();
 }
 
 template <typename T>

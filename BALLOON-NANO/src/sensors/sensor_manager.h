@@ -46,12 +46,15 @@ class Sensor_manager
     bool _outer_thermistor_initialized = false;
     // temp manager
     Temperature_Manager _temp_manager;
+    bool _heater_enabled = false;
     Time_Averaging_Filter<float> *_inner_temp_averager;
     Time_Averaging_Filter<float> *_outer_temp_averager;
     // ranging lora
     Ranging_Wrapper _lora;
     unsigned long _last_ranging_pos_time = 0;
     int _slave_index = 0;
+    // battery averager
+    Time_Averaging_Filter<float> *_batt_averager;
 
     void position_calculation(Config &config);
     void read_ranging(Config &config);
@@ -93,7 +96,8 @@ public:
         Ranging_Wrapper::Ranging_Result ranging_results[3];
         Ranging_Wrapper::Position ranging_position = Ranging_Wrapper::Position(0, 0, 0);
 
-        float batt_votage = 0; // V
+        float batt_votage = 0;          // V
+        float average_batt_voltage = 0; // v
 
         unsigned long time = 0;                           // ms
         unsigned long time_since_last_gps = 0;            // ms
@@ -103,6 +107,11 @@ public:
     };
 
     //[F] = not sent over lora
+    void enable_heater()
+    {
+        _heater_enabled = true;
+        _temp_manager.reset();
+    };
     String header = "Data header:";
     Sensor_data data;
     String init(Config &config);

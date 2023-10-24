@@ -47,10 +47,12 @@ public:
         .SPI = &SPI1};
 
     float DESIRED_HEATER_TEMP = 35.0; // in C
-    unsigned int OUTER_TEMP_AVERAGE_TIME = 2000;
+    unsigned int OUTER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int OUTER_TEMP_AVERAGE_CAPACITY = ((OUTER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
-    unsigned int INNER_TEMP_AVERAGE_TIME = 2000;
+    unsigned int INNER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int INNER_TEMP_AVERAGE_CAPACITY = ((INNER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
+    unsigned int BAT_AVERAGE_TIME = 3000;
+    const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
     const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
@@ -112,6 +114,8 @@ public:
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
+    String DATA_SEND_STOP_MSG = "data_stop";
+    String HEATER_ENABLE_MSG = "heater_enable";
     String FORMAT_MSG = "format_flash";
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

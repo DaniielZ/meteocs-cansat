@@ -67,6 +67,9 @@ String Sensor_manager::init(Config &config)
     // RANGING lora
     status += _lora.init(config.LORA2400_MODE, config.LORA2400);
 
+    // bat averager
+    _batt_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
+
     return status;
 }
 
@@ -76,6 +79,9 @@ void Sensor_manager::read_batt_voltage(Config &config)
     analogReadResolution(12);
     float adc_reading = analogRead(config.BATT_SENS_PIN);
     data.batt_votage = (adc_reading / 4095.0) * config.BATT_SENS_CONVERSION_FACTOR;
+
+    _batt_averager->add_data(data.batt_votage);
+    data.average_batt_voltage = _batt_averager->get_averaged_value();
 }
 void Sensor_manager::position_calculation(Config &config)
 {
@@ -127,6 +133,7 @@ void Sensor_manager::read_gps()
     while (_gps_serial->available() > 0)
     {
         _gps.encode(_gps_serial->read());
+
         if (_gps.location.isUpdated())
         {
             _last_gps_packet_time = millis();
@@ -193,11 +200,13 @@ void Sensor_manager::read_temps(Config &config)
         _outer_temp_averager->add_data(data.outter_temp_thermistor);
         data.average_outter_temp = _outer_temp_averager->get_averaged_value();
     }
+    if (_heater_enabled)
+    {
+        _temp_manager.calculate_heater_power(data.average_inner_temp);
+        _temp_manager.set_heater_power();
 
-    _temp_manager.calculate_heater_power(data.average_inner_temp);
-    _temp_manager.set_heater_power();
-
-    data.heater_power = _temp_manager.get_heater_power();
+        data.heater_power = _temp_manager.get_heater_power();
+    }
 }
 
 void Sensor_manager::read_data(Config &config)
