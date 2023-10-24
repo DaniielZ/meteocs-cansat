@@ -19,3 +19,6 @@ public:
     void add_data(T data_point);
     T get_averaged_value();
 };
+
+template class Time_Averaging_Filter<int>;
+template class Time_Averaging_Filter<float>;

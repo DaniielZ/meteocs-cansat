@@ -1,4 +1,5 @@
 #include "data_filtering.h"
+#include <Arduino.h>
 
 template <typename T>
 Time_Averaging_Filter<T>::Time_Averaging_Filter(unsigned int capacity, unsigned long averaging_time_ms)
@@ -40,7 +41,7 @@ void Time_Averaging_Filter<T>::add_data(T data_point)
     unsigned int oldest_index = 0;
     unsigned long oldest_timestamp = _timestamps[0];
 
-    for (unsigned int i = 1; i < capacity; i++)
+    for (unsigned int i = 1; i < _capacity; i++)
     {
         if (_timestamps[i] < oldest_timestamp)
         {
@@ -62,11 +63,11 @@ T Time_Averaging_Filter<T>::get_averaged_value()
     T sum = T(); // Initialize the sum to the default value for type T
     unsigned int count = 0;
 
-    for (unsigned int i = 0; i < capacity; i++)
+    for (unsigned int i = 0; i < _capacity; i++)
     {
-        if (current_time - timestamps[i] <= averaging_time)
+        if (current_time - _timestamps[i] <= _averaging_time)
         {
-            sum += values[i];
+            sum += _values[i];
             count++;
         }
     }
@@ -82,8 +83,3 @@ T Time_Averaging_Filter<T>::get_averaged_value()
         return T();
     }
 }
-
-// Instantiate the class with the specific types you need in your Arduino code
-template class Time_Averaging_Filter<int>;
-template class Time_Averaging_Filter<float>;
-template class Time_Averaging_Filter<double>;

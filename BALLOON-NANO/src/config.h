@@ -8,6 +8,8 @@ class Config
 {
 public:
     //------------ OFTEN CHANGED ------------------
+    // hard data rate limiter
+    const int MAX_LOOP_TIME = 20; // ms
 
     bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
@@ -45,6 +47,10 @@ public:
         .SPI = &SPI1};
 
     float DESIRED_HEATER_TEMP = 35.0; // in C
+    unsigned int OUTER_TEMP_AVERAGE_TIME = 2000;
+    const unsigned int OUTER_TEMP_AVERAGE_CAPACITY = ((OUTER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
+    unsigned int INNER_TEMP_AVERAGE_TIME = 2000;
+    const unsigned int INNER_TEMP_AVERAGE_CAPACITY = ((INNER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
     const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
@@ -100,9 +106,6 @@ public:
     // Parachute
     int PARACHUTE_MOSFET = 27;   // mosfet 2
     int LAUNCH_RAIL_SWITCH = -1; // TBD
-
-    // hard data rate limiter
-    const int MAX_LOOP_TIME = 5; // ms
 
     // detection parameters
 

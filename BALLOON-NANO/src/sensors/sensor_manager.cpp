@@ -60,6 +60,9 @@ String Sensor_manager::init(Config &config)
 
     // TEMP CALCULATOR
     _temp_manager.init(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
+    // TEMP averagers
+    _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
+    _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
 
     // RANGING lora
     status += _lora.init(config.LORA2400_MODE, config.LORA2400);
@@ -181,12 +184,14 @@ void Sensor_manager::read_temps(Config &config)
     if (_inner_temp_probe_initialized)
     {
         data.inner_temp_probe = _inner_temp_probe.readTemperature();
-        data.average_inner_temp = data.inner_temp_probe;
+        _inner_temp_averager->add_data(data.inner_temp_probe);
+        data.average_inner_temp = _inner_temp_averager->get_averaged_value();
     }
     if (_outer_thermistor_initialized)
     {
         data.outter_temp_thermistor = _outer_thermistor.readCelsius();
-        data.average_outter_temp = data.outter_temp_thermistor;
+        _outer_temp_averager->add_data(data.outter_temp_thermistor);
+        data.average_outter_temp = _outer_temp_averager->get_averaged_value();
     }
 
     _temp_manager.calculate_heater_power(data.average_inner_temp);

@@ -12,6 +12,7 @@
 #include <RadioLib.h>
 #include "temperature_manager.h"
 #include <ranging_wrapper.h>
+#include "core/data_filtering.h"
 #include <Array.h>
 #include "config.h"
 
@@ -45,6 +46,8 @@ class Sensor_manager
     bool _outer_thermistor_initialized = false;
     // temp manager
     Temperature_Manager _temp_manager;
+    Time_Averaging_Filter<float> *_inner_temp_averager;
+    Time_Averaging_Filter<float> *_outer_temp_averager;
     // ranging lora
     Ranging_Wrapper _lora;
     unsigned long _last_ranging_pos_time = 0;
