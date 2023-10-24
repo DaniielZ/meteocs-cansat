@@ -45,7 +45,7 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
     Serial.print("Safe temp: " + String(_safe_temp, 5));
     _heater_power = constrain(_Kp * _proportional_term, -_proportional_limit, _proportional_limit);
     Serial.print("P: " + String(_Kp * _proportional_term));
-    // _heater_power += constrain(_Ki * _integral_term, 0, _integral_limit);
+    _heater_power += constrain(_Ki * _integral_term, 0, _integral_limit);
     Serial.print("  I: " + String(_Ki * _integral_term, 5));
     _heater_power += constrain(_Kd * _derivative_term, -_derivative_limit, 0);
     Serial.println("  D: " + String(_Kd * _derivative_term, 5));
