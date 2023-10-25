@@ -87,6 +87,9 @@ public:
         float average_inner_temp = 0;  // C
         float average_outter_temp = 0; // C
         float heater_power = 0;        // 0-255
+        float p = 0;                   // propotional * coeffcient
+        float i = 0;                   // integral * coeffcient
+        float d = 0;                   // derivative * coeffcient
 
         float humidity = 0; // %
 

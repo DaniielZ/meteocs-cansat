@@ -251,6 +251,12 @@ void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_sent,
     packet += String(data.inner_temp_probe, 2); // 31
     packet += ", ";
     packet += String(data.batt_votage, 2); // 32
+    packet += ", ";
+    packet += String(data.p, 4); // 33
+    packet += ", ";
+    packet += String(data.i, 4); // 34
+    packet += ", ";
+    packet += String(data.d, 4); // 35
 
     result_log = packet;
 }

@@ -69,6 +69,12 @@ void Temperature_Manager::set_heater_power()
     pinMode(_heater_pin, OUTPUT_12MA);
     analogWrite(_heater_pin, _heater_power);
 }
+void Temperature_Manager::get_pid(float &p, float &i, float &d)
+{
+    p = _proportional_term * _Kp;
+    i = _integral_term * _Ki;
+    d = _derivative_term * _Kd;
+}
 
 void Temperature_Manager::init(int heater_pin, int desired_temp)
 {

@@ -206,6 +206,9 @@ void Sensor_manager::read_temps(Config &config)
         _temp_manager.set_heater_power();
 
         data.heater_power = _temp_manager.get_heater_power();
+
+        // get pid values
+        _temp_manager.get_pid(data.p, data.i, data.d);
     }
 }
 
