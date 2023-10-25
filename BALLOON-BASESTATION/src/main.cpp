@@ -6,9 +6,11 @@ bool transmiting_mode = false; // dont change
 
 String ARM_MSG = "arm_confirm";
 String DATA_MSG = "data_send";
+String DATA_STOP_MSG = "data_stop";
+String HEATER_ENABLE = "heater_enable";
 
 RFM_Wrapper com_lora;
-RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 433.575,
+RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 434.5,
                                        .CS = 7,
                                        .DIO0 = 5,
                                        .DIO1 = 4,
@@ -133,6 +135,18 @@ void loop()
             if (incoming_msg == "D")
             {
                 send_main_lora(DATA_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (incoming_msg == "S")
+            {
+                send_main_lora(DATA_STOP_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (incoming_msg == "H")
+            {
+                send_main_lora(HEATER_ENABLE);
                 Serial.println("Switching to recieving mode");
                 transmiting_mode = false;
             }

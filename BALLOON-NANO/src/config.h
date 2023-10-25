@@ -20,7 +20,7 @@ public:
 
     // LORA 433 SPI0
     Ranging_Wrapper::Lora_Device LORA433{
-        .FREQUENCY = 433.575,
+        .FREQUENCY = 434.5,
         .CS = 5,
         .DIO0 = 7,
         .DIO1 = 8,
@@ -54,7 +54,7 @@ public:
     unsigned int BAT_AVERAGE_TIME = 3000;
     const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
-    const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms
+    const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms  30000
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
     int MOSFET_ON_TIME = 10000;                // ms
 
