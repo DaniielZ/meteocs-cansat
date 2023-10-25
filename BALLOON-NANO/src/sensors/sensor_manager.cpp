@@ -215,6 +215,7 @@ void Sensor_manager::read_temps(Config &config)
 
 void Sensor_manager::read_data(Config &config)
 {
+    Serial.println("Free heap: " + String(rp2040.getFreeHeap()));
     read_gps();
     read_inner_baro(config);
     read_temps(config);
