@@ -44,20 +44,23 @@ void read_main_lora()
         return;
     }
     String msg;
-    if (!com_lora.recieve(msg))
+    float rssi = 0, snr = 0;
+    if (!com_lora.recieve(msg, rssi, snr))
     {
         return;
     }
 
     if (msg.charAt(0) == '!')
     {
-        Serial.println(msg);
+        Serial.print(msg);
+        Serial.println(", " + String(rssi, 2) + ", " + String(snr, 2))
     }
     else
     {
         // format for visualiser
         Serial.print("/*");
         Serial.print(msg);
+        Serial.print(", " + String(rssi, 2) + ", " + String(snr, 2));
         Serial.println("*/");
     }
 }

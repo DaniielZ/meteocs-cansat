@@ -126,7 +126,7 @@ bool RFM_Wrapper::send(String msg)
 }
 
 // if recieved will return true
-bool RFM_Wrapper::recieve(String &msg)
+bool RFM_Wrapper::recieve(String &msg, float &rssi, float &snr)
 {
     // send back anything that was left over when recieve was called and then someone called transmit
     if (_recieve_left_over != "")
@@ -159,6 +159,8 @@ bool RFM_Wrapper::recieve(String &msg)
         if (_action_state == RADIOLIB_ERR_NONE)
         {
             msg = str; /// mybe later add rssi
+            rssi = _lora.getRSSI();
+            snr = _lora.getSNR();
         }
         // reset state
         _action_state = RADIOLIB_ERR_NONE;
