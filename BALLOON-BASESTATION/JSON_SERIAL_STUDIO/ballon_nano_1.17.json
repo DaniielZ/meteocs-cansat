@@ -373,6 +373,175 @@
             ],
             "title": "Acc",
             "widget": "multiplot"
+<<<<<<< Updated upstream:BALLOON-BASESTATION/JSON_SERIAL_STUDIO/ballon_nano_1.17.json
+=======
+        },
+        {
+            "datasets": [
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "Gyro X",
+                    "units": "Dps",
+                    "value": "%26",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "Gyro Y",
+                    "units": "Dps",
+                    "value": "%27",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "Gyro Z",
+                    "units": "Dps",
+                    "value": "%28",
+                    "widget": ""
+                }
+            ],
+            "title": "Gyro",
+            "widget": "multiplot"
+        },
+        {
+            "datasets": [
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "gps time",
+                    "units": "s",
+                    "value": "%25",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "outer_temp_RAW",
+                    "units": "C",
+                    "value": "%29",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "inner_baro_temp_RAW",
+                    "units": "C",
+                    "value": "%30",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "inner_probe_temp_RAW",
+                    "units": "C",
+                    "value": "%31",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "p_RAW",
+                    "units": "",
+                    "value": "%33",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "i_RAW",
+                    "units": "",
+                    "value": "%34",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "d_RAW",
+                    "units": "",
+                    "value": "%35",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": true,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "batt_RAW",
+                    "units": "V",
+                    "value": "%32",
+                    "widget": ""
+                }
+            ],
+            "title": "RAW_data",
+            "widget": ""
+>>>>>>> Stashed changes:BALLOON-BASESTATION/JSON_SERIAL_STUDIO/ballon_nano_local(1.17).json
         }
     ],
     "separator": "",
