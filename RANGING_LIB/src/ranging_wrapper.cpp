@@ -52,6 +52,7 @@ Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator*(doubl
     result.z = this->z * other;
     return result;
 }
+// However, for ranging operation, the use of SFII and SF12 is not permitted. Similarly, the bandwidth configuration for ranging operations is restricted to the values 406.25 kHz. 812.5 kHz and 1625 kHz
 String Ranging_Wrapper::begin_lora(Mode mode, Lora_Device config)
 {
     String status;
@@ -126,8 +127,7 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
         _lora.finishTransmit();
         _lora_range_state = -1;
 
-        // start ranging but first reset lora
-        _lora.reset();
+        // start ranging but first reset lora by calling begin lora again
         begin_lora(_mode, _config);
 
         // setup interrupt

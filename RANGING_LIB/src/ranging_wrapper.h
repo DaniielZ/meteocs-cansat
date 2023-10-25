@@ -37,7 +37,7 @@ public:
     struct Ranging_Slave
     {
         Position position; // in degrees
-        long address;
+        uint32_t address;
     };
     struct Lora_Device
     {

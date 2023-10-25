@@ -14,9 +14,9 @@ public:
     bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
 
-    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345671},
-                                                        {.position = {0, 0, 0}, .address = 0x12345672},
-                                                        {.position = {0, 0, 0}, .address = 0x12345673}};
+    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345678},
+                                                        {.position = {0, 0, 0}, .address = 0xABCD9876},
+                                                        {.position = {0, 0, 0}, .address = 0x9A8B7C6D}};
 
     // LORA 433 SPI0
     Ranging_Wrapper::Lora_Device LORA433{
@@ -41,9 +41,9 @@ public:
         .RESET = 14, // 10
         .SYNC_WORD = 0xF5,
         .TXPOWER = 14,
-        .SPREADING = 12,
+        .SPREADING = 10,
         .CODING_RATE = 7,
-        .SIGNAL_BW = 200,
+        .SIGNAL_BW = 406.25,
         .SPI = &SPI1};
 
     float DESIRED_HEATER_TEMP = 35.0; // in C

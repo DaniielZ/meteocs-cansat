@@ -24,7 +24,7 @@ RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 434.5,
 
 Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::SLAVE;
 Ranging_Wrapper ranging_lora;
-Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x12345671}; // pos not important rn;
+Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x12345678}; // posible addreses 0x12345678 , 0xABCD9876 , 0x9A8B7C6D
 Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .CS = 17,
                                                .DIO0 = 22, // busy
@@ -32,9 +32,9 @@ Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .RESET = 20,
                                                .SYNC_WORD = 0xF5,
                                                .TXPOWER = 14,
-                                               .SPREADING = 12,
+                                               .SPREADING = 10,
                                                .CODING_RATE = 7,
-                                               .SIGNAL_BW = 400,
+                                               .SIGNAL_BW = 406.25,
                                                .SPI = &SPI};
 
 void read_main_lora()
