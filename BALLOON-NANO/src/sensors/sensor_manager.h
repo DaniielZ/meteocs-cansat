@@ -52,6 +52,7 @@ class Sensor_manager
     // ranging lora
     Ranging_Wrapper _lora;
     unsigned long _last_ranging_pos_time = 0;
+    int _last_slave_index = 0;
     int _slave_index = 0;
     // battery averager
     Time_Averaging_Filter<float> *_batt_averager;

@@ -25,6 +25,7 @@ void ascent_state(Cansat &cansat)
 
         send_data_ascent(cansat);
         cansat.sensors.read_data(cansat.config);
+        Serial.println("Used heap: " + String(rp2040.getUsedHeap()));
 
         if (digitalRead(cansat.config.LAUNCH_RAIL_SWITCH))
         {

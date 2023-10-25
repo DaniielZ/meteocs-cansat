@@ -97,22 +97,26 @@ void Sensor_manager::position_calculation(Config &config)
 
 void Sensor_manager::read_ranging(Config &config)
 {
-    // increment next address
+
+    // try to range next slave address
     Ranging_Wrapper::Ranging_Result result = {0, 0};
     bool move_to_next_slave = false;
     if (_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
     {
+        // ranging data read and ranging for current slave started
         move_to_next_slave = true;
     }
-    // check if something was read
+    // check if something usefull was read from the previous slave
     if (result.distance != 0 && result.time != 0)
     {
-        data.ranging_results[_slave_index] = result;
-        Serial.println(_slave_index);
+        data.ranging_results[_last_slave_index] = result;
+        Serial.println(_last_slave_index);
     }
-    // check if should move to next slave
+
+    // move to next slave
     if (move_to_next_slave)
     {
+        _last_slave_index = _slave_index;
         int array_length = 3;
         _slave_index++;
         if (_slave_index > array_length - 1)
@@ -120,8 +124,6 @@ void Sensor_manager::read_ranging(Config &config)
             // reset index
             _slave_index = 0;
         }
-        // enable ranging for next lora already
-        _lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT);
     }
 }
 void Sensor_manager::read_gps()
@@ -215,7 +217,6 @@ void Sensor_manager::read_temps(Config &config)
 
 void Sensor_manager::read_data(Config &config)
 {
-    Serial.println("Free heap: " + String(rp2040.getFreeHeap()));
     read_gps();
     read_inner_baro(config);
     read_temps(config);
@@ -224,4 +225,5 @@ void Sensor_manager::read_data(Config &config)
     read_batt_voltage(config);
     position_calculation(config);
     read_time();
+
 }

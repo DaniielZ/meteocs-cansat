@@ -3,8 +3,7 @@
 
 bool prepare_state_loop(Cansat &cansat)
 {
-    int *buffer_overfollwer = new int[10000];
-
+    // int *buffer_overfollwer = new int[10000];
     unsigned long loop_start = millis();
     // check for further commands either pc or lora
     String incoming_msg = "";
