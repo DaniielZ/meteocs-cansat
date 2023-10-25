@@ -20,17 +20,6 @@ String Sensor_manager::init(Config &config)
         status += " gps error";
     }
 
-    // BARO WIRE1
-    // _outter_baro = MS5611(config.MS5611_ADDRESS);
-    // if (!_outter_baro.begin(&Wire))
-    // {
-    //     status += " Outter Baro error";
-    // }
-    // else
-    // {
-    //     _outter_baro_initialized = true;
-    // }
-
     // Inner baro
     _inner_baro = Adafruit_BMP085();
     if (!_inner_baro.begin(config.BMP180_ADDRESS_I2C, &Wire))
@@ -55,9 +44,8 @@ String Sensor_manager::init(Config &config)
     // TEMP PROBE
     _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
     _inner_temp_probe.address(config.STS35_ADDRESS);
-    //_inner_temp_probe.setRepeatability(ClosedCube::Sensor::STS35::STS35_REPEATABILITY_LOW);
     _inner_temp_probe_initialized = true;
-    // test
+    // Test temp probe to see if its working
     float test = _inner_temp_probe.readTemperature();
     if (test > 100.00 || test < -100.0 || test == 0.00)
     {
@@ -65,15 +53,22 @@ String Sensor_manager::init(Config &config)
         status += "Inner probe error";
     }
 
+    // Outter temp probe
     analogReadResolution(12);
     _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
     _outer_thermistor_initialized = true;
 
     // TEMP CALCULATOR
     _temp_manager.init(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
+    // TEMP averagers
+    _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
+    _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
 
     // RANGING lora
     status += _lora.init(config.LORA2400_MODE, config.LORA2400);
+
+    // bat averager
+    _batt_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
 
     return status;
 }
@@ -84,6 +79,9 @@ void Sensor_manager::read_batt_voltage(Config &config)
     analogReadResolution(12);
     float adc_reading = analogRead(config.BATT_SENS_PIN);
     data.batt_votage = (adc_reading / 4095.0) * config.BATT_SENS_CONVERSION_FACTOR;
+
+    _batt_averager->add_data(data.batt_votage);
+    data.average_batt_voltage = _batt_averager->get_averaged_value();
 }
 void Sensor_manager::position_calculation(Config &config)
 {
@@ -135,6 +133,7 @@ void Sensor_manager::read_gps()
     while (_gps_serial->available() > 0)
     {
         _gps.encode(_gps_serial->read());
+
         if (_gps.location.isUpdated())
         {
             _last_gps_packet_time = millis();
@@ -146,17 +145,7 @@ void Sensor_manager::read_gps()
         }
     }
 }
-// void Sensor_manager::read_outter_baro(Config &config)
-// {
-//     if (_outter_baro_initialized != true)
-//     {
-//         return;
-//     }
-//     _outter_baro.read(); // note no error checking => "optimistic".
-//     data.outter_baro_pressure = _outter_baro.getPressure();
-//     data.outter_baro_height = get_altitude(data.outter_baro_pressure, config.SEA_LEVEL_HPA);
-//     data.outter_baro_temp = _outter_baro.getTemperature();
-// }
+
 void Sensor_manager::read_inner_baro(Config &config)
 {
     if (_inner_baro_initialized != true)
@@ -202,25 +191,28 @@ void Sensor_manager::read_temps(Config &config)
     if (_inner_temp_probe_initialized)
     {
         data.inner_temp_probe = _inner_temp_probe.readTemperature();
-        data.average_inner_temp = data.inner_temp_probe;
+        _inner_temp_averager->add_data(data.inner_temp_probe);
+        data.average_inner_temp = _inner_temp_averager->get_averaged_value();
     }
     if (_outer_thermistor_initialized)
     {
         data.outter_temp_thermistor = _outer_thermistor.readCelsius();
-        data.average_outter_temp = data.outter_temp_thermistor;
+        _outer_temp_averager->add_data(data.outter_temp_thermistor);
+        data.average_outter_temp = _outer_temp_averager->get_averaged_value();
     }
+    if (_heater_enabled)
+    {
+        _temp_manager.calculate_heater_power(data.average_inner_temp);
+        _temp_manager.set_heater_power();
 
-    _temp_manager.calculate_heater_power(data.average_inner_temp);
-    _temp_manager.set_heater_power();
-
-    data.heater_power = _temp_manager.get_heater_power();
+        data.heater_power = _temp_manager.get_heater_power();
+    }
 }
 
 void Sensor_manager::read_data(Config &config)
 {
     read_gps();
     read_inner_baro(config);
-    // read_outter_baro(config);
     read_temps(config);
     read_imu();
     read_ranging(config);

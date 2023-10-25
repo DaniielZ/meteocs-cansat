@@ -6,15 +6,15 @@ class Temperature_Manager
     // Heating
     int _heater_pin;
     float _desired_temp; // in C
-    float _safe_temp = _desired_temp - 5;
+    float _safe_temp;
     const int _pwm_min = 0;
-    // This should limit the max heater power to around 5 watts
+    // This should limit the max heater power to around 3 watts
     const int _pwm_max = 32;
 
     // PID coefficients
-    const float _Kp = 10;       // Proportional (Best between 5 and 15)
-    const float _Ki = 0.00008;  // Integral (Best between 0.00008 and 0.00013)
-    const float _Kd = 5000;     // Derivative (Best between 5000 and 20000)
+    const float _Kp = 7.5;     // Proportional (Best between 5 and 15)
+    const float _Ki = 0.00001; // Integral (Best between 0.00008 and 0.00013)
+    const float _Kd = 10000;   // Derivative (Best between 5000 and 20000)
 
     // PID values
     float _proportional_term = 0;
@@ -38,5 +38,6 @@ public:
     void set_heater_power();
     void calculate_heater_power(float inner_temp);
     double get_heater_power();
+    void reset() { _last_pid_calculation_time = millis(); };
     void init(int heater_pin, int desired_temp);
 };

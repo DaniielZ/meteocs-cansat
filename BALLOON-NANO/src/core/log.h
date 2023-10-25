@@ -8,7 +8,6 @@ class Log
 {
     RFM96 _lora = new Module(5, 7, 6, 8, SPI);
     bool _lora_initialized = false;
-    String info_msg;
     FS *_flash;
     String _log_file_path_final;
     bool _flash_initialized = false;

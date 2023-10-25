@@ -373,8 +373,6 @@
             ],
             "title": "Acc",
             "widget": "multiplot"
-<<<<<<< Updated upstream:BALLOON-BASESTATION/JSON_SERIAL_STUDIO/ballon_nano_1.17.json
-=======
         },
         {
             "datasets": [
@@ -481,69 +479,12 @@
                     "units": "C",
                     "value": "%31",
                     "widget": ""
-                },
-                {
-                    "alarm": 0,
-                    "fft": false,
-                    "fftSamples": 1024,
-                    "graph": true,
-                    "led": false,
-                    "log": false,
-                    "max": 0,
-                    "min": 0,
-                    "title": "p_RAW",
-                    "units": "",
-                    "value": "%33",
-                    "widget": ""
-                },
-                {
-                    "alarm": 0,
-                    "fft": false,
-                    "fftSamples": 1024,
-                    "graph": true,
-                    "led": false,
-                    "log": false,
-                    "max": 0,
-                    "min": 0,
-                    "title": "i_RAW",
-                    "units": "",
-                    "value": "%34",
-                    "widget": ""
-                },
-                {
-                    "alarm": 0,
-                    "fft": false,
-                    "fftSamples": 1024,
-                    "graph": true,
-                    "led": false,
-                    "log": false,
-                    "max": 0,
-                    "min": 0,
-                    "title": "d_RAW",
-                    "units": "",
-                    "value": "%35",
-                    "widget": ""
-                },
-                {
-                    "alarm": 0,
-                    "fft": false,
-                    "fftSamples": 1024,
-                    "graph": true,
-                    "led": false,
-                    "log": false,
-                    "max": 0,
-                    "min": 0,
-                    "title": "batt_RAW",
-                    "units": "V",
-                    "value": "%32",
-                    "widget": ""
                 }
             ],
             "title": "RAW_data",
             "widget": ""
->>>>>>> Stashed changes:BALLOON-BASESTATION/JSON_SERIAL_STUDIO/ballon_nano_local(1.17).json
         }
     ],
     "separator": "",
-    "title": "balllon_nano 1.17"
+    "title": "balllon_nano_local(1.17)"
 }

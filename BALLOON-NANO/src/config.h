@@ -8,6 +8,8 @@ class Config
 {
 public:
     //------------ OFTEN CHANGED ------------------
+    // hard data rate limiter
+    const int MAX_LOOP_TIME = 20; // ms
 
     bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
@@ -44,10 +46,13 @@ public:
         .SIGNAL_BW = 200,
         .SPI = &SPI1};
 
-    // Sea level Hpa for barometer height
-    float SEA_LEVEL_HPA = 1015.0; // only used by outter baro
-
     float DESIRED_HEATER_TEMP = 35.0; // in C
+    unsigned int OUTER_TEMP_AVERAGE_TIME = 3000;
+    const unsigned int OUTER_TEMP_AVERAGE_CAPACITY = ((OUTER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
+    unsigned int INNER_TEMP_AVERAGE_TIME = 3000;
+    const unsigned int INNER_TEMP_AVERAGE_CAPACITY = ((INNER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
+    unsigned int BAT_AVERAGE_TIME = 3000;
+    const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
     const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
@@ -76,13 +81,10 @@ public:
 
     Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::MASTER;
 
-    int RANGING_TIMEOUT = 500; // ms
+    int RANGING_TIMEOUT = 500; // ms  might need to adjust this if lora parameters change
     int SD_CARD_CS = 20;
 
     SPIClassRP2040 *SD_CARD_SPI = &SPI;
-
-    // BARO WIRE0
-    int MS5611_ADDRESS = 0x76; // 77 or 76 (77 is the real one)
 
     int BMP180_ADDRESS_I2C = 0x77; // or 0x76 :D
 
@@ -107,14 +109,13 @@ public:
     int PARACHUTE_MOSFET = 27;   // mosfet 2
     int LAUNCH_RAIL_SWITCH = -1; // TBD
 
-    // hard data rate limiter
-    const int MAX_LOOP_TIME = 5; // ms
-
     // detection parameters
 
     // ARMING AND DATA SENDING MSG IN PREP SATE
     String ARM_MSG = "arm_confirm";
     String DATA_SEND_MSG = "data_send";
+    String DATA_SEND_STOP_MSG = "data_stop";
+    String HEATER_ENABLE_MSG = "heater_enable";
     String FORMAT_MSG = "format_flash";
     String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
 };

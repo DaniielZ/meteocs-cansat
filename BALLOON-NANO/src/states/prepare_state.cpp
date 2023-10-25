@@ -26,7 +26,22 @@ void prepare_state_loop(Cansat &cansat)
             cansat.sensors.read_data(cansat.config);
             cansat.log.data(cansat.sensors.data, true, true);
             delay(cansat.config.MAX_LOOP_TIME);
+
+            if (Serial.available() > 0)
+            {
+                incoming_msg = Serial.readString();
+                if (incoming_msg == cansat.config.DATA_SEND_STOP_MSG)
+                {
+                    break;
+                }
+            }
         }
+    }
+    // check if should enable heater
+    else if (incoming_msg == cansat.config.HEATER_ENABLE_MSG)
+    {
+        cansat.sensors.enable_heater();
+        return;
     }
     // check if should arm
     else if (incoming_msg == cansat.config.ARM_MSG)

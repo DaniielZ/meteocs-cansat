@@ -25,6 +25,7 @@ public:
 
     Config config;
     Sensor_manager sensors;
+    
     Log log;
     void init_all_com_bus(Config &config);
     void start_states(Cansat &cansat);
