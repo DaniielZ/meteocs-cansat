@@ -257,6 +257,8 @@ void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_sent,
     packet += String(data.i, 4); // 34
     packet += ", ";
     packet += String(data.d, 4); // 35
+    packet += ", ";
+    packet += String(data.target_temp, 1); // 36
 
     result_log = packet;
 }

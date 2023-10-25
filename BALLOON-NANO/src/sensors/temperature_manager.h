@@ -38,7 +38,8 @@ public:
     void set_heater_power();
     void calculate_heater_power(float inner_temp);
     double get_heater_power();
-    void reset() { _last_pid_calculation_time = millis(); };
+    void reset() { _last_pid_calculation_time = millis(); }
     void get_pid(float &p, float &i, float &d);
+    float get_target_temp() { return _safe_temp; }
     void init(int heater_pin, int desired_temp);
 };

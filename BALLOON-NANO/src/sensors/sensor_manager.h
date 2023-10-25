@@ -90,6 +90,7 @@ public:
         float p = 0;                   // propotional * coeffcient
         float i = 0;                   // integral * coeffcient
         float d = 0;                   // derivative * coeffcient
+        float target_temp = 0;
 
         float humidity = 0; // %
 

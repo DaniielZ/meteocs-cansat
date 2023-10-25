@@ -209,6 +209,7 @@ void Sensor_manager::read_temps(Config &config)
 
         // get pid values
         _temp_manager.get_pid(data.p, data.i, data.d);
+        data.target_temp = _temp_manager.get_target_temp();
     }
 }
 
