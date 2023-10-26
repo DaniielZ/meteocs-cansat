@@ -46,12 +46,13 @@ public:
         .SIGNAL_BW = 406.25,
         .SPI = &SPI1};
 
-    float DESIRED_HEATER_TEMP = 35.0; // in C
+    float HEATER_CUT_OFF_VOLTAGE = 6.0; // V
+    float DESIRED_HEATER_TEMP = 35.0;   // in C
     unsigned int OUTER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int OUTER_TEMP_AVERAGE_CAPACITY = ((OUTER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
     unsigned int INNER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int INNER_TEMP_AVERAGE_CAPACITY = ((INNER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
-    unsigned int BAT_AVERAGE_TIME = 3000;
+    unsigned int BAT_AVERAGE_TIME = 5000;
     const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
     const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms  30000

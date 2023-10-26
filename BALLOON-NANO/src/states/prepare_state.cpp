@@ -40,7 +40,7 @@ bool prepare_state_loop(Cansat &cansat)
     // check if should enable heater
     else if (incoming_msg == cansat.config.HEATER_ENABLE_MSG)
     {
-        cansat.sensors.enable_heater();
+        cansat.sensors.set_heater(true);
     }
     // check if should arm
     else if (incoming_msg == cansat.config.ARM_MSG)

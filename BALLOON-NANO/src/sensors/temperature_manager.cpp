@@ -41,14 +41,9 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
 
     // Heater power is the sum of all the individual values multiplied by their coefficients
     // The values need to be constrained to not become too extreme
-    Serial.println();
-    Serial.print("Safe temp: " + String(_safe_temp, 5));
     _heater_power = constrain(_Kp * _proportional_term, -_proportional_limit, _proportional_limit);
-    Serial.print("P: " + String(_Kp * _proportional_term));
     _heater_power += constrain(_Ki * _integral_term, 0, _integral_limit);
-    Serial.print("  I: " + String(_Ki * _integral_term, 5));
     _heater_power += constrain(_Kd * _derivative_term, -_derivative_limit, 0);
-    Serial.println("  D: " + String(_Kd * _derivative_term, 5));
 
     // Constrain the final sum to PWM output range
     _heater_power = constrain(_heater_power, _pwm_min, _pwm_max);
@@ -66,8 +61,18 @@ double Temperature_Manager::get_heater_power()
 void Temperature_Manager::set_heater_power()
 {
     // Set heater PWM value
+    set_heater_power(_heater_power);
+}
+void Temperature_Manager::set_heater_power(float heater_power_pwm)
+{
+    // Set heater PWM value
     pinMode(_heater_pin, OUTPUT_12MA);
-    analogWrite(_heater_pin, _heater_power);
+    analogWrite(_heater_pin, heater_power_pwm);
+}
+void Temperature_Manager::reset()
+{
+    _last_pid_calculation_time = millis();
+    set_heater_power(0);
 }
 void Temperature_Manager::get_pid(float &p, float &i, float &d)
 {

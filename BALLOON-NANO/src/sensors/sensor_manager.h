@@ -112,9 +112,9 @@ public:
     };
 
     //[F] = not sent over lora
-    void enable_heater()
+    void set_heater(bool state)
     {
-        _heater_enabled = true;
+        _heater_enabled = state;
         _temp_manager.reset();
     };
     String header = "Data header:";

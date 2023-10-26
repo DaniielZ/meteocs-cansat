@@ -204,6 +204,13 @@ void Sensor_manager::read_temps(Config &config)
     }
     if (_heater_enabled)
     {
+        // check if should disable heater
+        if (data.average_batt_voltage < config.HEATER_CUT_OFF_VOLTAGE)
+        {
+            set_heater(false);
+            return;
+        }
+
         _temp_manager.calculate_heater_power(data.average_inner_temp);
         _temp_manager.set_heater_power();
 
@@ -225,5 +232,4 @@ void Sensor_manager::read_data(Config &config)
     read_batt_voltage(config);
     position_calculation(config);
     read_time();
-
 }
