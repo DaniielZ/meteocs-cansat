@@ -8,7 +8,6 @@ class Temperature_Manager
     float _desired_temp; // in C
     float _safe_temp;
     const int _pwm_min = 0;
-    // This should limit the max heater power to around 3 watts
     const int _pwm_max = 32;
 
     // PID coefficients
@@ -28,6 +27,8 @@ class Temperature_Manager
     const int _derivative_limit = _pwm_max / 2;
 
     // Timing
+    unsigned long int _heater_turn_on_time = 0;
+    unsigned long int _startup_pwm_limit_time = 1000 * 2 * 60; // 2 minutes
     unsigned long int _last_pid_calculation_time = 0;
     unsigned long int _time_at_safe_temp_start = 0;
 
