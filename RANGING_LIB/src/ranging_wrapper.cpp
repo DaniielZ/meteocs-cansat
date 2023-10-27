@@ -110,14 +110,17 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
         if (_lora_range_state == RADIOLIB_ERR_NONE)
         {
             result.distance = _lora.getRangingResult();
+            result.distance = _lora.get
             result.time = millis();
+            result.rssi = _lora.getRSSI();
+            result.snr = _lora.getSNR();
+            result.f_error = _lora.getFrequencyError();
             // Serial.print("Good: " + String(result.distance) + " Addr: ");
             // Serial.println(slave.address, HEX);
         }
         else
         {
-            result.distance = 0;
-            result.time = 0;
+            result = {0, 0, 0, 0, 0};
             // Serial.print("Ranging failed: " + String(_lora_range_state) + " Addr: ");
             // Serial.println(slave.address, HEX);
         }

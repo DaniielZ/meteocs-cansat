@@ -1,19 +1,28 @@
 #include "temperature_manager.h"
 
-void Temperature_Manager::calculate_heater_power(float inner_temp)
+// main function to call every
+void Temperature_Manager::update_heater_power(float inner_temp)
 {
-    // If temperature higher than safe temperature, set heater to off
-    if (inner_temp > (_safe_temp + 0.05))
+    _inner_temp = inner_temp;
+    calculate_heater_power();
+    set_heater_power(_heater_power);
+}
+
+// Safety check incase the pid loop did an opise
+void Temperature_Manager::check_heater_power()
+{
+    if (_inner_temp > (_safe_temp + 0.05))
     {
         _heater_power = 0;
-        return;
     }
-
+}
+void Temperature_Manager::calculate_heater_power()
+{
     // Time since last pid update
     float dt = (millis() - _last_pid_calculation_time);
 
     // If the temperature is 0.1 degree below or above the safe temp, reset the timer
-    if ((_safe_temp - 0.1) > inner_temp || inner_temp > (_safe_temp + 0.1))
+    if ((_safe_temp - 0.1) > _inner_temp || _inner_temp > (_safe_temp + 0.1))
     {
         _time_at_safe_temp_start = millis();
     }
@@ -21,7 +30,7 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
     // Calculate proportional term based on the state
     if (_safe_temp == _desired_temp)
     {
-        _proportional_term = _desired_temp - inner_temp;
+        _proportional_term = _desired_temp - _inner_temp;
     }
     else
     {
@@ -31,7 +40,7 @@ void Temperature_Manager::calculate_heater_power(float inner_temp)
             _safe_temp += 1;
             _time_at_safe_temp_start = millis();
         }
-        _proportional_term = _safe_temp - inner_temp;
+        _proportional_term = _safe_temp - _inner_temp;
     }
 
     // Integral term
@@ -78,29 +87,19 @@ double Temperature_Manager::get_heater_power()
     return _heater_power;
 }
 
-// Set heater PWM value
-void Temperature_Manager::set_heater_power()
-{
-    // Set heater PWM value
-    set_heater_power(_heater_power);
-}
-void Temperature_Manager::set_heater_power(float heater_power_pwm)
-{
-    set_heater_power(_heater_power);
-}
-
-// Set heater PWM value
+// heater PWM value
 void Temperature_Manager::set_heater_power(float heater_power_pwm)
 {
     pinMode(_heater_pin, OUTPUT_12MA);
     analogWrite(_heater_pin, heater_power_pwm);
 }
-
+// reset the last calculation times and set the mosfet to 0. Call this if ending the update loop or restarting it if there has been a long pause
 void Temperature_Manager::reset()
 {
     _last_pid_calculation_time = millis();
     _heater_turn_on_time = millis();
-    set_heater_power(0);
+    _heater_power = 0;
+    set_heater_power(_heater_power);
 }
 
 // Get current PID values
@@ -110,10 +109,14 @@ void Temperature_Manager::get_pid(float &p, float &i, float &d)
     i = _integral_term * _Ki;
     d = _derivative_term * _Kd;
 }
-
-void Temperature_Manager::init(int heater_pin, int desired_temp)
+// initialise the main values
+Temperature_Manager::Temperature_Manager(int heater_pin, float desired_temp)
 {
     _heater_pin = heater_pin;
     _desired_temp = desired_temp;
     _safe_temp = _desired_temp - 5;
+}
+Temperature_Manager::~Temperature_Manager()
+{
+    reset();
 }

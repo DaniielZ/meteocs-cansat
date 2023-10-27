@@ -45,7 +45,7 @@ class Sensor_manager
     NTC_Thermistor _outer_thermistor = NTC_Thermistor(0, 0, 0, 0, 0);
     bool _outer_thermistor_initialized = false;
     // temp manager
-    Temperature_Manager _temp_manager;
+    Temperature_Manager *_temp_manager;
     bool _heater_enabled = false;
     Time_Averaging_Filter<float> *_inner_temp_averager;
     Time_Averaging_Filter<float> *_outer_temp_averager;
@@ -115,7 +115,8 @@ public:
     void set_heater(bool state)
     {
         _heater_enabled = state;
-        _temp_manager.reset();
+        data.heater_power = 0;
+        _temp_manager->reset();
     };
     String header = "Data header:";
     Sensor_data data;

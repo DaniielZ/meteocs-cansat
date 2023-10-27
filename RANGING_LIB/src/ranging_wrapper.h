@@ -58,6 +58,9 @@ public:
     {
         double distance = 0;
         unsigned long time = 0;
+        float rssi = 0;
+        float snr = 0;
+        float f_error = 0;
     };
 
 private:

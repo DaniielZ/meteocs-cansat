@@ -35,14 +35,16 @@ class Temperature_Manager
     float _inner_temp = 0;
     float _heater_power = 0;
     void set_heater_power(float heater_power_pwm);
+    void calculate_heater_power();
+    void check_heater_power();
 
 public:
-    void set_heater_power();
-    void calculate_heater_power(float inner_temp);
-    double get_heater_power();
+    Temperature_Manager(int heater_pin, float desired_temp);
+    ~Temperature_Manager();
     // TODO properly reset all the necessary values
     void reset();
+    void update_heater_power(float inner_temp);
+    double get_heater_power();
     void get_pid(float &p, float &i, float &d);
     float get_target_temp() { return _safe_temp; }
-    void init(int heater_pin, int desired_temp);
 };

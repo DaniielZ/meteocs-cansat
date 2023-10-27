@@ -55,7 +55,7 @@ public:
     unsigned int BAT_AVERAGE_TIME = 5000;
     const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
-    const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms  30000
+    const int LORA_DATAPACKET_COOLDOWN = 30000; // in ms  30000
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
     int MOSFET_ON_TIME = 10000;                // ms
 

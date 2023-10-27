@@ -59,7 +59,7 @@ String Sensor_manager::init(Config &config)
     _outer_thermistor_initialized = true;
 
     // TEMP CALCULATOR
-    _temp_manager.init(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
+    _temp_manager = new Temperature_Manager(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
     // TEMP averagers
     _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
     _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
@@ -189,7 +189,7 @@ void Sensor_manager::read_imu()
 }
 void Sensor_manager::read_temps(Config &config)
 {
-    // average values first and take into account temp limits
+    // read and average values
     if (_inner_temp_probe_initialized)
     {
         data.inner_temp_probe = _inner_temp_probe.readTemperature();
@@ -204,21 +204,19 @@ void Sensor_manager::read_temps(Config &config)
     }
     if (_heater_enabled)
     {
+        _temp_manager->update_heater_power(data.average_inner_temp);
+
+        data.heater_power = _temp_manager->get_heater_power();
+
+        // get pid values
+        _temp_manager->get_pid(data.p, data.i, data.d);
+        data.target_temp = _temp_manager->get_target_temp();
+
         // check if should disable heater
         if (data.average_batt_voltage < config.HEATER_CUT_OFF_VOLTAGE)
         {
             set_heater(false);
-            return;
         }
-
-        _temp_manager.calculate_heater_power(data.average_inner_temp);
-        _temp_manager.set_heater_power();
-
-        data.heater_power = _temp_manager.get_heater_power();
-
-        // get pid values
-        _temp_manager.get_pid(data.p, data.i, data.d);
-        data.target_temp = _temp_manager.get_target_temp();
     }
 }
 

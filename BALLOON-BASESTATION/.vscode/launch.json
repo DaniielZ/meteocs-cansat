@@ -12,11 +12,11 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/build/pico/firmware.elf",
+            "executable": "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/build/pico/firmware.elf",
             "projectEnvName": "pico",
             "toolchainBinDir": "C:/Users/danie/.platformio/packages/toolchain-rp2040-earlephilhower/bin",
             "internalConsoleOptions": "openOnSessionStart",
-            "svdPath": "C:/Users/danie/.platformio/platforms/raspberrypi@src-ff76a3915224135aafad379817f41edd/misc/svd/rp2040.svd",
+            "svdPath": "C:/Users/danie/.platformio/platforms/raspberrypi/misc/svd/rp2040.svd",
             "preLaunchTask": {
                 "type": "PlatformIO",
                 "task": "Pre-Debug"
@@ -26,21 +26,21 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/build/pico/firmware.elf",
+            "executable": "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/build/pico/firmware.elf",
             "projectEnvName": "pico",
             "toolchainBinDir": "C:/Users/danie/.platformio/packages/toolchain-rp2040-earlephilhower/bin",
             "internalConsoleOptions": "openOnSessionStart",
-            "svdPath": "C:/Users/danie/.platformio/platforms/raspberrypi@src-ff76a3915224135aafad379817f41edd/misc/svd/rp2040.svd"
+            "svdPath": "C:/Users/danie/.platformio/platforms/raspberrypi/misc/svd/rp2040.svd"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "d:/Programing/Github/meteocs-cansat/BALLOON-BASESTATION/.pio/build/pico/firmware.elf",
+            "executable": "c:/Programing/meteocs-cansat/BALLOON-BASESTATION/.pio/build/pico/firmware.elf",
             "projectEnvName": "pico",
             "toolchainBinDir": "C:/Users/danie/.platformio/packages/toolchain-rp2040-earlephilhower/bin",
             "internalConsoleOptions": "openOnSessionStart",
-            "svdPath": "C:/Users/danie/.platformio/platforms/raspberrypi@src-ff76a3915224135aafad379817f41edd/misc/svd/rp2040.svd",
+            "svdPath": "C:/Users/danie/.platformio/platforms/raspberrypi/misc/svd/rp2040.svd",
             "loadMode": "manual"
         }
     ]

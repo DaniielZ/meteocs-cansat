@@ -36,6 +36,9 @@ Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .CODING_RATE = 7,
                                                .SIGNAL_BW = 406.25,
                                                .SPI = &SPI};
+const int buzzer_pin = 3;
+const int buzz_length = 200;
+bool master_basestation = true;
 
 void read_main_lora()
 {
@@ -53,7 +56,7 @@ void read_main_lora()
     if (msg.charAt(0) == '!')
     {
         Serial.print(msg);
-        Serial.println(", " + String(rssi, 2) + ", " + String(snr, 2))
+        Serial.println(", " + String(rssi, 2) + ", " + String(snr, 2));
     }
     else
     {
@@ -108,10 +111,14 @@ void int_LoRa_ranging(Ranging_Wrapper::Lora_Device lora_cfg)
 
 void setup()
 {
+
     Serial.begin(115200); // initialize serial
-    while (!Serial)
+    if (master_basestation)
     {
-        delay(100);
+        while (!Serial)
+        {
+            delay(100);
+        }
     }
     SPI1.setSCK(10);
     SPI1.setRX(12);
@@ -121,8 +128,10 @@ void setup()
     SPI.setRX(16);
     SPI.setTX(19);
     SPI.begin();
-
-    init_LoRa_main(com_config);
+    if (master_basestation)
+    {
+        init_LoRa_main(com_config);
+    }
     int_LoRa_ranging(ranging_device);
     Serial.println("base station setup done");
 }
@@ -195,6 +204,9 @@ void loop()
         if (result == true)
         {
             Serial.println("ranging ping recieved");
+            pinMode(buzzer_pin, OUTPUT_12MA);
+            // digitalWrite(buzzer_pin, HIGH);
+            tone(buzzer_pin, 1000, 250);
         }
     }
 }
