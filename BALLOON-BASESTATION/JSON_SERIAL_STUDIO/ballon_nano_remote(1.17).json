@@ -317,10 +317,38 @@
                     "log": false,
                     "max": 8,
                     "min": 0,
-                    "title": "batt_voltage",
+                    "title": "batt_voltage_average",
                     "units": "V",
                     "value": "%24",
                     "widget": "gauge"
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "rssi",
+                    "units": "",
+                    "value": "%25",
+                    "widget": ""
+                },
+                {
+                    "alarm": 0,
+                    "fft": false,
+                    "fftSamples": 1024,
+                    "graph": false,
+                    "led": false,
+                    "log": false,
+                    "max": 0,
+                    "min": 0,
+                    "title": "snr",
+                    "units": "",
+                    "value": "%26",
+                    "widget": ""
                 }
             ],
             "title": "Times/Other",
@@ -376,5 +404,5 @@
         }
     ],
     "separator": "",
-    "title": "balllon_nano_lora(1.17)"
+    "title": "balllon_nano_remote(1.17)"
 }

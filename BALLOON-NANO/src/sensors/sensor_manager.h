@@ -45,13 +45,14 @@ class Sensor_manager
     NTC_Thermistor _outer_thermistor = NTC_Thermistor(0, 0, 0, 0, 0);
     bool _outer_thermistor_initialized = false;
     // temp manager
-    Temperature_Manager _temp_manager;
+    Temperature_Manager *_temp_manager;
     bool _heater_enabled = false;
     Time_Averaging_Filter<float> *_inner_temp_averager;
     Time_Averaging_Filter<float> *_outer_temp_averager;
     // ranging lora
     Ranging_Wrapper _lora;
     unsigned long _last_ranging_pos_time = 0;
+    int _last_slave_index = 0;
     int _slave_index = 0;
     // battery averager
     Time_Averaging_Filter<float> *_batt_averager;
@@ -87,6 +88,10 @@ public:
         float average_inner_temp = 0;  // C
         float average_outter_temp = 0; // C
         float heater_power = 0;        // 0-255
+        float p = 0;                   // propotional * coeffcient
+        float i = 0;                   // integral * coeffcient
+        float d = 0;                   // derivative * coeffcient
+        float target_temp = 0;
 
         float humidity = 0; // %
 
@@ -107,10 +112,11 @@ public:
     };
 
     //[F] = not sent over lora
-    void enable_heater()
+    void set_heater(bool state)
     {
-        _heater_enabled = true;
-        _temp_manager.reset();
+        _heater_enabled = state;
+        data.heater_power = 0;
+        _temp_manager->reset();
     };
     String header = "Data header:";
     Sensor_data data;

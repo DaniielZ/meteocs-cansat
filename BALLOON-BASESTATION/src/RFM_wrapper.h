@@ -34,6 +34,6 @@ private:
 public:
     String init(bool transmit_first, Lora_Device config);
     bool send(String msg);
-    bool recieve(String &msg);
+    bool recieve(String &msg, float &rssi, float &snr);
     bool get_init_status();
 };

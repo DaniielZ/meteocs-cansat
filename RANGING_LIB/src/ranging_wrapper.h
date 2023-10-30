@@ -37,7 +37,7 @@ public:
     struct Ranging_Slave
     {
         Position position; // in degrees
-        long address;
+        uint32_t address;
     };
     struct Lora_Device
     {
@@ -57,7 +57,10 @@ public:
     struct Ranging_Result
     {
         double distance = 0;
-        int time = 0;
+        unsigned long time = 0;
+        float rssi = 0;
+        float snr = 0;
+        float f_error = 0;
     };
 
 private:
@@ -71,6 +74,7 @@ private:
     Lora_Device _config;
     double distance_between_earth_cordinates_m(Position p1, Position p2);
     Position local_point_to_global_space(Position_Local movable_point, Position p[3], Position_Local p_local[3]);
+    String begin_lora(Mode mode, Lora_Device config);
 
 public:
     String init(Mode mode, Lora_Device config);

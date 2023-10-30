@@ -59,7 +59,7 @@ String Sensor_manager::init(Config &config)
     _outer_thermistor_initialized = true;
 
     // TEMP CALCULATOR
-    _temp_manager.init(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
+    _temp_manager = new Temperature_Manager(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
     // TEMP averagers
     _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
     _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
@@ -97,22 +97,26 @@ void Sensor_manager::position_calculation(Config &config)
 
 void Sensor_manager::read_ranging(Config &config)
 {
-    // increment next address
+
+    // try to range next slave address
     Ranging_Wrapper::Ranging_Result result = {0, 0};
     bool move_to_next_slave = false;
     if (_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
     {
+        // ranging data read and ranging for current slave started
         move_to_next_slave = true;
     }
-    // check if something was read
+    // check if something usefull was read from the previous slave
     if (result.distance != 0 && result.time != 0)
     {
-        data.ranging_results[_slave_index] = result;
-        Serial.println(_slave_index);
+        data.ranging_results[_last_slave_index] = result;
+        Serial.println(_last_slave_index);
     }
-    // check if should move to next slave
+
+    // move to next slave
     if (move_to_next_slave)
     {
+        _last_slave_index = _slave_index;
         int array_length = 3;
         _slave_index++;
         if (_slave_index > array_length - 1)
@@ -120,8 +124,6 @@ void Sensor_manager::read_ranging(Config &config)
             // reset index
             _slave_index = 0;
         }
-        // enable ranging for next lora already
-        _lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT);
     }
 }
 void Sensor_manager::read_gps()
@@ -187,7 +189,7 @@ void Sensor_manager::read_imu()
 }
 void Sensor_manager::read_temps(Config &config)
 {
-    // average values first and take into account temp limits
+    // read and average values
     if (_inner_temp_probe_initialized)
     {
         data.inner_temp_probe = _inner_temp_probe.readTemperature();
@@ -202,10 +204,19 @@ void Sensor_manager::read_temps(Config &config)
     }
     if (_heater_enabled)
     {
-        _temp_manager.calculate_heater_power(data.average_inner_temp);
-        _temp_manager.set_heater_power();
+        _temp_manager->update_heater_power(data.average_inner_temp);
 
-        data.heater_power = _temp_manager.get_heater_power();
+        data.heater_power = _temp_manager->get_heater_power();
+
+        // get pid values
+        _temp_manager->get_pid(data.p, data.i, data.d);
+        data.target_temp = _temp_manager->get_target_temp();
+
+        // check if should disable heater
+        if (data.average_batt_voltage < config.HEATER_CUT_OFF_VOLTAGE)
+        {
+            set_heater(false);
+        }
     }
 }
 

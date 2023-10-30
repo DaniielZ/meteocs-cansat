@@ -14,13 +14,13 @@ public:
     bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
 
-    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345671},
-                                                        {.position = {0, 0, 0}, .address = 0x12345672},
-                                                        {.position = {0, 0, 0}, .address = 0x12345673}};
+    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345678},
+                                                        {.position = {0, 0, 0}, .address = 0xABCD9876},
+                                                        {.position = {0, 0, 0}, .address = 0x9A8B7C6D}};
 
     // LORA 433 SPI0
     Ranging_Wrapper::Lora_Device LORA433{
-        .FREQUENCY = 433.575,
+        .FREQUENCY = 434.5,
         .CS = 5,
         .DIO0 = 7,
         .DIO1 = 8,
@@ -41,20 +41,21 @@ public:
         .RESET = 14, // 10
         .SYNC_WORD = 0xF5,
         .TXPOWER = 14,
-        .SPREADING = 12,
+        .SPREADING = 10,
         .CODING_RATE = 7,
-        .SIGNAL_BW = 200,
+        .SIGNAL_BW = 406.25,
         .SPI = &SPI1};
 
-    float DESIRED_HEATER_TEMP = 35.0; // in C
+    float HEATER_CUT_OFF_VOLTAGE = 6.0; // V
+    float DESIRED_HEATER_TEMP = 35.0;   // in C
     unsigned int OUTER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int OUTER_TEMP_AVERAGE_CAPACITY = ((OUTER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
     unsigned int INNER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int INNER_TEMP_AVERAGE_CAPACITY = ((INNER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
-    unsigned int BAT_AVERAGE_TIME = 3000;
+    unsigned int BAT_AVERAGE_TIME = 5000;
     const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
-    const int LORA_DATAPACKET_COOLDOWN = 5000; // in ms
+    const int LORA_DATAPACKET_COOLDOWN = 30000; // in ms  30000
     int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
     int MOSFET_ON_TIME = 10000;                // ms
 

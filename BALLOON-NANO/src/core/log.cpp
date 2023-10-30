@@ -251,7 +251,38 @@ void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_sent,
     packet += String(data.inner_temp_probe, 2); // 31
     packet += ", ";
     packet += String(data.batt_votage, 2); // 32
-
+    packet += ", ";
+    packet += String(data.p, 4); // 33
+    packet += ", ";
+    packet += String(data.i, 4); // 34
+    packet += ", ";
+    packet += String(data.d, 4); // 35
+    packet += ", ";
+    packet += String(data.target_temp, 1); // 36
+    packet += ", ";
+    packet += String(data.ranging_results[0].time); // 37
+    packet += ", ";
+    packet += String(data.ranging_results[0].rssi, 2); // 38
+    packet += ", ";
+    packet += String(data.ranging_results[0].snr, 2); // 39
+    packet += ", ";
+    packet += String(data.ranging_results[0].f_error, 2); // 40
+    packet += ", ";
+    packet += String(data.ranging_results[1].time); // 41
+    packet += ", ";
+    packet += String(data.ranging_results[1].rssi, 2); // 42
+    packet += ", ";
+    packet += String(data.ranging_results[1].snr, 2); // 43
+    packet += ", ";
+    packet += String(data.ranging_results[1].f_error, 2); // 44
+    packet += ", ";
+    packet += String(data.ranging_results[2].time); // 45
+    packet += ", ";
+    packet += String(data.ranging_results[2].rssi, 2); // 46
+    packet += ", ";
+    packet += String(data.ranging_results[2].snr, 2); // 47
+    packet += ", ";
+    packet += String(data.ranging_results[2].f_error, 2); // 48
     result_log = packet;
 }
 void Log::read(String &msg)

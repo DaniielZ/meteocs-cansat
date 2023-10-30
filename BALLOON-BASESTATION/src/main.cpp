@@ -6,9 +6,11 @@ bool transmiting_mode = false; // dont change
 
 String ARM_MSG = "arm_confirm";
 String DATA_MSG = "data_send";
+String DATA_STOP_MSG = "data_stop";
+String HEATER_ENABLE = "heater_enable";
 
 RFM_Wrapper com_lora;
-RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 433.575,
+RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 434.5,
                                        .CS = 7,
                                        .DIO0 = 5,
                                        .DIO1 = 4,
@@ -22,7 +24,7 @@ RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 433.575,
 
 Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::SLAVE;
 Ranging_Wrapper ranging_lora;
-Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x12345671}; // pos not important rn;
+Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x9A8B7C6D}; // posible addreses 0x12345678 , 0xABCD9876 , 0x9A8B7C6D
 Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .CS = 17,
                                                .DIO0 = 22, // busy
@@ -30,10 +32,13 @@ Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                .RESET = 20,
                                                .SYNC_WORD = 0xF5,
                                                .TXPOWER = 14,
-                                               .SPREADING = 12,
+                                               .SPREADING = 10,
                                                .CODING_RATE = 7,
-                                               .SIGNAL_BW = 400,
+                                               .SIGNAL_BW = 406.25,
                                                .SPI = &SPI};
+const int buzzer_pin = 3;
+const int buzz_length = 200;
+bool master_basestation = true;
 
 void read_main_lora()
 {
@@ -42,20 +47,23 @@ void read_main_lora()
         return;
     }
     String msg;
-    if (!com_lora.recieve(msg))
+    float rssi = 0, snr = 0;
+    if (!com_lora.recieve(msg, rssi, snr))
     {
         return;
     }
 
     if (msg.charAt(0) == '!')
     {
-        Serial.println(msg);
+        Serial.print(msg);
+        Serial.println(", " + String(rssi, 2) + ", " + String(snr, 2));
     }
     else
     {
         // format for visualiser
         Serial.print("/*");
         Serial.print(msg);
+        Serial.print(", " + String(rssi, 2) + ", " + String(snr, 2));
         Serial.println("*/");
     }
 }
@@ -103,10 +111,14 @@ void int_LoRa_ranging(Ranging_Wrapper::Lora_Device lora_cfg)
 
 void setup()
 {
+
     Serial.begin(115200); // initialize serial
-    while (!Serial)
+    if (master_basestation)
     {
-        delay(100);
+        while (!Serial)
+        {
+            delay(100);
+        }
     }
     SPI1.setSCK(10);
     SPI1.setRX(12);
@@ -116,8 +128,10 @@ void setup()
     SPI.setRX(16);
     SPI.setTX(19);
     SPI.begin();
-
-    init_LoRa_main(com_config);
+    if (master_basestation)
+    {
+        init_LoRa_main(com_config);
+    }
     int_LoRa_ranging(ranging_device);
     Serial.println("base station setup done");
 }
@@ -133,6 +147,18 @@ void loop()
             if (incoming_msg == "D")
             {
                 send_main_lora(DATA_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (incoming_msg == "S")
+            {
+                send_main_lora(DATA_STOP_MSG);
+                Serial.println("Switching to recieving mode");
+                transmiting_mode = false;
+            }
+            else if (incoming_msg == "H")
+            {
+                send_main_lora(HEATER_ENABLE);
                 Serial.println("Switching to recieving mode");
                 transmiting_mode = false;
             }
@@ -178,6 +204,9 @@ void loop()
         if (result == true)
         {
             Serial.println("ranging ping recieved");
+            pinMode(buzzer_pin, OUTPUT_12MA);
+            // digitalWrite(buzzer_pin, HIGH);
+            tone(buzzer_pin, 1000, 250);
         }
     }
 }

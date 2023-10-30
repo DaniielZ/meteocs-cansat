@@ -1,4 +1,3 @@
-#pragma once
 #include "ranging_wrapper.h"
 #include <math.h>
 
@@ -53,14 +52,9 @@ Ranging_Wrapper::Position_Local Ranging_Wrapper::Position_Local::operator*(doubl
     result.z = this->z * other;
     return result;
 }
-
-String Ranging_Wrapper::init(Mode mode, Lora_Device config)
+// However, for ranging operation, the use of SFII and SF12 is not permitted. Similarly, the bandwidth configuration for ranging operations is restricted to the values 406.25 kHz. 812.5 kHz and 1625 kHz
+String Ranging_Wrapper::begin_lora(Mode mode, Lora_Device config)
 {
-    _lora_initialized = false;
-    _lora = new Module(config.CS, config.DIO1, config.RESET, config.DIO0, *config.SPI);
-    _mode = mode;
-    _config = config;
-
     String status;
     int state = _lora.begin();
     if (state != RADIOLIB_ERR_NONE)
@@ -81,15 +75,23 @@ String Ranging_Wrapper::init(Mode mode, Lora_Device config)
 
     return status;
 }
-// will return result from previous slave
+String Ranging_Wrapper::init(Mode mode, Lora_Device config)
+{
+    _lora_initialized = false;
+    _lora = new Module(config.CS, config.DIO1, config.RESET, config.DIO0, *config.SPI);
+    _mode = mode;
+    _config = config;
+
+    return begin_lora(mode, config);
+}
+// will return result from previous slave and start ranging on current slave
 bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, long int timeout)
 {
-    bool slave_done = false; // either timedout or result read
+    bool slave_done = false; // either timeout or result read
     if (_mode != Mode::MASTER || !_lora_initialized)
     {
         return slave_done;
     }
-
     if (sx1280_lora_ranging)
     {
         // check if should timeout
@@ -99,8 +101,6 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
             _lora_range_state = RADIOLIB_ERR_RANGING_TIMEOUT;
             _lora.clearDio1Action();
             _lora.finishTransmit();
-            slave_done = true;
-            return slave_done;
         }
     }
     if (!sx1280_lora_ranging)
@@ -110,27 +110,28 @@ bool Ranging_Wrapper::master_read(Ranging_Slave slave, Ranging_Result &result, l
         if (_lora_range_state == RADIOLIB_ERR_NONE)
         {
             result.distance = _lora.getRangingResult();
+            result.distance = _lora.get
+            result.time = millis();
+            result.rssi = _lora.getRSSI();
+            result.snr = _lora.getSNR();
+            result.f_error = _lora.getFrequencyError();
             // Serial.print("Good: " + String(result.distance) + " Addr: ");
             // Serial.println(slave.address, HEX);
-            result.time = millis();
-            _lora_range_state = -1;
-            slave_done = true;
-            return slave_done;
         }
         else
         {
+            result = {0, 0, 0, 0, 0};
             // Serial.print("Ranging failed: " + String(_lora_range_state) + " Addr: ");
             // Serial.println(slave.address, HEX);
         }
-
+        slave_done = true;
         // clean up
         _lora.clearDio1Action();
         _lora.finishTransmit();
         _lora_range_state = -1;
 
-        // start ranging but first reset lora
-        _lora.reset();
-        init(_mode, _config);
+        // start ranging but first reset lora by calling begin lora again
+        begin_lora(_mode, _config);
 
         // setup interrupt
         _lora.setDio1Action(sx1280_ranging_end);
@@ -178,7 +179,7 @@ bool Ranging_Wrapper::slave_reenable(long int timeout, Ranging_Slave slave)
 
         // start ranging but first reset lora
         _lora.reset();
-        init(_mode, _config);
+        begin_lora(_mode, _config);
 
         // setup interrupt
         _lora.setDio1Action(sx1280_ranging_end);

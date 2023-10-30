@@ -1,10 +1,10 @@
 #include "states/prepare_state.h"
 #include <SDFS.h>
 
-void prepare_state_loop(Cansat &cansat)
+bool prepare_state_loop(Cansat &cansat)
 {
+    // int *buffer_overfollwer = new int[10000];
     unsigned long loop_start = millis();
-
     // check for further commands either pc or lora
     String incoming_msg = "";
     cansat.log.read(incoming_msg);
@@ -20,7 +20,7 @@ void prepare_state_loop(Cansat &cansat)
     if (incoming_msg == cansat.config.DATA_SEND_MSG)
     {
         unsigned long data_send_start_time = millis();
-        unsigned long data_send_end_time = data_send_start_time + 1800000;
+        unsigned long data_send_end_time = data_send_start_time + 30000;
         while (millis() <= data_send_end_time)
         {
             cansat.sensors.read_data(cansat.config);
@@ -40,14 +40,13 @@ void prepare_state_loop(Cansat &cansat)
     // check if should enable heater
     else if (incoming_msg == cansat.config.HEATER_ENABLE_MSG)
     {
-        cansat.sensors.enable_heater();
-        return;
+        cansat.sensors.set_heater(true);
     }
     // check if should arm
     else if (incoming_msg == cansat.config.ARM_MSG)
     {
         cansat.log.info("Arming singal recieved");
-        return;
+        return true;
     }
     else if (incoming_msg == cansat.config.FORMAT_MSG)
     {
@@ -73,6 +72,7 @@ void prepare_state_loop(Cansat &cansat)
         Serial.println("Waiting " + String(cansat.config.MAX_LOOP_TIME - loop_time));
         delay(cansat.config.MAX_LOOP_TIME - loop_time);
     }
+    return false;
 }
 
 void prepare_state(Cansat &cansat)
@@ -83,8 +83,7 @@ void prepare_state(Cansat &cansat)
     cansat.log.info(status);
     cansat.log.info("init done, waiting for arm");
 
-    while (true)
+    while (!prepare_state_loop(cansat))
     {
-        prepare_state_loop(cansat);
     }
 }
