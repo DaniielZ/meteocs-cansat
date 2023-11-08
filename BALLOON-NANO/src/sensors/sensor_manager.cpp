@@ -229,6 +229,7 @@ void Sensor_manager::read_temps(Config &config)
 
 void Sensor_manager::read_data(Config &config)
 {
+    // Get data from all sensors
     read_gps();
     read_inner_baro(config);
     read_temps(config);
@@ -237,4 +238,7 @@ void Sensor_manager::read_data(Config &config)
     read_batt_voltage(config);
     position_calculation(config);
     read_time();
+
+    // Update logging data packets
+    //update_data_packet(data, cansat.log._sendable_packet, cansat.log._loggable_packet);
 }

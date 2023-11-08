@@ -26,11 +26,11 @@ void Log::init_flash(Config &config)
 
     if (_flash->setConfig(sd_config))
     {
-        Serial.println("config set");
+        Serial.println("Config set");
     }
     else
     {
-        Serial.println("config not set");
+        Serial.println("Config not set");
     }
     // Initialize flash
     if (_flash->begin())
@@ -44,25 +44,42 @@ void Log::init_flash(Config &config)
 
     // Determine file name number for final path
     int log_file_name_nr = 0;
-    while (_flash->exists(config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt"))
+    while (_flash->exists(config.TELEMETRY_LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".csv"))
     {
         log_file_name_nr++;
     }
-    _log_file_path_final = config.LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".txt";
+
+    _telemetry_log_file_path_final = config.TELEMETRY_LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".csv";
+    _info_log_file_path_final = config.INFO_LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".csv";
+    _error_log_file_path_final = config.ERROR_LOG_FILE_NAME_BASE_PATH + String(log_file_name_nr) + ".csv";
+    
     // Save file header
-    File file = _flash->open(_log_file_path_final, "a+");
-    if (!file)
+    File telemetry_file = _flash->open(_telemetry_log_file_path_final, "a+");
+    File error_file = _flash->open(_error_log_file_path_final, "a+");
+    File info_file = _flash->open(_info_log_file_path_final, "a+");
+    if (!telemetry_file)
     {
-        Serial.println("Failed opening flash file");
+        Serial.println("Failed opening telemetry file");
+        return;
+    }
+    if (!error_file)
+    {
+        Serial.println("Failed opening error file");
         return;
     }
 
-    // ADD PROPER HEADER!!!!!!!!!!!!!!!!!!!!!!!
-    file.println("DATA");
-    file.close();
+    telemetry_file.println(config.TELEMETRY_HEADER);
+    telemetry_file.close();
+    
+    info_file.println(config.INFO_HEADER);
+    info_file.close();
+
+    error_file.println(config.ERROR_HEADER);
+    error_file.close();
 
     // Print info about storage to PC
-    Serial.println("Final path: " + _log_file_path_final);
+    Serial.println("Final telemetry path: " + _telemetry_log_file_path_final);
+    Serial.println("Final error path: " + _error_log_file_path_final);
 
     FSInfo64 fsinfo;
     _flash->info64(fsinfo);
@@ -80,8 +97,28 @@ void Log::init(Config &config)
     String status = _com_lora.init(true, config.com_config);
 
     // Print status
-    String status = " INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_com_lora.get_init_status());
-    info(status, config);
+    status = " INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_com_lora.get_init_status());
+    send_info(status, config);
+}
+
+void Log::read(String &msg)
+{
+    if (_com_lora.get_init_status())
+    {
+        return;
+    }
+
+    float rssi;
+    float snr;
+
+    int state = _com_lora.receive(msg, rssi, snr);
+
+    if (state == RADIOLIB_ERR_NONE)
+    {
+        return;
+    }
+
+    msg = "";
 }
 
 bool Log::send_main_lora(String msg, Config &config)
@@ -99,28 +136,16 @@ bool Log::send_main_lora(String msg, Config &config)
     return true;
 }
 
-void Log::info(String msg, Config &config)
+void Log::write_to_file(String msg, String file_name)
 {
-    // Prints message to serial
-    msg = "!" + msg;
-    Serial.println(msg);
-
-    // Sends message over lora
-    // Serial.println("size of packet:" + String(msg.length()));
-    int state = send_main_lora(msg, config);
-    if (state != RADIOLIB_ERR_NONE)
-    {
-        Serial.println("Transmit error: " + String(state));
-    }
-
     // Write info to SD card
     if (_flash_initialized)
     {
         // write to flash
-        File file = _flash->open(_log_file_path_final, "a+");
+        File file = _flash->open(file_name, "a+");
         if (!file)
         {
-            Serial.println("Failed opening flash file");
+            Serial.println("Failed opening" + String(file_name));
             return;
         }
         file.println(msg);
@@ -128,45 +153,41 @@ void Log::info(String msg, Config &config)
     }
 }
 
-void Log::data(Sensor_manager::Sensor_data &data, bool log_to_storage, bool transmit, Config &config)
+void Log::send_info(String msg, Config &config)
 {
-    String sendable_packet;
-    String loggable_packet;
+    // Prints message to serial
+    Serial.println("! " + msg);
 
-    data_to_packet(data, sendable_packet, loggable_packet);
-
-    // sends data over lora if can be sent
-    if (transmit)
+    // Sends message over LoRa
+    int state = send_main_lora(msg, config);
+    if (state != RADIOLIB_ERR_NONE)
     {
-        // Serial.println("size of packet:" + String(packet.length()));
-        int state = send_main_lora(sendable_packet, config);
-        if (state != RADIOLIB_ERR_NONE)
-        {
-            Serial.println("Transmit error: " + String(state));
-        }
+        Serial.println("Transmit error: " + String(state));
+    }
+    
+    // Log data to info file
+    msg += String(millis());
+    write_to_file(msg, _info_log_file_path_final);
+} 
+
+void Log::send_error(String msg, Config &config)
+{
+    // Prints message to serial
+    Serial.println("!!! " + msg);
+
+    // Sends message over LoRa
+    int state = send_main_lora(msg, config);
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        Serial.println("Transmit error: " + String(state));
     }
 
-    Serial.print("/*");
-    // Serial.print(sendable_packet);
-    Serial.println(loggable_packet);
-    Serial.println("*/");
-
-    // logs data to flash if appropriate state
-    if (log_to_storage && _flash_initialized)
-    {
-        File file = _flash->open(_log_file_path_final, "a+");
-        if (!file)
-        {
-            Serial.println("File open failed");
-            return;
-        }
-
-        file.println(loggable_packet);
-        file.close();
-    }
+    // Log data to error file
+    msg += String(millis());
+    write_to_file(msg, _error_log_file_path_final);
 }
 
-void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_sent, String &result_log)
+void Log::update_data_packet(Sensor_manager::Sensor_data &data, String &result_sent, String &result_log)
 {
     String packet;
     // GPS
@@ -284,22 +305,25 @@ void Log::data_to_packet(Sensor_manager::Sensor_data &data, String &result_sent,
     result_log = packet;
 }
 
-void Log::read(String &msg)
+void Log::transmit_data(Config &config)
 {
-    if (_com_lora.get_init_status())
+    // Serial.println("size of packet:" + String(packet.length()));
+    int state = send_main_lora(_sendable_packet, config);
+    if (state != RADIOLIB_ERR_NONE)
     {
-        return;
+        Serial.println("Transmit error: " + String(state));
     }
+}
 
-    float rssi;
-    float snr;
+void Log::log_data_to_flash()
+{
+    write_to_file(_loggable_packet, _telemetry_log_file_path_final);
+}
 
-    int state = _com_lora.receive(msg, rssi, snr);
-
-    if (state == RADIOLIB_ERR_NONE)
-    {
-        return;
-    }
-
-    msg = "";
+void Log::log_data_to_pc()
+{
+    Serial.print("/*");
+    // Serial.print(sendable_packet);
+    Serial.println(_loggable_packet);
+    Serial.println("*/");
 }

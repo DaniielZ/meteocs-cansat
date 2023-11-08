@@ -4,16 +4,17 @@ unsigned long int last_data_transmit_time_ascent = 0;
 
 void send_data_ascent(Cansat &cansat)
 {
-    bool data_needs_to_be_sent = false;
+    // Print data to serial
+    cansat.log.log_data_to_pc();
+    // Save data to telemetry file
+    cansat.log.log_data_to_flash();
+
     // Check if data should be sent over LoRa
     if (millis() > last_data_transmit_time_ascent + cansat.config.LORA_DATAPACKET_COOLDOWN)
     {
-        cansat.log.data(cansat.sensors.data, true, true);
+        // Send data by LoRa
+        cansat.log.transmit_data(cansat.config);
         last_data_transmit_time_ascent = millis();
-    }
-    else
-    {
-        cansat.log.data(cansat.sensors.data, true, false);
     }
 }
 
@@ -25,10 +26,10 @@ void ascent_state(Cansat &cansat)
     {
         unsigned long loop_start = millis();
 
-        // Log/Send data
-        send_data_ascent(cansat);
         // Read data from sensors
         cansat.sensors.read_data(cansat.config);
+        // Log/Send data
+        send_data_ascent(cansat);
         // Used for debugging
         Serial.println("Used heap: " + String(rp2040.getUsedHeap()));
 
@@ -37,7 +38,7 @@ void ascent_state(Cansat &cansat)
             launch_rail_removed_cycle_count++;
             if (launch_rail_removed_cycle_count >= 10)
             {
-                cansat.log.info("Launch rail removed", cansat.config);
+                cansat.log.send_info("Launch rail removed", cansat.config);
                 return;
             }
         }

@@ -31,13 +31,12 @@ public:
                                         .SPI = &SPI1};
 
     // Ranging 2.4 GHZ LoRa
-    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345678},
-                                                        {.position = {0, 0, 0}, .address = 0xABCD9876},
-                                                        {.position = {0, 0, 0}, .address = 0x9A8B7C6D}};
-
+    
+    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x123456},
+                                                        {.position = {0, 0, 0}, .address = 0xABCD98},
+                                                        {.position = {0, 0, 0}, .address = 0x9A8B7C}};
+    
     Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::SLAVE;
-    Ranging_Wrapper ranging_lora;
-    Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x9A8B7C6D}; // posible addreses 0x12345678 , 0xABCD9876 , 0x9A8B7C6D
     Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                 .CS = 13,
                                                 .DIO0 = 18, // busy
@@ -89,8 +88,6 @@ public:
     int SPI1_TX = 11;
     int SPI1_SCK = 10;
 
-    Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::MASTER;
-
     int RANGING_TIMEOUT = 500; // ms  might need to adjust this if lora parameters change
     int SD_CARD_CS = 20;
 
@@ -127,5 +124,11 @@ public:
     String DATA_SEND_STOP_MSG = "data_stop";
     String HEATER_ENABLE_MSG = "heater_enable";
     String FORMAT_MSG = "format_flash";
-    String LOG_FILE_NAME_BASE_PATH = "/CANSAT";
+    String TELEMETRY_LOG_FILE_NAME_BASE_PATH = "/CANSAT_TELEMETRY";
+    String INFO_LOG_FILE_NAME_BASE_PATH = "/CANSAT_INFO";
+    String ERROR_LOG_FILE_NAME_BASE_PATH = "/CANSAT_ERROR";
+
+    String TELEMETRY_HEADER = "gps_lat,gps_lng,gps_height,gps_satellites,r1_dist,r2_dist,r3_dist,r1_time_since,r2_time_since,r3_time_since,r_pos_lat,r_pos_lng,r_pos_time_since,inner_pressure,avg_inner_temp,avg_outer_temp,heater_power,acc_x,acc_y,acc_z,gps_time_since,time_on,avg_batt_voltage,gps_time,gyro_x,gyro_y,gyro_z,outer_temp_thermistor,raw_inner_temp_baro,raw_inner_temp_probe,batt_voltage,p_term,i_term,d_term,target_temp";
+    String INFO_HEADER = "time_on, info";
+    String ERROR_HEADER = "time_on,error";
 };

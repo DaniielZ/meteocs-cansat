@@ -22,7 +22,6 @@
  */
 class Sensor_manager
 {
-
     // SENSOR OBJECTS AND Communication
     // GPS UART0
     TinyGPSPlus _gps;
