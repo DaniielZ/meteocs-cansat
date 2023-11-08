@@ -16,6 +16,7 @@ bool prepare_state_loop(Cansat &cansat)
 
     // Read sensor data
     cansat.sensors.read_data(cansat.config);
+    cansat.log.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
 
     // Check received message
     // Check if should send telemetry data for a short moment

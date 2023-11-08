@@ -238,7 +238,4 @@ void Sensor_manager::read_data(Config &config)
     read_batt_voltage(config);
     position_calculation(config);
     read_time();
-
-    // Update logging data packets
-    //update_data_packet(data, cansat.log._sendable_packet, cansat.log._loggable_packet);
 }
