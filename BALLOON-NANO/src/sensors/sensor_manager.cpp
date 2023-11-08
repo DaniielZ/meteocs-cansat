@@ -2,14 +2,14 @@
 
 float get_altitude(float pressure_hPa, float sea_level_hPa)
 {
-    float altitude;
-    altitude = 44330 * (1.0 - pow(pressure_hPa / sea_level_hPa, 0.1903));
+    float altitude = 44330 * (1.0 - pow(pressure_hPa / sea_level_hPa, 0.1903));
     return altitude;
 }
+
 String Sensor_manager::init(Config &config)
 {
-
     String status;
+    // GPS
     _gps_serial = &Serial1;
     if (_gps_serial)
     {
@@ -41,10 +41,12 @@ String Sensor_manager::init(Config &config)
         _imu_initialized = true;
         _imu.enableDefault();
     }
+
     // TEMP PROBE
     _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
     _inner_temp_probe.address(config.STS35_ADDRESS);
     _inner_temp_probe_initialized = true;
+
     // Test temp probe to see if its working
     float test = _inner_temp_probe.readTemperature();
     if (test > 100.00 || test < -100.0 || test == 0.00)
@@ -53,21 +55,22 @@ String Sensor_manager::init(Config &config)
         status += "Inner probe error";
     }
 
-    // Outter temp probe
+    // Outer temp probe
     analogReadResolution(12);
     _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
     _outer_thermistor_initialized = true;
 
     // TEMP CALCULATOR
     _temp_manager = new Temperature_Manager(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
+    
     // TEMP averagers
     _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
     _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
 
     // RANGING lora
-    status += _lora.init(config.LORA2400_MODE, config.LORA2400);
+    status += _lora.init(config.LORA2400_MODE, config.ranging_device);
 
-    // bat averager
+    // Battery averager
     _batt_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
 
     return status;
@@ -78,11 +81,12 @@ void Sensor_manager::read_batt_voltage(Config &config)
     pinMode(config.BATT_SENS_PIN, INPUT);
     analogReadResolution(12);
     float adc_reading = analogRead(config.BATT_SENS_PIN);
-    data.batt_votage = (adc_reading / 4095.0) * config.BATT_SENS_CONVERSION_FACTOR;
+    data.batt_voltage = (adc_reading / 4095.0) * config.BATT_SENS_CONVERSION_FACTOR;
 
-    _batt_averager->add_data(data.batt_votage);
+    _batt_averager->add_data(data.batt_voltage);
     data.average_batt_voltage = _batt_averager->get_averaged_value();
 }
+
 void Sensor_manager::position_calculation(Config &config)
 {
     Ranging_Wrapper::Position result;
@@ -91,7 +95,7 @@ void Sensor_manager::position_calculation(Config &config)
         data.ranging_position = result;
         _last_ranging_pos_time = millis();
     }
-    // mybe do more processing
+    // maybe do more processing
     return;
 }
 
@@ -126,6 +130,7 @@ void Sensor_manager::read_ranging(Config &config)
         }
     }
 }
+
 void Sensor_manager::read_gps()
 {
     if (!_gps_initialized)
@@ -142,7 +147,7 @@ void Sensor_manager::read_gps()
             data.gps_lat = _gps.location.lat();
             data.gps_lng = _gps.location.lng();
             data.gps_height = _gps.altitude.meters();
-            data.gps_sattelites = _gps.satellites.value();
+            data.gps_satellites = _gps.satellites.value();
             data.gps_time = _gps.time.value();
         }
     }
@@ -169,6 +174,7 @@ void Sensor_manager::read_time()
         i++;
     }
 }
+
 void Sensor_manager::read_imu()
 {
     if (!_imu_initialized)
@@ -187,6 +193,7 @@ void Sensor_manager::read_imu()
     data.gyro[1] = _imu.g.y * gyro_conversion_factor;
     data.gyro[2] = _imu.g.z * gyro_conversion_factor;
 }
+
 void Sensor_manager::read_temps(Config &config)
 {
     // read and average values
@@ -198,9 +205,9 @@ void Sensor_manager::read_temps(Config &config)
     }
     if (_outer_thermistor_initialized)
     {
-        data.outter_temp_thermistor = _outer_thermistor.readCelsius();
-        _outer_temp_averager->add_data(data.outter_temp_thermistor);
-        data.average_outter_temp = _outer_temp_averager->get_averaged_value();
+        data.outer_temp_thermistor = _outer_thermistor.readCelsius();
+        _outer_temp_averager->add_data(data.outer_temp_thermistor);
+        data.average_outer_temp = _outer_temp_averager->get_averaged_value();
     }
     if (_heater_enabled)
     {

@@ -11,9 +11,11 @@
 #include <Wire.h>
 #include <Servo.h>
 
+// Cansat object
 class Cansat
 {
 public:
+    // Available Cansat states
     enum State
     {
         PREP,
@@ -25,8 +27,9 @@ public:
 
     Config config;
     Sensor_manager sensors;
-    
     Log log;
+
+    // Function declaration
     void init_all_com_bus(Config &config);
     void start_states(Cansat &cansat);
 };

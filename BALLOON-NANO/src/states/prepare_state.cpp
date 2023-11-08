@@ -3,24 +3,26 @@
 
 bool prepare_state_loop(Cansat &cansat)
 {
-    // int *buffer_overfollwer = new int[10000];
     unsigned long loop_start = millis();
-    // check for further commands either pc or lora
+    
+    // Check for further commands either from PC or LoRa
     String incoming_msg = "";
     cansat.log.read(incoming_msg);
-    // can be overwriten by computer
+    // can be overwritten by computer
     if (Serial.available() > 0)
     {
         incoming_msg = Serial.readString();
     }
 
-    // read sensor data
+    // Read sensor data
     cansat.sensors.read_data(cansat.config);
-    // check send data check
+    
+    // Check received message
+    // Check if should send telemetry data for a short moment
     if (incoming_msg == cansat.config.DATA_SEND_MSG)
     {
         unsigned long data_send_start_time = millis();
-        unsigned long data_send_end_time = data_send_start_time + 30000;
+        unsigned long data_send_end_time = data_send_start_time + 30000;  // 30 seconds 
         while (millis() <= data_send_end_time)
         {
             cansat.sensors.read_data(cansat.config);
@@ -37,35 +39,37 @@ bool prepare_state_loop(Cansat &cansat)
             }
         }
     }
-    // check if should enable heater
+    // Check if should enable heater
     else if (incoming_msg == cansat.config.HEATER_ENABLE_MSG)
     {
         cansat.sensors.set_heater(true);
     }
-    // check if should arm
+    // Check if should arm
     else if (incoming_msg == cansat.config.ARM_MSG)
     {
-        cansat.log.info("Arming singal recieved");
+        cansat.log.info("Arming signal received", cansat.config);
         return true;
     }
+    // Check if should format SD card
     else if (incoming_msg == cansat.config.FORMAT_MSG)
     {
         if (cansat.log.format_storage(cansat.config))
         {
-            cansat.log.info("Formating done");
+            cansat.log.info("Formatting done", cansat.config);
         }
         else
         {
-            cansat.log.info("Formating fail");
+            cansat.log.info("Formatting fail", cansat.config);
         }
     }
+    // If message doesn't match any case
     else if (incoming_msg != "")
     {
-        String noise_msg = "NOISE recieved: " + incoming_msg;
-        cansat.log.info((char *)noise_msg.c_str());
+        String noise_msg = "NOISE received: " + incoming_msg;
+        cansat.log.info((char *)noise_msg.c_str(), cansat.config);
     }
 
-    // check if should wait before next loop
+    // Check if should wait before next loop
     unsigned long loop_time = millis() - loop_start;
     if (loop_time < cansat.config.MAX_LOOP_TIME)
     {
@@ -75,14 +79,22 @@ bool prepare_state_loop(Cansat &cansat)
     return false;
 }
 
+// Prepare state start
 void prepare_state(Cansat &cansat)
 {
+    // Init communications
     cansat.init_all_com_bus(cansat.config);
-    cansat.log.init(cansat.config);
-    String status = String("sensor status ") + cansat.sensors.init(cansat.config);
-    cansat.log.info(status);
-    cansat.log.info("init done, waiting for arm");
 
+    // Init logging
+    cansat.log.init(cansat.config);
+    
+    // Init sensors
+    String status = String("sensor status ") + cansat.sensors.init(cansat.config);
+    cansat.log.info(status, cansat.config);
+
+    cansat.log.info("init done, waiting for arm", cansat.config);
+
+    // Run prepare loop while waiting for arming signal
     while (!prepare_state_loop(cansat))
     {
     }

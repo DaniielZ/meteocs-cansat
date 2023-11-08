@@ -4,6 +4,8 @@
 #include <LittleFS.h>
 #include <SDFS.h>
 #include <ranging_wrapper.h>
+#include <RFM_Wrapper.h>
+
 class Config
 {
 public:
@@ -13,38 +15,41 @@ public:
 
     bool WAIT_PC = false;
     bool LOG_TO_STORAGE = true;
+    
+    // 433 MHz LoRa
+    RFM_Wrapper com_lora;
+    RFM_Wrapper::Lora_Device com_config = {.FREQUENCY = 434.5,
+                                        .CS = 5,
+                                        .DIO0 = 7,
+                                        .DIO1 = 8,
+                                        .RESET = 6,
+                                        .SYNC_WORD = 0xF4,
+                                        .TXPOWER = 14,
+                                        .SPREADING = 10,
+                                        .CODING_RATE = 7,
+                                        .SIGNAL_BW = 125,
+                                        .SPI = &SPI1};
 
+    // Ranging 2.4 GHZ LoRa
     Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345678},
                                                         {.position = {0, 0, 0}, .address = 0xABCD9876},
                                                         {.position = {0, 0, 0}, .address = 0x9A8B7C6D}};
 
-    // LORA 433 SPI0
-    Ranging_Wrapper::Lora_Device LORA433{
-        .FREQUENCY = 434.5,
-        .CS = 5,
-        .DIO0 = 7,
-        .DIO1 = 8,
-        .RESET = 6,
-        .SYNC_WORD = 0xF4,
-        .TXPOWER = 14,
-        .SPREADING = 10,
-        .CODING_RATE = 7,
-        .SIGNAL_BW = 125,
-        .SPI = &SPI};
-
-    // LORA 2.4 SPI1
-    Ranging_Wrapper::Lora_Device LORA2400{
-        .FREQUENCY = 2405.6,
-        .CS = 13,
-        .DIO0 = 18,  // busy pin not programmable dont use
-        .DIO1 = 15,  // only use thsi
-        .RESET = 14, // 10
-        .SYNC_WORD = 0xF5,
-        .TXPOWER = 14,
-        .SPREADING = 10,
-        .CODING_RATE = 7,
-        .SIGNAL_BW = 406.25,
-        .SPI = &SPI1};
+    Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::SLAVE;
+    Ranging_Wrapper ranging_lora;
+    Ranging_Wrapper::Ranging_Slave RANGING_SLAVE = {.position = {0, 0, 0}, .address = 0x9A8B7C6D}; // posible addreses 0x12345678 , 0xABCD9876 , 0x9A8B7C6D
+    Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
+                                                .CS = 13,
+                                                .DIO0 = 18, // busy
+                                                .DIO1 = 15,
+                                                .RESET = 14,
+                                                .SYNC_WORD = 0xF5,
+                                                .TXPOWER = 14,
+                                                .SPREADING = 10,
+                                                .CODING_RATE = 7,
+                                                .SIGNAL_BW = 406.25,
+                                                .SPI = &SPI};
+    
 
     float HEATER_CUT_OFF_VOLTAGE = 6.0; // V
     float DESIRED_HEATER_TEMP = 35.0;   // in C
@@ -64,17 +69,21 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     FS *FILE_SYSTEM = &SDFS; // if change to LittleFS need to change some code
+
     // GPS UART0
     int SERIAL1_RX = 17;
     int SERIAL1_TX = 16;
     long SERIAL1_BAUDRATE = 9600;
+    
     // Wire0
     int WIRE0_SCL = 1;
     int WIRE0_SDA = 0;
+    
     // SPI0
     int SPI0_RX = 4;
     int SPI0_TX = 3;
     int SPI0_SCK = 2;
+    
     // SPI1
     int SPI1_RX = 12;
     int SPI1_TX = 11;
@@ -92,7 +101,7 @@ public:
     // INNER TEMP WIRE0
     int STS35_ADDRESS = 0x4B; // I2C Address: either 0x4A or 0x04B
 
-    // OUTTTER TEMP ANALOG
+    // OUTER TEMP ANALOG
     int THERMISTOR_PIN = 26;
     float THERMISTOR_REFERENCE_R = 10000;
     float THERMISTOR_NOMINAL_R = 10000;

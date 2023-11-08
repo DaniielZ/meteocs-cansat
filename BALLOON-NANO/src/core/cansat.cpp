@@ -1,5 +1,6 @@
 #include <core/cansat.h>
 
+// Initialize SPI/I2C/PC Serial/Hardware Serial communication
 void Cansat::init_all_com_bus(Config &config)
 {
     SPI.setRX(config.SPI0_RX);
@@ -18,7 +19,7 @@ void Cansat::init_all_com_bus(Config &config)
     // Wire1.setSCL(config.WIRE1_SCL);
     // Wire1.setSDA(config.WIRE1_SDA);
 
-    // initilise pc serial
+    // Initialize PC serial
     Serial.begin(config.PC_BAUDRATE);
     if (config.WAIT_PC)
     {
@@ -30,7 +31,7 @@ void Cansat::init_all_com_bus(Config &config)
 
     Serial1.setRX(config.SERIAL1_RX);
     Serial1.setTX(config.SERIAL1_TX);
-    Serial1.setFIFOSize(256); // once had a prblem of not reading serial properly but this seemed to fix it
+    Serial1.setFIFOSize(256); // once had a problem of not reading serial properly but this seemed to fix it
     Serial1.begin(config.SERIAL1_BAUDRATE);
 }
 

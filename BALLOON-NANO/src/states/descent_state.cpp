@@ -1,10 +1,11 @@
 #include "states/descent_state.h"
 
 unsigned long int last_data_transmit_time_descent = 0;
+
 void send_data_descent(Cansat &cansat)
 {
-
     bool data_needs_to_be_sent = false;
+    // Check if data should be sent over LoRa
     if (millis() > last_data_transmit_time_descent + cansat.config.LORA_DATAPACKET_COOLDOWN)
     {
         cansat.log.data(cansat.sensors.data, true, true);

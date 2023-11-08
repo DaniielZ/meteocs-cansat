@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
+
 void setup()
 {
     Cansat cansat;
@@ -10,7 +11,7 @@ void setup()
 
 void loop()
 {
-    // not used for this programm
+    // not used for this program
 }
 
 // if you want to configure the cansat go to INCLUDE/config.h

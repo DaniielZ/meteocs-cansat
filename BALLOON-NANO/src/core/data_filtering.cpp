@@ -1,6 +1,7 @@
 #include "data_filtering.h"
 #include <Arduino.h>
 
+// Create new time averaging filter object
 template <typename T>
 Time_Averaging_Filter<T>::Time_Averaging_Filter(unsigned int capacity, unsigned long averaging_time_ms)
 {
@@ -11,6 +12,7 @@ Time_Averaging_Filter<T>::Time_Averaging_Filter(unsigned int capacity, unsigned 
     reset_data();
 }
 
+// Destroy time averaging filter object
 template <typename T>
 Time_Averaging_Filter<T>::~Time_Averaging_Filter()
 {
@@ -18,12 +20,14 @@ Time_Averaging_Filter<T>::~Time_Averaging_Filter()
     delete[] _timestamps;
 }
 
+// Set averaging time in milliseconds
 template <typename T>
 void Time_Averaging_Filter<T>::set_averaging_time(unsigned long time_ms)
 {
     _averaging_time = time_ms;
 }
 
+// Reset current data stored in the filter
 template <typename T>
 void Time_Averaging_Filter<T>::reset_data()
 {
@@ -35,6 +39,7 @@ void Time_Averaging_Filter<T>::reset_data()
     }
 }
 
+// Add new value to the filter
 template <typename T>
 void Time_Averaging_Filter<T>::add_data(T data_point)
 {
@@ -56,6 +61,7 @@ void Time_Averaging_Filter<T>::add_data(T data_point)
     _timestamps[oldest_index] = millis();
 }
 
+// Return the current average filter value
 template <typename T>
 T Time_Averaging_Filter<T>::get_averaged_value()
 {
