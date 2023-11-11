@@ -35,6 +35,8 @@ void ascent_state(Cansat &cansat)
         // Used for debugging
         // Serial.println("Used heap: " + String(rp2040.getUsedHeap()));
 
+        /*
+        // Currently not really functional, because a digital pin is required for it to not throw an error 
         if (digitalRead(cansat.config.LAUNCH_RAIL_SWITCH))
         {
             launch_rail_removed_cycle_count++;
@@ -48,7 +50,8 @@ void ascent_state(Cansat &cansat)
         {
             launch_rail_removed_cycle_count = 0;
         }
-
+        */
+       
         // Check if should wait before starting next loop
         unsigned long loop_time = millis() - loop_start;
         if (loop_time < cansat.config.MAX_LOOP_TIME)

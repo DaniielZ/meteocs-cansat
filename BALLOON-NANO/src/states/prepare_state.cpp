@@ -10,28 +10,24 @@ bool prepare_state_loop(Cansat &cansat)
     float rssi;
     float snr;
     cansat.log.receive_main_lora(incoming_msg, rssi, snr, cansat.config);
-    // Can be overwritten by computer
     if (Serial.available() > 0)
     {
         incoming_msg = Serial.readString();
     }
 
-    // DEBUG
+    // Remove any new line characters and log the received message
     if (incoming_msg != "")
     {
+        incoming_msg.trim();
         Serial.println(incoming_msg + ", " + String(rssi) + ", " + String(snr));
         cansat.log.send_info("Payload received message: " + incoming_msg, cansat.config);
     }
 
     // Read sensor data
     cansat.sensors.read_data(cansat.config);
+    // Update data packets
     cansat.log.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
 
-    // Remove any new line characters
-    if (incoming_msg != "")
-    {
-        incoming_msg.trim();
-    }
     // Check received message
     // Check if should send telemetry data for a short moment
     if (incoming_msg == cansat.config.DATA_SEND_MSG)
@@ -51,13 +47,16 @@ bool prepare_state_loop(Cansat &cansat)
 
             delay(cansat.config.MAX_LOOP_TIME);
 
+            // Check for any commands from PC or LoRa
+            cansat.log.receive_main_lora(incoming_msg, rssi, snr, cansat.config);
             if (Serial.available() > 0)
             {
                 incoming_msg = Serial.readString();
-                if (incoming_msg == cansat.config.DATA_SEND_STOP_MSG)
-                {
-                    break;
-                }
+            }
+
+            if (incoming_msg == cansat.config.DATA_SEND_STOP_MSG)
+            {
+                break;
             }
         }
     }

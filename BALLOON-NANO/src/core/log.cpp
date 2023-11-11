@@ -104,6 +104,7 @@ void Log::init(Config &config)
     send_info(status, config);
 }
 
+// Checks if LoRa has received any messages. Sets the message to the received one, or to empty string otherwise
 void Log::receive_main_lora(String &msg, float &rssi, float &snr, Config &config)
 {
     // Check if LoRa is initialized
@@ -113,24 +114,28 @@ void Log::receive_main_lora(String &msg, float &rssi, float &snr, Config &config
     }
 
     // Get data from LoRa
-    bool state = _com_lora.receive(msg, rssi, snr);
+    bool message_received = _com_lora.receive(msg, rssi, snr);
 
     // Finish receive if all good
-    if (state != RADIOLIB_ERR_NONE)
+    if (message_received)
     {
         return;
     }
-    // log_error_msg_to_flash("Receiving data from main LoRa failed with error code: " + String(state));
+
+    // Default message
     msg = "";
 }
 
+// Sends the provided message using LoRa
 bool Log::send_main_lora(String msg, Config &config)
 {
+    // Check if LoRa is initialized
     if (!_com_lora.get_init_status())
     {
         return false;
     }
 
+    // Wait while transmission is happening
     while (_com_lora.send(msg) == false)
     {
         delay(1);
@@ -139,6 +144,7 @@ bool Log::send_main_lora(String msg, Config &config)
     return true;
 }
 
+// Writes a given message to a file on the SD card
 void Log::write_to_file(String msg, String file_name)
 {
     // Write info to SD card
@@ -156,6 +162,7 @@ void Log::write_to_file(String msg, String file_name)
     }
 }
 
+// Sends a message over LoRa and logs the message to the info file 
 void Log::send_info(String msg, Config &config)
 {
     // Prints message to serial
@@ -173,6 +180,7 @@ void Log::send_info(String msg, Config &config)
     write_to_file(msg, _info_log_file_path_final);
 } 
 
+// Sends a message over LoRa and logs the message to the error file 
 void Log::send_error(String msg, Config &config)
 {
     // Prints message to serial
@@ -190,6 +198,7 @@ void Log::send_error(String msg, Config &config)
     write_to_file(msg, _error_log_file_path_final);
 }
 
+// Updates the message data packets with newest sensor data
 void Log::update_data_packet(Sensor_manager::Sensor_data &data, String &result_sent, String &result_log)
 {
     String packet;
@@ -308,6 +317,7 @@ void Log::update_data_packet(Sensor_manager::Sensor_data &data, String &result_s
     result_log = packet;
 }
 
+// Send telemetry data packet over LoRa
 void Log::transmit_data(Config &config)
 {
     // Serial.println("size of packet:" + String(packet.length()));
@@ -318,11 +328,13 @@ void Log::transmit_data(Config &config)
     }
 }
 
+// Logs the full data packet to SD card
 void Log::log_data_to_flash()
 {
     write_to_file(_loggable_packet, _telemetry_log_file_path_final);
 }
 
+// Sends the full data packet to Serial port
 void Log::log_data_to_pc()
 {
     Serial.print("/*");
@@ -331,11 +343,13 @@ void Log::log_data_to_pc()
     Serial.println("*/");
 }
 
+// Logs the provided info message to info file on SD card
 void Log::log_info_msg_to_flash(String msg)
 {
     write_to_file(msg, _info_log_file_path_final);
 }
 
+// Logs the provided error message to error file on SD card
 void Log::log_error_msg_to_flash(String msg)
 {
     write_to_file(msg, _error_log_file_path_final);
