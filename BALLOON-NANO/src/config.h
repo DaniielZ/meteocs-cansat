@@ -28,10 +28,9 @@ public:
                                         .SPREADING = 10,
                                         .CODING_RATE = 7,
                                         .SIGNAL_BW = 125,
-                                        .SPI = &SPI1};
+                                        .SPI = &SPI};
 
     // Ranging 2.4 GHZ LoRa
-    
     Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x123456},
                                                         {.position = {0, 0, 0}, .address = 0xABCD98},
                                                         {.position = {0, 0, 0}, .address = 0x9A8B7C}};
@@ -47,7 +46,7 @@ public:
                                                 .SPREADING = 10,
                                                 .CODING_RATE = 7,
                                                 .SIGNAL_BW = 406.25,
-                                                .SPI = &SPI};
+                                                .SPI = &SPI1};
     
 
     float HEATER_CUT_OFF_VOLTAGE = 6.0; // V
@@ -114,7 +113,7 @@ public:
 
     // Parachute
     int PARACHUTE_MOSFET = 27;   // mosfet 2
-    int LAUNCH_RAIL_SWITCH = -1; // TBD
+    int LAUNCH_RAIL_SWITCH = 0; // TBD
 
     // detection parameters
 

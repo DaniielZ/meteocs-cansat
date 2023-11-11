@@ -33,7 +33,7 @@ void ascent_state(Cansat &cansat)
         // Log/Send data
         send_data_ascent(cansat);
         // Used for debugging
-        Serial.println("Used heap: " + String(rp2040.getUsedHeap()));
+        // Serial.println("Used heap: " + String(rp2040.getUsedHeap()));
 
         if (digitalRead(cansat.config.LAUNCH_RAIL_SWITCH))
         {

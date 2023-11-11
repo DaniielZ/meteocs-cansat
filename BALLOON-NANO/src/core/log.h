@@ -28,9 +28,11 @@ public:
     
     void transmit_data(Config &config);
     void log_data_to_flash();
+    void log_info_msg_to_flash(String msg);
+    void log_error_msg_to_flash(String msg);
     void log_data_to_pc();
     
-    void read(String &msg);
+    void receive_main_lora(String &msg, float &rssi, float &snr, Config &config);
     bool format_storage(Config &config);
     bool send_main_lora(String msg, Config &config);
 };

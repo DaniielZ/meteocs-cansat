@@ -7,17 +7,31 @@ bool prepare_state_loop(Cansat &cansat)
     
     // Check for further commands either from PC or LoRa
     String incoming_msg = "";
-    cansat.log.read(incoming_msg);
-    // can be overwritten by computer
+    float rssi;
+    float snr;
+    cansat.log.receive_main_lora(incoming_msg, rssi, snr, cansat.config);
+    // Can be overwritten by computer
     if (Serial.available() > 0)
     {
         incoming_msg = Serial.readString();
+    }
+
+    // DEBUG
+    if (incoming_msg != "")
+    {
+        Serial.println(incoming_msg + ", " + String(rssi) + ", " + String(snr));
+        cansat.log.send_info("Payload received message: " + incoming_msg, cansat.config);
     }
 
     // Read sensor data
     cansat.sensors.read_data(cansat.config);
     cansat.log.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
 
+    // Remove any new line characters
+    if (incoming_msg != "")
+    {
+        incoming_msg.trim();
+    }
     // Check received message
     // Check if should send telemetry data for a short moment
     if (incoming_msg == cansat.config.DATA_SEND_MSG)
@@ -74,14 +88,14 @@ bool prepare_state_loop(Cansat &cansat)
     else if (incoming_msg != "")
     {
         String noise_msg = "NOISE received: " + incoming_msg;
-        cansat.log.send_info((char *)noise_msg.c_str(), cansat.config);
+        cansat.log.send_info(noise_msg, cansat.config);
     }
 
     // Check if should wait before next loop
     unsigned long loop_time = millis() - loop_start;
     if (loop_time < cansat.config.MAX_LOOP_TIME)
     {
-        Serial.println("Waiting " + String(cansat.config.MAX_LOOP_TIME - loop_time));
+        // Serial.println("Waiting " + String(cansat.config.MAX_LOOP_TIME - loop_time));
         delay(cansat.config.MAX_LOOP_TIME - loop_time);
     }
     return false;
@@ -97,10 +111,10 @@ void prepare_state(Cansat &cansat)
     cansat.log.init(cansat.config);
     
     // Init sensors
-    String status = String("sensor status ") + cansat.sensors.init(cansat.config);
+    String status = String("Sensor status: ") + cansat.sensors.init(cansat.config);
     cansat.log.send_info(status, cansat.config);
 
-    cansat.log.send_info("init done, waiting for arm", cansat.config);
+    cansat.log.send_info("Init done, waiting for arm", cansat.config);
 
     // Run prepare loop while waiting for arming signal
     while (!prepare_state_loop(cansat))

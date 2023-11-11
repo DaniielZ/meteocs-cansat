@@ -40,6 +40,7 @@ void Log::init_flash(Config &config)
     else
     {
         Serial.println("FileSystem init error");
+        return;
     }
 
     // Determine file name number for final path
@@ -79,15 +80,17 @@ void Log::init_flash(Config &config)
 
     // Print info about storage to PC
     Serial.println("Final telemetry path: " + _telemetry_log_file_path_final);
+    Serial.println("Final info path: " + _info_log_file_path_final);
     Serial.println("Final error path: " + _error_log_file_path_final);
 
-    FSInfo64 fsinfo;
-    _flash->info64(fsinfo);
-    Serial.println("Current size:" + String((unsigned long)fsinfo.usedBytes / 1024) + "/" + String((unsigned long)fsinfo.totalBytes / 1024));
+    //FSInfo64 fsinfo;
+    //_flash->info64(fsinfo);
+    //Serial.println("Current size:" + String((unsigned long)fsinfo.usedBytes / 1024) + "/" + String((unsigned long)fsinfo.totalBytes / 1024));
 
     _flash_initialized = true;
 }
 
+// Call flash and LoRa init
 void Log::init(Config &config)
 {
     // Init SD card
@@ -97,27 +100,27 @@ void Log::init(Config &config)
     String status = _com_lora.init(true, config.com_config);
 
     // Print status
-    status = " INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_com_lora.get_init_status());
+    status = "INIT STATUS: Flash ready?:" + String(_flash_initialized) + " | " + "Lora ready?:" + String(_com_lora.get_init_status());
     send_info(status, config);
 }
 
-void Log::read(String &msg)
+void Log::receive_main_lora(String &msg, float &rssi, float &snr, Config &config)
 {
-    if (_com_lora.get_init_status())
+    // Check if LoRa is initialized
+    if (!_com_lora.get_init_status())
     {
         return;
     }
 
-    float rssi;
-    float snr;
+    // Get data from LoRa
+    bool state = _com_lora.receive(msg, rssi, snr);
 
-    int state = _com_lora.receive(msg, rssi, snr);
-
-    if (state == RADIOLIB_ERR_NONE)
+    // Finish receive if all good
+    if (state != RADIOLIB_ERR_NONE)
     {
         return;
     }
-
+    // log_error_msg_to_flash("Receiving data from main LoRa failed with error code: " + String(state));
     msg = "";
 }
 
@@ -145,7 +148,7 @@ void Log::write_to_file(String msg, String file_name)
         File file = _flash->open(file_name, "a+");
         if (!file)
         {
-            Serial.println("Failed opening" + String(file_name));
+            Serial.println("Failed opening file: " + String(file_name));
             return;
         }
         file.println(msg);
@@ -160,13 +163,13 @@ void Log::send_info(String msg, Config &config)
 
     // Sends message over LoRa
     int state = send_main_lora(msg, config);
-    if (state != RADIOLIB_ERR_NONE)
+    if (state == RADIOLIB_ERR_NONE)
     {
         Serial.println("Transmit error: " + String(state));
     }
     
     // Log data to info file
-    msg += String(millis());
+    msg = String(millis()) + "," + msg; 
     write_to_file(msg, _info_log_file_path_final);
 } 
 
@@ -177,13 +180,13 @@ void Log::send_error(String msg, Config &config)
 
     // Sends message over LoRa
     int state = send_main_lora(msg, config);
-    if (state != RADIOLIB_ERR_NONE)
+    if (state == RADIOLIB_ERR_NONE)
     {
         Serial.println("Transmit error: " + String(state));
     }
 
     // Log data to error file
-    msg += String(millis());
+    msg = String(millis()) + "," + msg; 
     write_to_file(msg, _error_log_file_path_final);
 }
 
@@ -309,7 +312,7 @@ void Log::transmit_data(Config &config)
 {
     // Serial.println("size of packet:" + String(packet.length()));
     int state = send_main_lora(_sendable_packet, config);
-    if (state != RADIOLIB_ERR_NONE)
+    if (state == RADIOLIB_ERR_NONE)
     {
         Serial.println("Transmit error: " + String(state));
     }
@@ -324,6 +327,16 @@ void Log::log_data_to_pc()
 {
     Serial.print("/*");
     // Serial.print(sendable_packet);
-    Serial.println(_loggable_packet);
+    Serial.print(_loggable_packet);
     Serial.println("*/");
+}
+
+void Log::log_info_msg_to_flash(String msg)
+{
+    write_to_file(msg, _info_log_file_path_final);
+}
+
+void Log::log_error_msg_to_flash(String msg)
+{
+    write_to_file(msg, _error_log_file_path_final);
 }
