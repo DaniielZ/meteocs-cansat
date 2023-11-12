@@ -15,6 +15,7 @@
 #include "core/data_filtering.h"
 #include <Array.h>
 #include "config.h"
+#include <core/log.h>
 
 /**
  * @brief A class responsible for initializing, managing and reading data from all the different sensors and controllers. All the data is stored in the data struct
@@ -32,49 +33,61 @@ class Sensor_manager
     // BARO WIRE0
     MS5611 _outer_baro;
     bool _outer_baro_initialized = false;
+    int _outer_baro_consecutive_failed_readings = 0;
 
-    // BARO WIRE0 currently not in use
+    // BARO WIRE0
     Adafruit_BMP085 _inner_baro;
     bool _inner_baro_initialized = false;
+    int _inner_baro_consecutive_failed_readings = 0;
 
     // IMU WIRE0
     LSM6 _imu;
     bool _imu_initialized = false;
+    int _imu_consecutive_failed_readings = 0;
 
     // TEMPERATURE WIRE0
     ClosedCube::Sensor::STS35 _inner_temp_probe;
     bool _inner_temp_probe_initialized = false;
+    int _inner_temp_probe_consecutive_failed_readings = 0;
 
     // TEMPERATURE NTC
     NTC_Thermistor _outer_thermistor = NTC_Thermistor(0, 0, 0, 0, 0);
     bool _outer_thermistor_initialized = false;
+    int _outer_thermistor_consecutive_failed_readings = 0;
 
-    // temp manager
+    // Temp manager
     Temperature_Manager *_temp_manager;
     bool _heater_enabled = false;
     Time_Averaging_Filter<float> *_inner_temp_averager;
     Time_Averaging_Filter<float> *_outer_temp_averager;
 
-    // ranging lora
+    // Ranging lora
     Ranging_Wrapper _lora;
     unsigned long _last_ranging_pos_time = 0;
     int _last_slave_index = 0;
     int _slave_index = 0;
-    
-    // battery averager
+    int _ranging_lora_consecutive_failed_readings = 0;
+
+    // Battery
+    int _batt_voltage_consecutive_failed_readings = 0;
+
+    // Heater current
+    int _heater_current_consecutive_failed_readings = 0;
+
+    // Battery averager
     Time_Averaging_Filter<float> *_batt_averager;
 
-    void position_calculation(Config &config);
-    void read_ranging(Config &config);
-    void read_gps();
-    void read_magneto();
-    void read_outer_baro(Config &config);
-    void read_inner_baro(Config &config);
-    void read_humidity();
-    void read_imu();
+    void position_calculation(Log &log, Config &config);
+    void read_ranging(Log &log, Config &config);
+    void read_gps(Log &log, Config &config);
+    void read_outer_baro(Log &log, Config &config);
+    void read_inner_baro(Log &log, Config &config);
+    void read_inner_temp_probe(Log &log, Config &config);
+    void read_outer_thermistor(Log &log, Config &config);
+    void read_imu(Log &log, Config &config);
     void read_time();
-    void read_temps(Config &config);
-    void read_batt_voltage(Config &config);
+    void update_heater(Log &log, Config &config);
+    void read_batt_voltage(Log &log, Config &config);
 
 public:
     // TODO make a different struct for sendable data and raw data
@@ -85,6 +98,9 @@ public:
         float gps_lng = 0;      // deg
         float gps_height = 0;   // m
         int gps_satellites = 0; // count
+
+        float outer_baro_pressure = 0;
+        float outer_baro_temp = 0;
 
         float inner_baro_pressure = 0; // Pa
         float inner_baro_temp = 0;     // C
@@ -125,9 +141,11 @@ public:
         data.heater_power = 0;
         _temp_manager->reset();
     };
+
+    void update_data_packet(Sensor_data &data, String &result_sent, String &result_log);
     
     String header = "Data header:";
     Sensor_data data;
-    String init(Config &config);
-    void read_data(Config &config);
+    String init(Log &log, Config &config);
+    void read_data(Log &log, Config &config);
 };

@@ -6,7 +6,7 @@ class Temperature_Manager
     // Heating
     int _heater_pin;
     float _desired_temp; // in C
-    float _safe_temp;
+    
     const int _pwm_min = 0;
     const int _pwm_max = 32;
 
@@ -14,12 +14,6 @@ class Temperature_Manager
     const float _Kp = 7.5;     // Proportional (Best between 5 and 15)
     const float _Ki = 0.00001; // Integral (Best between 0.00008 and 0.00013)
     const float _Kd = 10000;   // Derivative (Best between 5000 and 20000)
-
-    // PID values
-    float _proportional_term = 0;
-    float _last_proportional_term = 0;
-    float _derivative_term = 0;
-    float _integral_term = 0;
 
     // PID value limits
     const int _proportional_limit = _pwm_max;
@@ -39,6 +33,13 @@ class Temperature_Manager
     void check_heater_power();
 
 public:
+    float _safe_temp;
+    // PID values
+    float _proportional_term = 0;
+    float _last_proportional_term = 0;
+    float _derivative_term = 0;
+    float _integral_term = 0;
+
     Temperature_Manager(int heater_pin, float desired_temp);
     ~Temperature_Manager();
     // TODO properly reset all the necessary values

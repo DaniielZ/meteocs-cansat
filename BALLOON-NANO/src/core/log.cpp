@@ -90,11 +90,14 @@ void Log::init_flash(Config &config)
     _flash_initialized = true;
 }
 
-// Call flash and LoRa init
+// Call flash, eeprom and LoRa init
 void Log::init(Config &config)
 {
     // Init SD card
     init_flash(config);
+
+    // Init eeprom
+    EEPROM.begin(512);
 
     // Init LoRa
     String status = _com_lora.init(true, config.com_config);
@@ -198,125 +201,6 @@ void Log::send_error(String msg, Config &config)
     write_to_file(msg, _error_log_file_path_final);
 }
 
-// Updates the message data packets with newest sensor data
-void Log::update_data_packet(Sensor_manager::Sensor_data &data, String &result_sent, String &result_log)
-{
-    String packet;
-    // GPS
-    packet += String(data.gps_lat, 6); // 1
-    packet += ",";
-    packet += String(data.gps_lng, 6); // 2
-    packet += ",";
-    packet += String(data.gps_height, 2); // 3
-    packet += ",";
-    packet += String(data.gps_satellites); // 4
-    packet += ",";
-    // Ranging
-    packet += String(data.ranging_results[0].distance, 2); // 5
-    packet += ",";
-    packet += String(data.ranging_results[1].distance, 2); // 6
-    packet += ",";
-    packet += String(data.ranging_results[2].distance, 2); // 7
-    packet += ",";
-    packet += String(data.times_since_last_ranging_result[0]); // 8
-    packet += ",";
-    packet += String(data.times_since_last_ranging_result[1]); // 9
-    packet += ",";
-    packet += String(data.times_since_last_ranging_result[2]); // 10
-    packet += ",";
-    packet += String(data.ranging_position.lat, 6); // 11
-    packet += ",";
-    packet += String(data.ranging_position.lng, 6); // 12
-    packet += ",";
-    packet += String(data.ranging_position.height, 2); // 13
-    packet += ",";
-    packet += String(data.time_since_last_ranging_pos); // 14
-    packet += ",";
-    // Baro
-    packet += String(data.inner_baro_pressure, 3); // 15
-    packet += ",";
-    // Temperatures
-    packet += String(data.average_inner_temp, 2); // 16
-    packet += ",";
-    packet += String(data.average_outer_temp, 2); // 17
-    packet += ",";
-    // Heater
-    packet += String(data.heater_power); // 18
-    packet += ",";
-    // Accelerometer
-    packet += String(data.acc[0], 4); // 19
-    packet += ",";
-    packet += String(data.acc[1], 4); // 20
-    packet += ",";
-    packet += String(data.acc[2], 4); // 21
-    packet += ",";
-    // Misc
-    packet += String(data.time_since_last_gps); // 22
-    packet += ",";
-    packet += String(data.time); // 23
-    packet += ",";
-    packet += String(data.average_batt_voltage, 2); // 24
-
-    result_sent = packet;
-
-    packet += ",";
-    packet += String(data.gps_time); // 25
-    packet += ",";
-    // Gyro
-    packet += String(data.gyro[0], 2); // 26
-    packet += ",";
-    packet += String(data.gyro[1], 2); // 27
-    packet += ",";
-    packet += String(data.gyro[2], 2); // 28
-    packet += ",";
-    // Temperatures
-    packet += String(data.outer_temp_thermistor, 2); // 29
-    packet += ",";
-    packet += String(data.inner_baro_temp, 2); // 30
-    packet += ",";
-    packet += String(data.inner_temp_probe, 2); // 31
-    packet += ",";
-    // Battery voltage
-    packet += String(data.batt_voltage, 2); // 32
-    packet += ",";
-    // PID
-    packet += String(data.p, 4); // 33
-    packet += ",";
-    packet += String(data.i, 4); // 34
-    packet += ",";
-    packet += String(data.d, 4); // 35
-    packet += ",";
-    packet += String(data.target_temp, 1); // 36
-    //packet += ",";
-    // Ranging
-    /*
-    packet += String(data.ranging_results[0].time); // 37
-    packet += ",";
-    packet += String(data.ranging_results[0].rssi, 2); // 38
-    packet += ",";
-    packet += String(data.ranging_results[0].snr, 2); // 39
-    packet += ",";
-    packet += String(data.ranging_results[0].f_error, 2); // 40
-    packet += ",";
-    packet += String(data.ranging_results[1].time); // 41
-    packet += ",";
-    packet += String(data.ranging_results[1].rssi, 2); // 42
-    packet += ",";
-    packet += String(data.ranging_results[1].snr, 2); // 43
-    packet += ",";
-    packet += String(data.ranging_results[1].f_error, 2); // 44
-    packet += ",";
-    packet += String(data.ranging_results[2].time); // 45
-    packet += ",";
-    packet += String(data.ranging_results[2].rssi, 2); // 46
-    packet += ",";
-    packet += String(data.ranging_results[2].snr, 2); // 47
-    packet += ",";
-    packet += String(data.ranging_results[2].f_error, 2); // 48
-    */
-    result_log = packet;
-}
-
 // Send telemetry data packet over LoRa
 void Log::transmit_data(Config &config)
 {
@@ -353,4 +237,18 @@ void Log::log_info_msg_to_flash(String msg)
 void Log::log_error_msg_to_flash(String msg)
 {
     write_to_file(msg, _error_log_file_path_final);
+}
+
+// Read from EEPROM
+bool Log::read_eeprom(int address)
+{
+    bool value;
+    EEPROM.get(address, value);
+    return value;
+}
+
+// Write to eeprom
+void Log::write_eeprom(int address, int value)
+{
+    EEPROM.put(address, value);
 }

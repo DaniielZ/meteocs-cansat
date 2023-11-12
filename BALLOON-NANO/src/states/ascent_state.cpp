@@ -27,9 +27,9 @@ void ascent_state(Cansat &cansat)
         unsigned long loop_start = millis();
 
         // Read data from sensors
-        cansat.sensors.read_data(cansat.config);
+        cansat.sensors.read_data(cansat.log, cansat.config);
         // Update data packets
-        cansat.log.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
+        cansat.sensors.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
         // Log/Send data
         send_data_ascent(cansat);
         // Used for debugging

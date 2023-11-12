@@ -24,9 +24,7 @@ bool prepare_state_loop(Cansat &cansat)
     }
 
     // Read sensor data
-    cansat.sensors.read_data(cansat.config);
-    // Update data packets
-    cansat.log.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
+    cansat.sensors.read_data(cansat.log, cansat.config);
 
     // Check received message
     // Check if should send telemetry data for a short moment
@@ -37,7 +35,7 @@ bool prepare_state_loop(Cansat &cansat)
         while (millis() <= data_send_end_time)
         {
             // Get sensor data
-            cansat.sensors.read_data(cansat.config);
+            cansat.sensors.read_data(cansat.log, cansat.config);
             // Print data to serial
             cansat.log.log_data_to_pc();
             // Save data to telemetry file
@@ -110,7 +108,7 @@ void prepare_state(Cansat &cansat)
     cansat.log.init(cansat.config);
     
     // Init sensors
-    String status = String("Sensor status: ") + cansat.sensors.init(cansat.config);
+    String status = String("Sensor status: ") + cansat.sensors.init(cansat.log, cansat.config);
     cansat.log.send_info(status, cansat.config);
 
     cansat.log.send_info("Init done, waiting for arm", cansat.config);

@@ -8,7 +8,7 @@ void Temperature_Manager::update_heater_power(float inner_temp)
     set_heater_power(_heater_power);
 }
 
-// Safety check incase the pid loop did an opise
+// Safety check incase the pid loop did an opsie
 void Temperature_Manager::check_heater_power()
 {
     if (_inner_temp > (_safe_temp + 0.05))

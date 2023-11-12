@@ -1,9 +1,9 @@
 #pragma once
 #include <SPI.h>
 #include <RadioLib.h>
+#include <EEPROM.h>
 #include <Arduino.h>
 #include "config.h"
-#include "sensors/sensor_manager.h"
 
 class Log
 {
@@ -24,8 +24,10 @@ public:
     void write_to_file(String msg, String file_name);
     void send_info(String msg, Config &config);
     void send_error(String msg, Config &config);
-    void update_data_packet(Sensor_manager::Sensor_data &data, String &result_sent, String &result_log);
     
+    bool read_eeprom(int address);
+    void write_eeprom(int address, int value);
+
     void transmit_data(Config &config);
     void log_data_to_flash();
     void log_info_msg_to_flash(String msg);

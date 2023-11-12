@@ -28,8 +28,7 @@ void descent_state(Cansat &cansat)
     {
         unsigned long loop_start = millis();
 
-        cansat.sensors.read_data(cansat.config);
-        cansat.log.update_data_packet(cansat.sensors.data, cansat.log._sendable_packet, cansat.log._loggable_packet);
+        cansat.sensors.read_data(cansat.log, cansat.config);
         send_data_descent(cansat);
 
         if (millis() >= parachute_ejection_time && !mosfet_on_triggered)
