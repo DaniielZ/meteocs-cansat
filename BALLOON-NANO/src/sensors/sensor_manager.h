@@ -23,6 +23,7 @@
  */
 class Sensor_manager
 {
+private:
     // SENSOR OBJECTS AND Communication
     // GPS UART0
     TinyGPSPlus _gps;
@@ -55,14 +56,16 @@ class Sensor_manager
     bool _outer_thermistor_initialized = false;
     int _outer_thermistor_consecutive_failed_readings = 0;
 
-    // Temp manager
-    Temperature_Manager *_temp_manager;
+    // Temperature manager
     bool _heater_enabled = false;
+    bool _heater_constant = false;
+    float _heater_constant_temp;
     Time_Averaging_Filter<float> *_inner_temp_averager;
     Time_Averaging_Filter<float> *_outer_temp_averager;
 
     // Ranging lora
-    Ranging_Wrapper _lora;
+    Ranging_Wrapper _ranging_lora;
+    bool _ranging_lora_initalized = false;
     unsigned long _last_ranging_pos_time = 0;
     int _last_slave_index = 0;
     int _slave_index = 0;
@@ -90,6 +93,9 @@ class Sensor_manager
     void read_batt_voltage(Log &log, Config &config);
 
 public:
+    // Temp manager
+    Temperature_Manager *_temp_manager;
+    
     // TODO make a different struct for sendable data and raw data
     struct Sensor_data
     {
@@ -116,8 +122,6 @@ public:
         float d = 0;                   // derivative * coefficient
         float target_temp = 0;
 
-        float humidity = 0; // %
-
         float acc[3] = {0, 0, 0};  // m/s^2
         float gyro[3] = {0, 0, 0}; // dps
 
@@ -134,18 +138,18 @@ public:
         unsigned long gps_time = 0;                       //
     };
 
-    //[F] = not sent over lora
+    // Set heater state
     void set_heater(bool state)
     {
         _heater_enabled = state;
         data.heater_power = 0;
         _temp_manager->reset();
     };
-
-    void update_data_packet(Sensor_data &data, String &result_sent, String &result_log);
     
     String header = "Data header:";
     Sensor_data data;
+    
     String init(Log &log, Config &config);
     void read_data(Log &log, Config &config);
+    void update_data_packet(Sensor_data &data, String &result_sent, String &result_log);
 };

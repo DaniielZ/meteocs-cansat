@@ -1,31 +1,58 @@
 #include "states/prepare_state.h"
 #include <SDFS.h>
 
+unsigned long int last_state_save_time_prepare = 0;
+
+// HELPER FUNCTIONS
+// Reset last state variables to 0
+void reset_last_state_values(Cansat &cansat)
+{
+    cansat.config.last_state_variables.last_state = 0;
+    cansat.config.last_state_variables.last_log_file_index = 0;
+    cansat.config.last_state_variables.last_inner_temp = 0;
+    cansat.config.last_state_variables.last_integral_term = 0;
+    cansat.config.last_state_variables.last_safe_temp = 0;
+
+    cansat.config.last_state_variables.inner_temp_probe_restarted = 0;
+    cansat.config.last_state_variables.imu_restarted = 0;
+    
+    cansat.save_last_state(cansat);
+}
+
+// Reset last state failed sensors to not failed
+void reset_sensor_last_state_values(Cansat &cansat)
+{
+    cansat.config.last_state_variables.outer_baro_failed = 0;
+    cansat.config.last_state_variables.inner_baro_failed = 0;
+    cansat.config.last_state_variables.inner_temp_probe_failed = 0;
+    cansat.config.last_state_variables.imu_failed = 0;
+    cansat.config.last_state_variables.outer_thermistor_failed = 0;
+    cansat.config.last_state_variables.ranging_lora_failed = 0;
+
+    cansat.save_last_state(cansat);
+}
+
+
+// MAIN FUNCTIONS
+// Prepare state loop
 bool prepare_state_loop(Cansat &cansat)
 {
     unsigned long loop_start = millis();
     
-    // Check for further commands either from PC or LoRa
-    String incoming_msg = "";
-    float rssi;
-    float snr;
-    cansat.log.receive_main_lora(incoming_msg, rssi, snr, cansat.config);
-    if (Serial.available() > 0)
-    {
-        incoming_msg = Serial.readString();
-    }
-
-    // Remove any new line characters and log the received message
-    if (incoming_msg != "")
-    {
-        incoming_msg.trim();
-        Serial.println(incoming_msg + ", " + String(rssi) + ", " + String(snr));
-        cansat.log.send_info("Payload received message: " + incoming_msg, cansat.config);
-    }
+    String incoming_msg = cansat.receive_command(cansat);
 
     // Read sensor data
     cansat.sensors.read_data(cansat.log, cansat.config);
 
+    // Save data to telemetry file
+    cansat.log.log_telemetry_data();
+
+    // Save last state variables
+    if (millis() - last_state_save_time_prepare >= cansat.config.PREPARE_STATE_SAVE_UPDATE_INTERVAL)
+    {
+        cansat.save_last_state(cansat);
+    }
+    
     // Check received message
     // Check if should send telemetry data for a short moment
     if (incoming_msg == cansat.config.DATA_SEND_MSG)
@@ -34,33 +61,35 @@ bool prepare_state_loop(Cansat &cansat)
         unsigned long data_send_end_time = data_send_start_time + 30000;  // 30 seconds 
         while (millis() <= data_send_end_time)
         {
-            // Get sensor data
-            cansat.sensors.read_data(cansat.log, cansat.config);
-            // Print data to serial
-            cansat.log.log_data_to_pc();
-            // Save data to telemetry file
-            cansat.log.log_data_to_flash();
-            // Send data by LoRa
-            cansat.log.transmit_data(cansat.config);
-
-            delay(cansat.config.MAX_LOOP_TIME);
-
+            unsigned long data_send_loop_start = millis();
             // Check for any commands from PC or LoRa
-            cansat.log.receive_main_lora(incoming_msg, rssi, snr, cansat.config);
-            if (Serial.available() > 0)
-            {
-                incoming_msg = Serial.readString();
-            }
-
+            incoming_msg = cansat.receive_command(cansat);
             if (incoming_msg == cansat.config.DATA_SEND_STOP_MSG)
             {
                 break;
+            }
+
+            // Get sensor data
+            cansat.sensors.read_data(cansat.log, cansat.config);
+            // Print data to serial
+            cansat.log.log_telemetry_data_to_pc();
+            // Save data to telemetry file
+            cansat.log.log_telemetry_data();
+            // Send data by LoRa
+            cansat.log.transmit_data(cansat.config);
+
+            // Check if should wait before next loop
+            unsigned long data_send_loop_time = millis() - data_send_loop_start;
+            if (data_send_loop_time < cansat.config.MAX_LOOP_TIME)
+            {
+                delay(cansat.config.MAX_LOOP_TIME - data_send_loop_time);
             }
         }
     }
     // Check if should enable heater
     else if (incoming_msg == cansat.config.HEATER_ENABLE_MSG)
     {
+        cansat.sensors._temp_manager->_heater_enabled = true;
         cansat.sensors.set_heater(true);
     }
     // Check if should arm
@@ -81,6 +110,16 @@ bool prepare_state_loop(Cansat &cansat)
             cansat.log.send_info("Formatting fail", cansat.config);
         }
     }
+    // Check if should reset eeprom values
+    else if (incoming_msg == cansat.config.RESET_EEPROM_MSG)
+    {
+        reset_last_state_values(cansat);
+    }
+    // Check if should reset eeprom values
+    else if (incoming_msg == cansat.config.RESET_SENSOR_STATES_MSG)
+    {
+        reset_sensor_last_state_values(cansat);
+    }
     // If message doesn't match any case
     else if (incoming_msg != "")
     {
@@ -98,15 +137,9 @@ bool prepare_state_loop(Cansat &cansat)
     return false;
 }
 
-// Prepare state start
+// Prepare state setup
 void prepare_state(Cansat &cansat)
-{
-    // Init communications
-    cansat.init_all_com_bus(cansat.config);
-
-    // Init logging
-    cansat.log.init(cansat.config);
-    
+{    
     // Init sensors
     String status = String("Sensor status: ") + cansat.sensors.init(cansat.log, cansat.config);
     cansat.log.send_info(status, cansat.config);

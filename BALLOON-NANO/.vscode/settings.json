@@ -6,5 +6,11 @@
     "RADIOLIB",
     "trilaterate"
   ],
-  "cmake.configureOnOpen": false
+  "cmake.configureOnOpen": false,
+  "files.associations": {
+    "*.tcc": "cpp",
+    "unordered_map": "cpp",
+    "numeric": "cpp",
+    "ostream": "cpp"
+  }
 }

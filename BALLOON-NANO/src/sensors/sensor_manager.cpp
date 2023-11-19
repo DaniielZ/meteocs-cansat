@@ -1,95 +1,6 @@
 #include "sensors/sensor_manager.h"
 
-// Initialize sensors
-String Sensor_manager::init(Log &log, Config &config)
-{
-    String status;
-    // GPS
-    _gps_serial = &Serial1;
-    if (_gps_serial)
-    {
-        _gps_initialized = true;
-    }
-    else
-    {
-        log.send_error("GPS init error", config);
-        status += "GPS error ";
-    }
-
-    // Outer baro
-    MS5611 MS5611(config.MS5611_ADDRESS_I2C);
-    if (!MS5611.begin())
-    {
-        log.send_error("MS5611 init error", config);
-        status += "MS5611 error ";
-    }
-    else
-    {
-        MS5611.setOversampling(OSR_LOW); // OSR_ULTRA_LOW => 0.5 ms/OSR_LOW => 1.1 ms
-        _outer_baro_initialized = true;
-    }
-
-    // Inner baro
-    _inner_baro = Adafruit_BMP085();
-    if (!_inner_baro.begin(config.BMP180_ADDRESS_I2C, &Wire))
-    {
-        log.send_error("BMP180 init error", config);
-        status += "BMP180 error ";
-    }
-    else
-    {
-        _inner_baro_initialized = true;
-    }
-
-    // IMU WIRE1
-    if (!_imu.init())
-    {
-        log.send_error("IMU init error", config);
-        status += "IMU error ";
-    }
-    else
-    {
-        _imu_initialized = true;
-        _imu.enableDefault();
-    }
-
-    // TEMP PROBE
-    _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
-    _inner_temp_probe.address(config.STS35_ADDRESS);
-    _inner_temp_probe_initialized = true;
-
-    // Test temp probe to see if its working
-    float test = _inner_temp_probe.readTemperature();
-    if (test > 100.00 || test < -100.0 || test == 0.00)
-    {
-        _inner_temp_probe_initialized = false;
-        log.send_error("Inner temp probe init error", config);
-        status += "Inner temp probe error";
-    }
-
-    // Outer temp probe
-    analogReadResolution(12);
-    _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
-    _outer_thermistor_initialized = true;
-
-    // TEMP CALCULATOR
-    _temp_manager = new Temperature_Manager(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
-
-    // TEMP averagers
-    _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
-    _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
-
-    // Battery
-    pinMode(config.BATT_SENS_PIN, INPUT);
-    analogReadResolution(12);
-    _batt_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
-
-    // RANGING lora
-    status += _lora.init(config.LORA2400_MODE, config.ranging_device);
-
-    return status;
-}
-
+// PRIVATE FUNCTIONS
 void Sensor_manager::read_batt_voltage(Log &log, Config &config)
 {
     // Read voltage and do calculations
@@ -105,20 +16,22 @@ void Sensor_manager::read_batt_voltage(Log &log, Config &config)
     }
     else
     {
-        // Later change to log_error_to_flash
-        log.send_error("Battery voltage reading outside range: " + String(new_batt_voltage), config);
+        log.log_error_msg_to_flash("Battery voltage reading outside range: " + String(new_batt_voltage));
     }
     // NO OTHER CHECKS ARE DONE AS THIS IS VERY SIMPLE AND NOTHING CAN REALLY GO WRONG (Hopefully)
 }
 
 void Sensor_manager::position_calculation(Log &log, Config &config)
-{
+{   
     // DON'T KNOW WHAT ARE THE EXPECTED VALUES SO ERROR CHECKING WILL BE IMPLEMENTED LATER
-    Ranging_Wrapper::Position result;
-    if (_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
+    if (_ranging_lora_initalized)
     {
-        data.ranging_position = result;
-        _last_ranging_pos_time = millis();
+        Ranging_Wrapper::Position result;
+        if (_ranging_lora.trilaterate_position(data.ranging_results, config.RANGING_SLAVES, result))
+        {
+            data.ranging_position = result;
+            _last_ranging_pos_time = millis();
+        }
     }
     // maybe do more processing
     return;
@@ -128,30 +41,33 @@ void Sensor_manager::read_ranging(Log &log, Config &config)
 {
     // DON'T KNOW WHAT ARE THE EXPECTED VALUES SO ERROR CHECKING WILL BE IMPLEMENTED LATER
     // try to range next slave address
-    Ranging_Wrapper::Ranging_Result result = {0, 0};
-    bool move_to_next_slave = false;
-    if (_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
+    if (_ranging_lora_initalized)
     {
-        // ranging data read and ranging for current slave started
-        move_to_next_slave = true;
-    }
-    // check if something useful was read from the previous slave
-    if (result.distance != 0 && result.time != 0)
-    {
-        data.ranging_results[_last_slave_index] = result;
-        Serial.println(_last_slave_index);
-    }
-
-    // move to next slave
-    if (move_to_next_slave)
-    {
-        _last_slave_index = _slave_index;
-        int array_length = 3;
-        _slave_index++;
-        if (_slave_index > array_length - 1)
+        Ranging_Wrapper::Ranging_Result result = {0, 0};
+        bool move_to_next_slave = false;
+        if (_ranging_lora.master_read(config.RANGING_SLAVES[_slave_index], result, config.RANGING_TIMEOUT))
         {
-            // reset index
-            _slave_index = 0;
+            // ranging data read and ranging for current slave started
+            move_to_next_slave = true;
+        }
+        // check if something useful was read from the previous slave
+        if (result.distance != 0 && result.time != 0)
+        {
+            data.ranging_results[_last_slave_index] = result;
+            Serial.println(_last_slave_index);
+        }
+
+        // move to next slave
+        if (move_to_next_slave)
+        {
+            _last_slave_index = _slave_index;
+            int array_length = 3;
+            _slave_index++;
+            if (_slave_index > array_length - 1)
+            {
+                // reset index
+                _slave_index = 0;
+            }
         }
     }
 }
@@ -184,8 +100,7 @@ void Sensor_manager::read_gps(Log &log, Config &config)
             }
             else
             {
-                // Later change to log_error_to_flash
-                log.send_error("GPS location is not correct: " + String(new_gps_lat, 6) + " " + String(new_gps_lng, 6), config);
+                log.log_error_msg_to_flash("GPS location is not correct: " + String(new_gps_lat, 6) + " " + String(new_gps_lng, 6));
             }
         }
     }
@@ -194,7 +109,7 @@ void Sensor_manager::read_gps(Log &log, Config &config)
 void Sensor_manager::read_outer_baro(Log &log, Config &config)
 {
     // Check if initalized or if the sensor has been flagged as failed
-    if (!_outer_baro_initialized && log.read_eeprom(config.OUTER_BARO_FAILED_EEPROM_ADDRESS))
+    if (!_outer_baro_initialized || config.last_state_variables.outer_baro_failed)
     {
         return;
     }
@@ -223,7 +138,7 @@ void Sensor_manager::read_outer_baro(Log &log, Config &config)
             else
             {
                 // Later change to log_error_to_flash
-                log.send_error("Outer baro pressure reading outside range: " + String(new_pressure), config);
+                log.log_error_msg_to_flash("Outer baro pressure reading outside range: " + String(new_pressure));
                 data_ok = false;
             }
             // TEMPERATURE IS NOT CHECKED AS OUTSIDE TEMP CAN BE OUTSIDE SENSOR RANGE
@@ -239,19 +154,19 @@ void Sensor_manager::read_outer_baro(Log &log, Config &config)
             log.log_error_msg_to_flash("Reading outer baro failed. Consecutive attempt: " + String(_outer_baro_consecutive_failed_readings));
             if (_outer_baro_consecutive_failed_readings >= config.OUTER_BARO_MAX_ATTEMPTS)
             {
+                // Set sensor to failed
                 log.send_error("Outer baro failure detected!", config);
+                config.last_state_variables.outer_baro_failed = 1;
                 _outer_baro_initialized = false;
-                // Set sensor in eeprom to failed
-                // log.write_eeprom(config.OUTER_BARO_FAILED_EEPROM_ADDRESS, true);
             }
         }
         // If the actual reading of the sensor took too long, something is probably wrong with it
         if (reading_end - reading_start >= config.OUTER_BARO_TIMEOUT)
         {
+            // Set sensor to failed
             log.send_error("Outer baro timeout detected!", config);
+            config.last_state_variables.outer_baro_failed = 1;
             _outer_baro_initialized = false;
-            // Set sensor in eeprom to failed
-            // log.write_eeprom(config.OUTER_BARO_FAILED_EEPROM_ADDRESS, true);
         }
     }
 }
@@ -259,7 +174,7 @@ void Sensor_manager::read_outer_baro(Log &log, Config &config)
 void Sensor_manager::read_inner_baro(Log &log, Config &config)
 {
     // Check if initalized or if the sensor has been flagged as failed
-    if (!_inner_baro_initialized && log.read_eeprom(config.INNER_BARO_FAILED_EEPROM_ADDRESS))
+    if (!_inner_baro_initialized || config.last_state_variables.inner_baro_failed)
     {
         return;
     }
@@ -310,19 +225,19 @@ void Sensor_manager::read_inner_baro(Log &log, Config &config)
             log.log_error_msg_to_flash("Reading inner baro failed. Consecutive attempt: " + String(_outer_baro_consecutive_failed_readings));
             if (_inner_baro_consecutive_failed_readings >= config.INNER_BARO_MAX_ATTEMPTS)
             {
+                // Set sensor to failed
                 log.send_error("Inner baro failure detected!", config);
+                config.last_state_variables.inner_baro_failed = 1;
                 _inner_baro_initialized = false;
-                // Set sensor in eeprom to failed
-                // log.write_eeprom(config.INNER_BARO_FAILED_EEPROM_ADDRESS, true);
             }
         }
         // If the actual reading of the sensor took too long, something is probably wrong with it
         if (reading_end - reading_start >= config.INNER_BARO_TIMEOUT)
         {
+            // Set sensor to failed
             log.send_error("Inner baro timeout detected!", config);
+            config.last_state_variables.inner_baro_failed = 1;
             _inner_baro_initialized = false;
-            // Set sensor in eeprom to failed
-            // log.write_eeprom(config.INNER_BARO_FAILED_EEPROM_ADDRESS, true);
         }
     }
 }
@@ -342,7 +257,7 @@ void Sensor_manager::read_time()
 void Sensor_manager::read_imu(Log &log, Config &config)
 {
     // Check if initalized or if the sensor has been flagged as failed
-    if (!_imu_initialized && log.read_eeprom(config.IMU_FAILED_EEPROM_ADDRESS))
+    if (!_imu_initialized || config.last_state_variables.imu_failed)
     {
         return;
     }
@@ -438,7 +353,6 @@ void Sensor_manager::read_imu(Log &log, Config &config)
         // If the actual reading of the sensor took too long, something is probably wrong with it
         if (reading_end - reading_start >= config.IMU_TIMEOUT)
         {
-            log.send_info("IMU time: "+ String(reading_end - reading_start), config);
             log.send_error("IMU timeout detected!", config);
             _imu_initialized = false;
             // As IMU is mission critical, implement hard reset
@@ -449,7 +363,7 @@ void Sensor_manager::read_imu(Log &log, Config &config)
 
 void Sensor_manager::read_inner_temp_probe(Log &log, Config &config)
 {
-    if (!_inner_temp_probe_initialized && log.read_eeprom(config.INNER_TEMP_PROBE_FAILED_EEPROM_ADDRESS))
+    if (!_inner_temp_probe_initialized || config.last_state_variables.inner_temp_probe_failed)
     {
         return;
     }
@@ -490,16 +404,16 @@ void Sensor_manager::read_inner_temp_probe(Log &log, Config &config)
             {
                 log.send_error("Inner temp probe failure detected!", config);
                 _inner_temp_probe_initialized = false;
-                // Set sensor in eeprom to failed
-                // log.write_eeprom(config.INNER_BARO_FAILED_EEPROM_ADDRESS, true);
+                // As the inner temp probe is mission critical, implement hard reset
+                // TODO
             }
         }
 
         // If the actual reading of the sensor took too long, something is probably wrong with it
-        if (reading_end - reading_start >= config.INNER_BARO_TIMEOUT)
+        if (reading_end - reading_start >= config.INNER_TEMP_PROBE_TIMEOUT)
         {
-            log.send_error("Inner baro timeout detected!", config);
-            _inner_baro_initialized = false;
+            log.send_error("Inner temp probe timeout detected!", config);
+            _inner_temp_probe_initialized = false;
             // As the inner temp probe is mission critical, implement hard reset
             // TODO
         }
@@ -508,7 +422,7 @@ void Sensor_manager::read_inner_temp_probe(Log &log, Config &config)
 
 void Sensor_manager::read_outer_thermistor(Log &log, Config &config)
 {
-    if (!_outer_thermistor_initialized && log.read_eeprom(config.OUTER_THERMISTOR_FAILED_EEPROM_ADDRESS))
+    if (!_outer_thermistor_initialized || config.last_state_variables.outer_thermistor_failed)
     {
         return;
     }
@@ -532,7 +446,6 @@ void Sensor_manager::read_outer_thermistor(Log &log, Config &config)
             data.outer_temp_thermistor = new_temperature;
             _outer_temp_averager->add_data(data.outer_temp_thermistor);
             data.average_outer_temp = _outer_temp_averager->get_averaged_value();
-            ;
         }
         else
         {
@@ -548,21 +461,20 @@ void Sensor_manager::read_outer_thermistor(Log &log, Config &config)
             log.log_error_msg_to_flash("Reading outer thermistor failed. Consecutive attempt: " + String(_outer_thermistor_consecutive_failed_readings));
             if (_outer_thermistor_consecutive_failed_readings >= config.INNER_TEMP_PROBE_MAX_ATTEMPTS)
             {
+                // Set sensor to failed
                 log.send_error("Outer thermistor failure detected!", config);
+                config.last_state_variables.outer_thermistor_failed = 1;
                 _outer_thermistor_initialized = false;
-                // Set sensor in eeprom to failed
-                // log.write_eeprom(config.INNER_BARO_FAILED_EEPROM_ADDRESS, true);
             }
         }
 
         // If the actual reading of the sensor took too long, something is probably wrong with it
         if (reading_end - reading_start >= config.OUTER_BARO_TIMEOUT)
         {
-            log.send_info("Outer thermistor time: "+ String(reading_end - reading_start), config);
+            // Set sensor to failed
             log.send_error("Outer thermistor timeout detected!", config);
+            config.last_state_variables.outer_thermistor_failed = 1;
             _outer_thermistor_initialized = false;
-            // Set sensor in eeprom to failed
-            // log.write_eeprom(config.INNER_BARO_FAILED_EEPROM_ADDRESS, true);
         }
     }
 }
@@ -572,50 +484,61 @@ void Sensor_manager::update_heater(Log &log, Config &config)
     if (_heater_enabled)
     {
         float best_inner_temp;
-        // Compare inner temp probe and inner baro temp
-        // If both sensors working
-        if (_inner_temp_probe_initialized && _inner_baro_initialized)
+        
+        // If heater is not set to constant power mode (both temp sensors have failed)
+        if (!_heater_constant)
         {
-            // TODO maybe also average inner baro temp
-            // If the temp difference between both sensors is less 5 degrees
-            // both sensors are probably working fine
-            if (abs(data.average_inner_temp - data.inner_baro_temp) <= 5)
+            // Compare inner temp probe and inner baro temp
+            // If both sensors working
+            if (_inner_temp_probe_initialized && _inner_baro_initialized)
+            {
+                // TODO maybe also average inner baro temp
+                // If the temp difference between both sensors is less 5 degrees
+                // both sensors are probably working fine
+                if (abs(data.average_inner_temp - data.inner_baro_temp) <= 5)
+                {
+                    best_inner_temp = data.average_inner_temp;
+                }
+                // If the difference is larger, take the smallest value to be on the safe side of things
+                else
+                {
+                    best_inner_temp = min(data.average_inner_temp, data.inner_baro_temp);
+                    log.log_info_msg_to_flash("Difference between inner temp sensors larger than 5: " + String(data.average_inner_temp) + " " + String(data.inner_baro_temp));
+                }
+            }
+            // If only inner temp probe is working
+            else if (_inner_temp_probe_initialized)
             {
                 best_inner_temp = data.average_inner_temp;
             }
-            // If the difference is larger, take the smallest value to be on the safe side of things
+            // From testing inner baro temp was always lower than inner temp probe, so taking this value should be fine
+            else if (_inner_baro_initialized)
+            {
+                best_inner_temp = data.inner_baro_temp;
+            }
+            // If both sensors have failed there are 2 options:
+            // * We set inner temp to target temp, which sets proportional term to 0, and only leaves integral term
+            //   Assuming the inner box has reached equilibrium, heating power will stay constant and temperature should also
+            //   But as the heating losses will not be constant, temperature can increase way above target temp
+            //   If we slightly reduce the integral term, the temperature should in most cases stay below the target temp
+            //
+            // * Other option is to just disable the heater. This means that temperature can't ever go higher than target temp
+            //   But also this means that inner temp can go way below safe temp, especially while we are still ascending
+            // Probably the first option is better, as the chance that the experiment is still somewhat successful is higher
             else
             {
-                // Later change this to log_info_to_flash
-                best_inner_temp = min(data.average_inner_temp, data.inner_baro_temp);
-                log.send_info("Difference between inner temp sensors larger than 5: " + String(data.average_inner_temp) + " " + String(data.inner_baro_temp), config);
+                _heater_constant_temp = _temp_manager->_safe_temp;
+                // Reduce the integral term by 30%
+                _temp_manager->_integral_term *= 0.7;
+                _heater_constant = true;
             }
         }
-        // If only inner temp probe is working
-        else if (_inner_temp_probe_initialized)
+        // If heater is set to constant power, set it to constant heater temp, which makes proportional term equal to 0
+        if (_heater_constant)
         {
-            best_inner_temp = data.average_inner_temp;
+            best_inner_temp = _heater_constant_temp;
         }
-        // From testing inner baro temp was always lower than inner temp probe, so taking this value should be fine
-        else if (_inner_baro_initialized)
-        {
-            best_inner_temp = data.inner_baro_temp;
-        }
-        // If both sensors have failed there are 2 options:
-        // * We set inner temp to target temp, which sets proportional term to 0, and only leaves integral term
-        //   Assuming the inner box has reached equilibrium, heating power will stay constant and temperature should also
-        //   But as the heating losses will not be constant, temperature can increase way above target temp
-        //   If we slightly reduce the integral term, the temperature should in most cases stay below the target temp
-        //
-        // * Other option is to just disable the heater. This means that temperature can't ever go higher than target temp
-        //   But also this means that inner temp can go way below safe temp, especially while we are still ascending
-        // Probably the first option is better, as the chance that the experiment is still somewhat successful is higher
-        else
-        {
-            best_inner_temp = _temp_manager->_safe_temp;
-            // Reduce the integral term by 30%
-            _temp_manager->_integral_term *= 0.7;
-        }
+
         // Send the best option of inner temp to temp control
         _temp_manager->update_heater_power(best_inner_temp);
 
@@ -623,12 +546,154 @@ void Sensor_manager::update_heater(Log &log, Config &config)
         _temp_manager->get_pid(data.p, data.i, data.d);
         data.target_temp = _temp_manager->get_target_temp();
 
-        // Check if should disable heater, because of critical battery voltage
+        // Check if heater should be disabled, because of critical battery voltage
         if (data.average_batt_voltage < config.HEATER_CUT_OFF_VOLTAGE)
         {
+            _heater_enabled = false;
             set_heater(false);
         }
     }
+}
+
+// PUBLIC FUNCTIONS
+String Sensor_manager::init(Log &log, Config &config)
+{
+    String status;
+
+    // GPS
+    _gps_serial = &Serial1;
+    if (_gps_serial)
+    {
+        _gps_initialized = true;
+    }
+    else
+    {
+        log.send_error("GPS init error", config);
+        status += "GPS error ";
+    }
+
+    // Outer baro
+    if (!config.last_state_variables.outer_baro_failed)
+    {
+        MS5611 MS5611(config.MS5611_ADDRESS_I2C);
+        if (!MS5611.begin())
+        {
+            log.send_error("MS5611 init error", config);
+            status += "MS5611 error ";
+        }
+        else
+        {
+            MS5611.setOversampling(OSR_LOW); // OSR_ULTRA_LOW => 0.5 ms/OSR_LOW => 1.1 ms
+            _outer_baro_initialized = true;
+        }
+    }
+    else
+    {
+        log.send_error("MS5611 state is set as failed. Sensor not initalized", config);
+    }
+
+    // Inner baro
+    if (!config.last_state_variables.inner_baro_failed)
+    {
+        _inner_baro = Adafruit_BMP085();
+        if (!_inner_baro.begin(config.BMP180_ADDRESS_I2C, &Wire))
+        {
+            log.send_error("BMP180 init error", config);
+            status += "BMP180 error ";
+        }
+        else
+        {
+            _inner_baro_initialized = true;
+        }
+    }
+    else
+    {
+        log.send_error("BMP180 state is set as failed. Sensor not initalized", config);
+    }
+    
+    // IMU WIRE1
+    if (!config.last_state_variables.imu_failed)
+    {
+        if (!_imu.init())
+        {
+            log.send_error("IMU init error", config);
+            status += "IMU error ";
+        }
+        else
+        {
+            _imu_initialized = true;
+            _imu.enableDefault();
+        }
+    }
+    else
+    {
+        log.send_error("IMU state is set as failed. Sensor not initalized", config);
+    }
+    
+    // TEMP PROBE
+    if (!config.last_state_variables.inner_temp_probe_failed)
+    {
+       _inner_temp_probe = ClosedCube::Sensor::STS35(&Wire);
+        _inner_temp_probe.address(config.STS35_ADDRESS);
+        _inner_temp_probe_initialized = true;
+
+        // Test temp probe to see if its working
+        float test = _inner_temp_probe.readTemperature();
+        if (test > 100.00 || test < -100.0 || test == 0.00)
+        {
+            _inner_temp_probe_initialized = false;
+            log.send_error("Inner temp probe init error", config);
+            status += "Inner temp probe error";
+        } 
+    }
+    else
+    {
+        log.send_error("Inner temp probe state is set as failed. Sensor not initalized", config);
+    }
+
+    // Outer temp probe
+    analogReadResolution(12);
+    if (!config.last_state_variables.outer_thermistor_failed)
+    {
+        _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
+        _outer_thermistor_initialized = true;
+    }
+    else
+    {
+        log.send_error("Outer_thermistor state is set as failed. Sensor not initalized", config);
+    }
+
+    // TEMP CALCULATOR
+    _temp_manager = new Temperature_Manager(config.HEATER_MOSFET, config.DESIRED_HEATER_TEMP);
+
+    // TEMP averagers
+    _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
+    _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
+
+    // Battery
+    pinMode(config.BATT_SENS_PIN, INPUT);
+    analogReadResolution(12);
+    _batt_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
+
+    // RANGING lora
+    if (!config.last_state_variables.ranging_lora_failed)
+    {
+        String result = _ranging_lora.init(config.LORA2400_MODE, config.ranging_device);
+        if (result == "")
+        {
+            _ranging_lora_initalized = true;
+        }
+        else
+        {
+            status += result;
+        }
+    }
+    else
+    {
+        log.send_error("Ranging LoRa state is set as failed. Ranging LoRa not initalized", config);
+    }
+
+    return status;
 }
 
 void Sensor_manager::read_data(Log &log, Config &config)
@@ -636,7 +701,7 @@ void Sensor_manager::read_data(Log &log, Config &config)
     // Get data from all sensors
     // GPS
     read_gps(log, config);
-
+    
     // IMU
     read_imu(log, config);
 
@@ -698,7 +763,7 @@ void Sensor_manager::update_data_packet(Sensor_data &data, String &result_sent, 
     packet += String(data.time_since_last_ranging_pos); // 14
     packet += ",";
     // Baro
-    packet += String(data.inner_baro_pressure, 3); // 15
+    packet += String(data.inner_baro_pressure, 0); // 15
     packet += ",";
     // Temperatures
     packet += String(data.average_inner_temp, 2); // 16

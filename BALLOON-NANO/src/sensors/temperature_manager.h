@@ -3,6 +3,7 @@
 
 class Temperature_Manager
 {
+private:
     // Heating
     int _heater_pin;
     float _desired_temp; // in C
@@ -33,7 +34,9 @@ class Temperature_Manager
     void check_heater_power();
 
 public:
+    bool _heater_enabled = false;
     float _safe_temp;
+
     // PID values
     float _proportional_term = 0;
     float _last_proportional_term = 0;
@@ -44,6 +47,7 @@ public:
     ~Temperature_Manager();
     // TODO properly reset all the necessary values
     void reset();
+    void reset_from_state(float integral_term, float safe_temp);
     void update_heater_power(float inner_temp);
     double get_heater_power();
     void get_pid(float &p, float &i, float &d);

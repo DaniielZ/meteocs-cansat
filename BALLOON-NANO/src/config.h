@@ -9,11 +9,35 @@
 class Config
 {
 public:
+    //----------- CHANGES DURING RUNTIME ------------------
+    // I know this shouldn't be here, but this was the easiest place to put this for state saving to work
+    struct Last_state_variables
+    {
+        int last_state = 0;
+        int last_log_file_index = 0;
+        
+        float last_inner_temp = 0;
+        float last_integral_term = 0;
+        float last_safe_temp = 0;
+
+        int outer_baro_failed = 0;
+        int inner_baro_failed = 0;
+
+        int inner_temp_probe_failed = 0;
+        int imu_failed = 0;
+        int outer_thermistor_failed = 0;
+        int ranging_lora_failed = 0;
+        
+        int inner_temp_probe_restarted = 0;
+        int imu_restarted = 0;
+    };
+    Last_state_variables last_state_variables;
+
     //------------ OFTEN CHANGED ------------------
     // hard data rate limiter
     const int MAX_LOOP_TIME = 20; // ms
 
-    const bool WAIT_PC = true;
+    bool WAIT_PC = true;
     const bool LOG_TO_STORAGE = true;
     
     // 433 MHz LoRa
@@ -50,18 +74,29 @@ public:
     
     const float HEATER_CUT_OFF_VOLTAGE = 6.0; // V
     const float DESIRED_HEATER_TEMP = 35.0;   // in C
+
     const unsigned int OUTER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int OUTER_TEMP_AVERAGE_CAPACITY = ((OUTER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
+    
     const unsigned int INNER_TEMP_AVERAGE_TIME = 3000;
     const unsigned int INNER_TEMP_AVERAGE_CAPACITY = ((INNER_TEMP_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
+
     const unsigned int BAT_AVERAGE_TIME = 5000;
     const unsigned int BAT_AVERAGE_CAPACITY = ((BAT_AVERAGE_TIME / MAX_LOOP_TIME) * 1.5);
 
-    const int LORA_DATAPACKET_COOLDOWN = 30000; // in ms  30000
+    const int LORA_DATAPACKET_COOLDOWN_ASCENT = 30000; // in ms  30000
+    const int LORA_DATAPACKET_COOLDOWN_DESCENT = 3000;
     const int TIME_FROM_LAUNCH_TO_EJECT = 20000;     // ms
     const int MOSFET_ON_TIME = 10000;                // ms
 
     //----------------------------------SOMEWHAT STATIC -------------------------------------
+
+    // State saving
+    const String LAST_STATE_VARIABLE_FILE_NAME = "/CANSAT_LAST_STATE.csv";
+
+    const unsigned int PREPARE_STATE_SAVE_UPDATE_INTERVAL = 10000;
+    const unsigned int ASCENT_STATE_SAVE_UPDATE_INTERVAL = 5000;
+    const unsigned int DESCENT_STATE_SAVE_UPDATE_INTERVAL = 5000;
 
     // logging
     const unsigned long PC_BAUDRATE = 115200;
@@ -115,14 +150,6 @@ public:
     const int PARACHUTE_MOSFET = 27;   // mosfet 2
     const int LAUNCH_RAIL_SWITCH = 0; // TBD
 
-    // SENSOR FAILED STATE EEPROM ADDRESSES
-    int OUTER_BARO_FAILED_EEPROM_ADDRESS = 100;
-    int INNER_BARO_FAILED_EEPROM_ADDRESS = 101;
-    int INNER_TEMP_PROBE_FAILED_EEPROM_ADDRESS = 102;
-    int IMU_FAILED_EEPROM_ADDRESS = 103;
-    int OUTER_THERMISTOR_FAILED_EEPROM_ADDRESS = 104;
-    int RANGING_LORA_FAILED_EEPROM_ADDRESS = 105;
-
     // SENSOR TIMEOUT CONSTANTS (milliseconds)
     const unsigned int OUTER_BARO_TIMEOUT = 100;
     const unsigned int INNER_BARO_TIMEOUT = 100;
@@ -171,16 +198,19 @@ public:
     
     // detection parameters
     // ARMING AND DATA SENDING MSG IN PREP SATE
-    String ARM_MSG = "arm_confirm";
-    String DATA_SEND_MSG = "data_send";
-    String DATA_SEND_STOP_MSG = "data_stop";
-    String HEATER_ENABLE_MSG = "heater_enable";
-    String FORMAT_MSG = "format_flash";
-    String TELEMETRY_LOG_FILE_NAME_BASE_PATH = "/CANSAT_TELEMETRY";
-    String INFO_LOG_FILE_NAME_BASE_PATH = "/CANSAT_INFO";
-    String ERROR_LOG_FILE_NAME_BASE_PATH = "/CANSAT_ERROR";
+    const String ARM_MSG = "arm_confirm";
+    const String DATA_SEND_MSG = "data_send";
+    const String DATA_SEND_STOP_MSG = "data_stop";
+    const String HEATER_ENABLE_MSG = "heater_enable";
+    const String FORMAT_MSG = "format_flash";
+    const String RESET_EEPROM_MSG = "reset_eeprom";
+    const String RESET_STATE_MSG = "reset_state";
+    const String RESET_SENSOR_STATES_MSG = "reset_sensor_states";
+    const String TELEMETRY_LOG_FILE_NAME_BASE_PATH = "/CANSAT_TELEMETRY";
+    const String INFO_LOG_FILE_NAME_BASE_PATH = "/CANSAT_INFO";
+    const String ERROR_LOG_FILE_NAME_BASE_PATH = "/CANSAT_ERROR";
 
-    String TELEMETRY_HEADER = "gps_lat,gps_lng,gps_height,gps_satellites,r1_dist,r2_dist,r3_dist,r1_time_since,r2_time_since,r3_time_since,r_pos_lat,r_pos_lng,r_pos_time_since,inner_pressure,avg_inner_temp,avg_outer_temp,heater_power,acc_x,acc_y,acc_z,gps_time_since,time_on,avg_batt_voltage,gps_time,gyro_x,gyro_y,gyro_z,outer_temp_thermistor,raw_inner_temp_baro,raw_inner_temp_probe,batt_voltage,p_term,i_term,d_term,target_temp";
-    String INFO_HEADER = "time_on, info";
-    String ERROR_HEADER = "time_on,error";
+    const String TELEMETRY_HEADER = "gps_lat,gps_lng,gps_height,gps_satellites,r1_dist,r2_dist,r3_dist,r1_time_since,r2_time_since,r3_time_since,r_pos_lat,r_pos_lng,r_pos_time_since,inner_pressure,avg_inner_temp,avg_outer_temp,heater_power,acc_x,acc_y,acc_z,gps_time_since,time_on,avg_batt_voltage,gps_time,gyro_x,gyro_y,gyro_z,outer_temp_thermistor,raw_inner_temp_baro,raw_inner_temp_probe,batt_voltage,p_term,i_term,d_term,target_temp";
+    const String INFO_HEADER = "time_on,info";
+    const String ERROR_HEADER = "time_on,error";
 };
