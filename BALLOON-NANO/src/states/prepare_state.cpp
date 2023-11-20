@@ -41,12 +41,9 @@ bool prepare_state_loop(Cansat &cansat)
     unsigned long loop_start = millis();
     
     String incoming_msg = cansat.receive_command(cansat);
-
+    
     // Reset watchdog timer
     watchdog_update();
-
-    Serial.println("Watchdog updated: " + String(millis()));
-
     // Read sensor data
     cansat.sensors.read_data(cansat.log, cansat.config);
 

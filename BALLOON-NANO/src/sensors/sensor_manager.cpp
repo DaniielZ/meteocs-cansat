@@ -585,6 +585,9 @@ String Sensor_manager::init(Log &log, Config &config)
 {
     String status;
 
+    // Change analogRead resolution
+    analogReadResolution(12);
+
     // GPS
     _gps_serial = &Serial1;
     if (_gps_serial)
@@ -684,7 +687,6 @@ String Sensor_manager::init(Log &log, Config &config)
     }
 
     // Outer temp probe
-    analogReadResolution(12);
     if (!config.last_state_variables.outer_thermistor_failed)
     {
         _outer_thermistor = NTC_Thermistor(config.THERMISTOR_PIN, config.THERMISTOR_REFERENCE_R, config.THERMISTOR_NOMINAL_R, config.THERMISTOR_NOMINAL_T, config.THERMISTOR_B, 4095);
@@ -700,12 +702,16 @@ String Sensor_manager::init(Log &log, Config &config)
 
     // TEMP averagers
     _inner_temp_averager = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
+    _inner_temp_averager_baro = new Time_Averaging_Filter<float>(config.INNER_TEMP_AVERAGE_CAPACITY, config.INNER_TEMP_AVERAGE_TIME);
     _outer_temp_averager = new Time_Averaging_Filter<float>(config.OUTER_TEMP_AVERAGE_CAPACITY, config.OUTER_TEMP_AVERAGE_TIME);
 
     // Battery
     pinMode(config.BATT_SENS_PIN, INPUT);
-    analogReadResolution(12);
     _batt_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
+
+    // Heater current
+    pinMode(config.HEATER_CURR_SENS_PIN, INPUT);
+    _heater_current_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
 
     // RANGING lora
     if (!config.last_state_variables.ranging_lora_failed)

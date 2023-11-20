@@ -99,7 +99,7 @@ public:
     const unsigned int DESCENT_STATE_SAVE_UPDATE_INTERVAL = 5000;
 
     // Watchdog
-    const int WATCHDOG_TIMER = 2000;
+    const int WATCHDOG_TIMER = 10000;
 
     // Port extender
     const int PORT_EXTENDER_ADDRESS_I2C = 0x20;
@@ -157,13 +157,13 @@ public:
     const int HEATER_MOSFET = 22; // mosfet 1
 
     // Heater current
-    const float HEATER_CURR_SENS_PIN = 32;
+    const float HEATER_CURR_SENS_PIN = 27;
     const float HEATER_CURR_CONVERSION_FACTOR = 3.3 * (1 / 0.3357);
     const float HEATER_RESISTOR_VALUE = 1;
 
     // Parachute
-    const int PARACHUTE_MOSFET_1 = 25;
-    const int PARACHUTE_MOSFET_2 = 24;   // mosfet 2
+    const int PARACHUTE_MOSFET_1 = 19;
+    const int PARACHUTE_MOSFET_2 = 18;   // mosfet 2
 
     // Buzzer
     const int BUZZER_INTERVAL = 300;
