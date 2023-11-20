@@ -4,6 +4,9 @@ unsigned long state_start_time = 0;
 unsigned long int last_data_transmit_time_descent = 0;
 unsigned long int last_state_save_time_descent = 0;
 
+unsigned long int last_buzzer_state_change_time = 0;
+bool buzzer_state = false;
+
 unsigned long parachute_ejection_time;
 bool mosfet_on_triggered = false;
 unsigned long mosfet_turnoff_time;
@@ -35,17 +38,25 @@ bool descent_state_loop(Cansat &cansat)
     // Reset watchdog timer
     watchdog_update();
 
-    // Check if parachute should be deployed
+    // Check if parachute deployment mosfets should be turned on
     if (millis() >= parachute_ejection_time && !mosfet_on_triggered)
     {
-        pinMode(cansat.config.PARACHUTE_MOSFET, OUTPUT_12MA);
-        digitalWrite(cansat.config.PARACHUTE_MOSFET, HIGH);
+        digitalWrite(cansat.config.PARACHUTE_MOSFET_1, HIGH);
+        digitalWrite(cansat.config.PARACHUTE_MOSFET_2, HIGH);
         mosfet_on_triggered = true;
     }
+    // Check if parachute deployment mosfets should be turned off
     if (millis() >= mosfet_turnoff_time)
     {
-        pinMode(cansat.config.PARACHUTE_MOSFET, OUTPUT_12MA);
-        digitalWrite(cansat.config.PARACHUTE_MOSFET, LOW);
+        digitalWrite(cansat.config.PARACHUTE_MOSFET_1, LOW);
+        digitalWrite(cansat.config.PARACHUTE_MOSFET_2, LOW);
+    }
+
+    // Change buzzer state
+    if (millis() - last_buzzer_state_change_time > cansat.config.BUZZER_INTERVAL)
+    {
+        buzzer_state = !buzzer_state;
+        cansat.sensors.set_buzzer(cansat.config, buzzer_state);
     }
 
     // Check for any commands

@@ -44,7 +44,6 @@ void Sensor_manager::read_heater_current(Log &log, Config &config)
     // NO OTHER CHECKS ARE DONE AS THIS IS VERY SIMPLE AND NOTHING CAN REALLY GO WRONG (Hopefully)
 }
 
-
 void Sensor_manager::position_calculation(Log &log, Config &config)
 {   
     // DON'T KNOW WHAT ARE THE EXPECTED VALUES SO ERROR CHECKING WILL BE IMPLEMENTED LATER
@@ -231,6 +230,8 @@ void Sensor_manager::read_inner_baro(Log &log, Config &config)
         if (config.INNER_BARO_MIN_TEMP <= new_temperature && new_temperature <= config.INNER_BARO_MAX_TEMP)
         {
             data.inner_baro_temp = new_temperature;
+            _inner_temp_averager_baro->add_data(data.inner_baro_temp);
+            data.average_inner_temp_baro = _inner_temp_averager_baro->get_averaged_value();
         }
         else
         {
@@ -519,15 +520,15 @@ void Sensor_manager::update_heater(Log &log, Config &config)
                 // TODO maybe also average inner baro temp
                 // If the temp difference between both sensors is less 5 degrees
                 // both sensors are probably working fine
-                if (abs(data.average_inner_temp - data.inner_baro_temp) <= 5)
+                if (abs(data.average_inner_temp - data.average_inner_temp_baro) <= 5)
                 {
                     best_inner_temp = data.average_inner_temp;
                 }
                 // If the difference is larger, take the smallest value to be on the safe side of things
                 else
                 {
-                    best_inner_temp = min(data.average_inner_temp, data.inner_baro_temp);
-                    log.log_info_msg_to_flash("Difference between inner temp sensors larger than 5: " + String(data.average_inner_temp) + " " + String(data.inner_baro_temp));
+                    best_inner_temp = min(data.average_inner_temp, data.average_inner_temp_baro);
+                    log.log_info_msg_to_flash("Difference between inner temp sensors larger than 5: " + String(data.average_inner_temp) + " " + String(data.average_inner_temp_baro));
                 }
             }
             // If only inner temp probe is working
@@ -538,7 +539,7 @@ void Sensor_manager::update_heater(Log &log, Config &config)
             // From testing inner baro temp was always lower than inner temp probe, so taking this value should be fine
             else if (_inner_baro_initialized)
             {
-                best_inner_temp = data.inner_baro_temp;
+                best_inner_temp = data.average_inner_temp_baro;
             }
             // If both sensors have failed there are 2 options:
             // * We set inner temp to target temp, which sets proportional term to 0, and only leaves integral term
@@ -596,18 +597,25 @@ String Sensor_manager::init(Log &log, Config &config)
         status += "GPS error ";
     }
 
+    // Port extender
+    _port_extender = PCF8575(config.PORT_EXTENDER_ADDRESS_I2C);
+    _port_extender.pinMode(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN, INPUT);
+	_port_extender.pinMode(config.PORT_EXTENDER_BUZZER_PIN, OUTPUT);
+	_port_extender.pinMode(config.PORT_EXTENDER_LED_2_PIN, OUTPUT);
+	_port_extender.pinMode(config.PORT_EXTENDER_LED_1_PIN, OUTPUT);
+
     // Outer baro
     if (!config.last_state_variables.outer_baro_failed)
     {
-        MS5611 MS5611(config.MS5611_ADDRESS_I2C);
-        if (!MS5611.begin())
+        _outer_baro = MS5611(config.MS5611_ADDRESS_I2C);
+        if (!_outer_baro.begin())
         {
             log.send_error("MS5611 init error", config);
             status += "MS5611 error ";
         }
         else
         {
-            MS5611.setOversampling(OSR_LOW); // OSR_ULTRA_LOW => 0.5 ms/OSR_LOW => 1.1 ms
+            _outer_baro.setOversampling(OSR_LOW); // OSR_ULTRA_LOW => 0.5 ms/OSR_LOW => 1.1 ms
             _outer_baro_initialized = true;
         }
     }
@@ -718,6 +726,26 @@ String Sensor_manager::init(Log &log, Config &config)
     }
 
     return status;
+}
+
+bool Sensor_manager::read_switch_state(Config &config)
+{
+    _port_extender.digitalRead(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN);
+}
+
+void Sensor_manager::set_buzzer(Config &config, bool state)
+{
+    _port_extender.digitalWrite(config.PORT_EXTENDER_BUZZER_PIN, state);
+}
+
+void Sensor_manager::set_status_led_1(Config &config, bool state)
+{
+    _port_extender.digitalWrite(config.PORT_EXTENDER_LED_1_PIN, state);
+}
+
+void Sensor_manager::set_status_led_2(Config &config, bool state)
+{
+    _port_extender.digitalWrite(config.PORT_EXTENDER_LED_2_PIN, state);
 }
 
 void Sensor_manager::read_data(Log &log, Config &config)

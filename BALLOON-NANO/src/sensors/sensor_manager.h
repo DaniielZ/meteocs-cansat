@@ -16,7 +16,7 @@
 #include <Array.h>
 #include "config.h"
 #include <core/log.h>
-
+#include <PCF8575.h>
 /**
  * @brief A class responsible for initializing, managing and reading data from all the different sensors and controllers. All the data is stored in the data struct
  *
@@ -31,6 +31,8 @@ private:
     bool _gps_initialized = false;
     unsigned long _last_gps_packet_time = 0;
     
+    PCF8575 _port_extender;
+
     // BARO WIRE0
     MS5611 _outer_baro;
     bool _outer_baro_initialized = false;
@@ -61,6 +63,7 @@ private:
     bool _heater_constant = false;
     float _heater_constant_temp;
     Time_Averaging_Filter<float> *_inner_temp_averager;
+    Time_Averaging_Filter<float> *_inner_temp_averager_baro;
     Time_Averaging_Filter<float> *_outer_temp_averager;
 
     // Ranging lora
@@ -117,6 +120,7 @@ public:
         float outer_temp_thermistor = 0;
 
         float average_inner_temp = 0;  // C
+        float average_inner_temp_baro = 0;
         float average_outer_temp = 0; // C
         float heater_power = 0;        // 0-255
         float p = 0;                   // proportional * coefficient
@@ -155,6 +159,10 @@ public:
     Sensor_data data;
     
     String init(Log &log, Config &config);
+    bool read_switch_state(Config &config);
+    void set_buzzer(Config &config, bool state);
+    void set_status_led_1(Config &config, bool state);
+    void set_status_led_2(Config &config, bool state);
     void read_data(Log &log, Config &config);
     void update_data_packet(Sensor_data &data, String &result_sent, String &result_log);
 };
