@@ -66,7 +66,7 @@ void Cansat::read_last_state(Cansat &cansat)
 
         // Set the last state variables to the ones read from the file
         int result = sscanf(char_array,                                     // The char array to read from
-                            "%i,%i,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i,%i/n",     // The form the variables are separated in string
+                            "%i,%i,%f,%f,%f,%i,%i,%i,%i,%i,%i,%i/n",     // The form the variables are separated in string
                             &cansat.config.last_state_variables.last_state, // The values to update that correspond to the variable in string
                             &cansat.config.last_state_variables.last_log_file_index,
                             &cansat.config.last_state_variables.last_inner_temp,
@@ -77,7 +77,6 @@ void Cansat::read_last_state(Cansat &cansat)
                             &cansat.config.last_state_variables.inner_temp_probe_failed,
                             &cansat.config.last_state_variables.imu_failed,
                             &cansat.config.last_state_variables.outer_thermistor_failed,
-                            &cansat.config.last_state_variables.ranging_lora_failed,
                             &cansat.config.last_state_variables.inner_temp_probe_restarted,
                             &cansat.config.last_state_variables.imu_restarted);
         // Close the file
@@ -107,7 +106,6 @@ void Cansat::save_to_flash_after_init(Cansat &cansat)
     cansat.log.log_info_msg_to_flash("Inner temp probe failed: " + String(cansat.config.last_state_variables.inner_temp_probe_failed));
     cansat.log.log_info_msg_to_flash("IMU failed: " + String(cansat.config.last_state_variables.imu_failed));
     cansat.log.log_info_msg_to_flash("Outer thermistor failed: " + String(cansat.config.last_state_variables.outer_thermistor_failed));
-    cansat.log.log_info_msg_to_flash("Ranging LoRa failed: " + String(cansat.config.last_state_variables.ranging_lora_failed));
 
     cansat.log.log_info_msg_to_flash("Inner temp probe restarted: " + String(cansat.config.last_state_variables.inner_temp_probe_restarted));
     cansat.log.log_info_msg_to_flash("IMU restarted: " + String(cansat.config.last_state_variables.imu_restarted));
@@ -173,8 +171,6 @@ void Cansat::save_last_state(Cansat &cansat)
         data += ",";
         data += String(config.last_state_variables.outer_thermistor_failed);
         data += ",";
-        data += String(config.last_state_variables.ranging_lora_failed);
-        data += ",";
         data += String(config.last_state_variables.inner_temp_probe_restarted);
         data += ",";
         data += String(config.last_state_variables.imu_restarted);
@@ -184,6 +180,37 @@ void Cansat::save_last_state(Cansat &cansat)
 
         // Close the file
         file.close();
+    }
+}
+
+// Cycle 3.3V power bus and restart Pico
+void Cansat::restart(Cansat &cansat)
+{
+    // Cycle power off/on
+    cansat.sensors.reset_sensor_power(cansat.config);
+    // Restart Pico
+    watchdog_reboot(0, 0, config.WATCHDOG_TIMER);
+}
+
+void Cansat::check_if_should_restart(Cansat &cansat)
+{
+    if (cansat.sensors._hard_reset_required)
+    {   
+        // Save which sensor has failed
+        if (!cansat.sensors._imu_initialized)
+        {
+            cansat.config.last_state_variables.imu_failed = 1;
+        }
+        if (!cansat.sensors._inner_temp_probe_initialized)
+        {
+            cansat.config.last_state_variables.inner_temp_probe_failed = 1;
+        }
+        cansat.save_last_state(cansat);
+        
+        cansat.log.send_info("Hard reset initalized", cansat.config);
+        
+        // Do a restart
+        cansat.restart(cansat);
     }
 }
 

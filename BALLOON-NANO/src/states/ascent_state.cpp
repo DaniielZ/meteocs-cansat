@@ -60,6 +60,9 @@ bool ascent_state_loop(Cansat &cansat)
     // Reset watchdog timer
     watchdog_update();
 
+    // Check if a sensor has failed and a restart is required
+    cansat.check_if_should_restart(cansat);
+
     // Save data to last state
     if (millis() - last_state_save_time_ascent >= cansat.config.ASCENT_STATE_SAVE_UPDATE_INTERVAL)
     {

@@ -61,8 +61,6 @@ void Log::init_flash(Config &config)
         data += ",";
         data += String(config.last_state_variables.outer_thermistor_failed);
         data += ",";
-        data += String(config.last_state_variables.ranging_lora_failed);
-        data += ",";
         data += String(config.last_state_variables.inner_temp_probe_restarted);
         data += ",";
         data += String(config.last_state_variables.imu_restarted);

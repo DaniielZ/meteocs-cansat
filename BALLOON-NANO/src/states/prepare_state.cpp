@@ -28,7 +28,6 @@ void reset_sensor_last_state_values(Cansat &cansat)
     cansat.config.last_state_variables.inner_temp_probe_failed = 0;
     cansat.config.last_state_variables.imu_failed = 0;
     cansat.config.last_state_variables.outer_thermistor_failed = 0;
-    cansat.config.last_state_variables.ranging_lora_failed = 0;
 
     cansat.save_last_state(cansat);
 }
@@ -49,12 +48,15 @@ bool prepare_state_loop(Cansat &cansat)
 
     // Reset watchdog timer
     watchdog_update();
-    
+
     // Save data to telemetry file
     cansat.log.log_telemetry_data();
 
     // Reset watchdog timer
     watchdog_update();
+
+    // Check if a sensor has failed and a restart is required
+    cansat.check_if_should_restart(cansat);
     
     // Save last state variables
     if (millis() - last_state_save_time_prepare >= cansat.config.PREPARE_STATE_SAVE_UPDATE_INTERVAL)

@@ -29,59 +29,52 @@ private:
     // GPS UART0
     TinyGPSPlus _gps;
     SerialUART *_gps_serial;
-    bool _gps_initialized = false;
     unsigned long _last_gps_packet_time = 0;
 
     // BARO WIRE0
     MS5611 _outer_baro;
-    bool _outer_baro_initialized = false;
     int _outer_baro_consecutive_failed_readings = 0;
 
     // BARO WIRE0
     Adafruit_BMP085 _inner_baro;
-    bool _inner_baro_initialized = false;
     int _inner_baro_consecutive_failed_readings = 0;
 
     // IMU WIRE0
     LSM6 _imu;
-    bool _imu_initialized = false;
     int _imu_consecutive_failed_readings = 0;
 
     // TEMPERATURE WIRE0
     ClosedCube::Sensor::STS35 _inner_temp_probe;
-    bool _inner_temp_probe_initialized = false;
     int _inner_temp_probe_consecutive_failed_readings = 0;
 
     // TEMPERATURE NTC
     NTC_Thermistor _outer_thermistor = NTC_Thermistor(0, 0, 0, 0, 0);
-    bool _outer_thermistor_initialized = false;
     int _outer_thermistor_consecutive_failed_readings = 0;
-
-    // Temperature manager
-    bool _heater_enabled = false;
-    bool _heater_constant = false;
-    float _heater_constant_temp;
-    Time_Averaging_Filter<float> *_inner_temp_averager;
-    Time_Averaging_Filter<float> *_inner_temp_averager_baro;
-    Time_Averaging_Filter<float> *_outer_temp_averager;
 
     // Ranging lora
     Ranging_Wrapper _ranging_lora;
-    bool _ranging_lora_initalized = false;
     unsigned long _last_ranging_pos_time = 0;
     int _last_slave_index = 0;
     int _slave_index = 0;
     int _ranging_lora_consecutive_failed_readings = 0;
 
+    // Temperature manager
+    bool _heater_enabled = false;
+    bool _heater_constant = false;
+    float _heater_constant_temp;
+    
+    // Averagers 
+    Time_Averaging_Filter<float> *_inner_temp_averager;
+    Time_Averaging_Filter<float> *_inner_temp_averager_baro;
+    Time_Averaging_Filter<float> *_outer_temp_averager;
+    Time_Averaging_Filter<float> *_batt_averager;
+    Time_Averaging_Filter<float> *_heater_current_averager;
+
     // Battery
     int _batt_voltage_consecutive_failed_readings = 0;
-    // Battery averager
-    Time_Averaging_Filter<float> *_batt_averager;
     
     // Heater current
     int _heater_current_consecutive_failed_readings = 0;
-    // Current averager
-    Time_Averaging_Filter<float> *_heater_current_averager;
 
     void position_calculation(Log &log, Config &config);
     void read_ranging(Log &log, Config &config);
@@ -103,6 +96,16 @@ public:
     // Port extender
     PCF8575 *_port_extender;
     
+    bool _hard_reset_required = false;
+
+    bool _gps_initialized = false;
+    bool _outer_baro_initialized = false;
+    bool _inner_baro_initialized = false;
+    bool _imu_initialized = false;
+    bool _inner_temp_probe_initialized = false;
+    bool _outer_thermistor_initialized = false;
+    bool _ranging_lora_initalized = false;
+
     // TODO make a different struct for sendable data and raw data
     struct Sensor_data
     {
@@ -161,6 +164,7 @@ public:
     Sensor_data data;
     
     String init(Log &log, Config &config);
+    void reset_sensor_power(Config &config);
     bool read_switch_state(Config &config);
     void set_buzzer(Config &config, bool state);
     void set_status_led_1(Config &config, bool state);

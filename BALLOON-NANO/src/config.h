@@ -22,14 +22,15 @@ public:
 
         int outer_baro_failed = 0;
         int inner_baro_failed = 0;
-
-        int inner_temp_probe_failed = 0;
         int imu_failed = 0;
+        int inner_temp_probe_failed = 0;
         int outer_thermistor_failed = 0;
-        int ranging_lora_failed = 0;
         
-        int inner_temp_probe_restarted = 0;
+        int outer_baro_restarted = 0;
+        int inner_baro_restarted = 0;
         int imu_restarted = 0;
+        int inner_temp_probe_restarted = 0;
+        int outer_thermistor_restarted = 0;
     };
     Last_state_variables last_state_variables;
 
@@ -55,11 +56,11 @@ public:
                                         .SPI = &SPI};
 
     // Ranging 2.4 GHZ LoRa
-    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x123456},
-                                                        {.position = {0, 0, 0}, .address = 0xABCD98},
-                                                        {.position = {0, 0, 0}, .address = 0x9A8B7C}};
+    Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] = {{.position = {0, 0, 0}, .address = 0x12345678},
+                                                        {.position = {0, 0, 0}, .address = 0xABCD9876},
+                                                        {.position = {0, 0, 0}, .address = 0x9A8B7C6D}};
     
-    Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::SLAVE;
+    Ranging_Wrapper::Mode LORA2400_MODE = Ranging_Wrapper::Mode::MASTER;
     Ranging_Wrapper::Lora_Device ranging_device = {.FREQUENCY = 2405.6,
                                                 .CS = 13,
                                                 .DIO0 = 18, // busy
@@ -99,7 +100,10 @@ public:
     const unsigned int DESCENT_STATE_SAVE_UPDATE_INTERVAL = 5000;
 
     // Watchdog
-    const int WATCHDOG_TIMER = 10000;
+    const int WATCHDOG_TIMER = 5000;
+
+    // Sensor power
+    const int SENSOR_POWER_ENABLE_PIN = 17;
 
     // Port extender
     const int PORT_EXTENDER_ADDRESS_I2C = 0x20;

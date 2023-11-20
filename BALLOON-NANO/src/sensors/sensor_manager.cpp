@@ -261,7 +261,6 @@ void Sensor_manager::read_inner_baro(Log &log, Config &config)
         {
             // Set sensor to failed
             log.send_error("Inner baro timeout detected!", config);
-            config.last_state_variables.inner_baro_failed = 1;
             _inner_baro_initialized = false;
         }
     }
@@ -371,8 +370,6 @@ void Sensor_manager::read_imu(Log &log, Config &config)
             {
                 log.send_error("IMU failure detected!", config);
                 _imu_initialized = false;
-                // As IMU is mission critical, implement hard reset
-                // TODO
             }
         }
         // If the actual reading of the sensor took too long, something is probably wrong with it
@@ -380,8 +377,12 @@ void Sensor_manager::read_imu(Log &log, Config &config)
         {
             log.send_error("IMU timeout detected!", config);
             _imu_initialized = false;
-            // As IMU is mission critical, implement hard reset
-            // TODO
+        }
+
+        // Restart Pico if sensor has failed and if it hasn't already been restarted
+        if (!_imu_initialized && !config.last_state_variables.imu_restarted)
+        {
+            _hard_reset_required = true;
         }
     }
 }
@@ -429,8 +430,6 @@ void Sensor_manager::read_inner_temp_probe(Log &log, Config &config)
             {
                 log.send_error("Inner temp probe failure detected!", config);
                 _inner_temp_probe_initialized = false;
-                // As the inner temp probe is mission critical, implement hard reset
-                // TODO
             }
         }
 
@@ -439,8 +438,12 @@ void Sensor_manager::read_inner_temp_probe(Log &log, Config &config)
         {
             log.send_error("Inner temp probe timeout detected!", config);
             _inner_temp_probe_initialized = false;
-            // As the inner temp probe is mission critical, implement hard reset
-            // TODO
+        }
+        
+        // Restart Pico if sensor has failed and if it hasn't already been restarted
+        if (!_inner_temp_probe_initialized && !config.last_state_variables.inner_temp_probe_restarted)
+        {
+            _hard_reset_required = true;
         }
     }
 }
@@ -588,6 +591,10 @@ String Sensor_manager::init(Log &log, Config &config)
     // Change analogRead resolution
     analogReadResolution(12);
 
+    // Set sensor power enable pin to output
+    pinMode(config.SENSOR_POWER_ENABLE_PIN, OUTPUT_12MA);
+    digitalWrite(config.SENSOR_POWER_ENABLE_PIN, HIGH);
+
     // GPS
     _gps_serial = &Serial1;
     if (_gps_serial)
@@ -596,16 +603,16 @@ String Sensor_manager::init(Log &log, Config &config)
     }
     else
     {
-        log.send_error("GPS init error", config);
+        log.log_error_msg_to_flash("GPS init error");
         status += "GPS error ";
     }
 
     // Port extender
     _port_extender = new PCF8575(config.PORT_EXTENDER_ADDRESS_I2C);
     _port_extender->pinMode(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN, INPUT);
-	_port_extender->pinMode(config.PORT_EXTENDER_BUZZER_PIN, OUTPUT);
-	_port_extender->pinMode(config.PORT_EXTENDER_LED_2_PIN, OUTPUT);
-	_port_extender->pinMode(config.PORT_EXTENDER_LED_1_PIN, OUTPUT);
+	_port_extender->pinMode(config.PORT_EXTENDER_BUZZER_PIN, OUTPUT_12MA);
+	_port_extender->pinMode(config.PORT_EXTENDER_LED_2_PIN, OUTPUT_12MA);
+	_port_extender->pinMode(config.PORT_EXTENDER_LED_1_PIN, OUTPUT_12MA);
 
     // Outer baro
     if (!config.last_state_variables.outer_baro_failed)
@@ -613,7 +620,7 @@ String Sensor_manager::init(Log &log, Config &config)
         _outer_baro = MS5611(config.MS5611_ADDRESS_I2C);
         if (!_outer_baro.begin())
         {
-            log.send_error("MS5611 init error", config);
+            log.log_error_msg_to_flash("MS5611 init error");
             status += "MS5611 error ";
         }
         else
@@ -633,7 +640,7 @@ String Sensor_manager::init(Log &log, Config &config)
         _inner_baro = Adafruit_BMP085();
         if (!_inner_baro.begin(config.BMP180_ADDRESS_I2C, &Wire))
         {
-            log.send_error("BMP180 init error", config);
+            log.log_error_msg_to_flash("BMP180 init error");
             status += "BMP180 error ";
         }
         else
@@ -651,7 +658,7 @@ String Sensor_manager::init(Log &log, Config &config)
     {
         if (!_imu.init())
         {
-            log.send_error("IMU init error", config);
+            log.log_error_msg_to_flash("IMU init error");
             status += "IMU error ";
         }
         else
@@ -677,7 +684,7 @@ String Sensor_manager::init(Log &log, Config &config)
         if (test > 100.00 || test < -100.0 || test == 0.00)
         {
             _inner_temp_probe_initialized = false;
-            log.send_error("Inner temp probe init error", config);
+            log.log_error_msg_to_flash("Inner temp probe init error");
             status += "Inner temp probe error";
         } 
     }
@@ -714,24 +721,31 @@ String Sensor_manager::init(Log &log, Config &config)
     _heater_current_averager = new Time_Averaging_Filter<float>(config.BAT_AVERAGE_CAPACITY, config.BAT_AVERAGE_TIME);
 
     // RANGING lora
-    if (!config.last_state_variables.ranging_lora_failed)
+    String result = _ranging_lora.init(config.LORA2400_MODE, config.ranging_device);
+    if (result == "")
     {
-        String result = _ranging_lora.init(config.LORA2400_MODE, config.ranging_device);
-        if (result == "")
-        {
-            _ranging_lora_initalized = true;
-        }
-        else
-        {
-            status += result;
-        }
+        _ranging_lora_initalized = true;
     }
     else
     {
-        log.send_error("Ranging LoRa state is set as failed. Ranging LoRa not initalized", config);
+        status += result;
     }
 
     return status;
+}
+
+void Sensor_manager::reset_sensor_power(Config &config)
+{
+    unsigned long int start = millis();
+    // Disable 3.3 V power bus
+    digitalWrite(config.SENSOR_POWER_ENABLE_PIN, LOW);
+
+    while (millis() - start >= 250)
+    {
+        delay(1);
+    }
+    // Enable 3.3 V power bus
+    digitalWrite(config.SENSOR_POWER_ENABLE_PIN, HIGH);
 }
 
 bool Sensor_manager::read_switch_state(Config &config)
@@ -760,7 +774,7 @@ void Sensor_manager::read_data(Log &log, Config &config)
     // Get data from all sensors
     // GPS
     read_gps(log, config);
-    
+
     // IMU
     read_imu(log, config);
 

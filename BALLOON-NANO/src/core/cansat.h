@@ -38,6 +38,8 @@ public:
     Sensor_manager sensors;
 
     String receive_command(Cansat &cansat);
+    void restart(Cansat &cansat);
+    void check_if_should_restart(Cansat &cansat);
     void start_states(Cansat &cansat);
     void save_last_state(Cansat &cansat);
 };
