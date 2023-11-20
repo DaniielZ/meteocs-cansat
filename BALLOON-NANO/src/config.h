@@ -144,10 +144,15 @@ public:
 
     // Battery voltage
     const float BATT_SENS_CONVERSION_FACTOR = 3.3 * (1 / 0.3357);
-    const float BATT_SENS_PIN = 28;
+    const int BATT_SENS_PIN = 28;
 
     // HEATER
     const int HEATER_MOSFET = 22; // mosfet 1
+
+    // Heater current
+    const float HEATER_CURR_SENS_PIN = 32;
+    const float HEATER_CURR_CONVERSION_FACTOR = 3.3 * (1 / 0.3357);
+    const float HEATER_RESISTOR_VALUE = 1;
 
     // Parachute
     const int PARACHUTE_MOSFET = 27;   // mosfet 2
@@ -194,6 +199,10 @@ public:
     // Battery voltage
     const float BATT_VOLTAGE_MIN = 0;
     const float BATT_VOLTAGE_MAX = 8;
+
+    // Heater current
+    const float HEATER_CURRENT_MIN = 0;
+    const float HEATER_CURRENT_MAX = 5;
 
     // Outer thermistor
     const float OUTER_THERMISTOR_MIN_TEMP = -100;

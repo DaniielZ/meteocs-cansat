@@ -21,6 +21,30 @@ void Sensor_manager::read_batt_voltage(Log &log, Config &config)
     // NO OTHER CHECKS ARE DONE AS THIS IS VERY SIMPLE AND NOTHING CAN REALLY GO WRONG (Hopefully)
 }
 
+void Sensor_manager::read_heater_current(Log &log, Config &config)
+{
+    // Read voltage and do calculations
+    float adc_reading = analogRead(config.HEATER_CURR_SENS_PIN);
+    float voltage = (adc_reading / 4095.0) * config.HEATER_CURR_CONVERSION_FACTOR;
+
+    // Using Ohm's law calculate current (I=U/R)
+    float new_current = voltage/config.HEATER_RESISTOR_VALUE;
+
+    // Just make sure the voltage value is within reasonable values
+    if (config.HEATER_CURRENT_MIN < new_current && new_current < config.HEATER_CURRENT_MAX)
+    {
+        data.heater_current = new_current;
+        _heater_current_averager->add_data(data.heater_current);
+        data.average_heater_current = _heater_current_averager->get_averaged_value();
+    }
+    else
+    {
+        log.log_error_msg_to_flash("Heater current reading outside range: " + String(new_current));
+    }
+    // NO OTHER CHECKS ARE DONE AS THIS IS VERY SIMPLE AND NOTHING CAN REALLY GO WRONG (Hopefully)
+}
+
+
 void Sensor_manager::position_calculation(Log &log, Config &config)
 {   
     // DON'T KNOW WHAT ARE THE EXPECTED VALUES SO ERROR CHECKING WILL BE IMPLEMENTED LATER
@@ -715,6 +739,9 @@ void Sensor_manager::read_data(Log &log, Config &config)
 
     // Battery voltage
     read_batt_voltage(log, config);
+
+    // Heater current
+    read_heater_current(log, config);
 
     // Heater (Must be after baro, temp and voltage)
     update_heater(log, config);

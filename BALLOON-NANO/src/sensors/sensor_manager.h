@@ -73,12 +73,13 @@ private:
 
     // Battery
     int _batt_voltage_consecutive_failed_readings = 0;
-
-    // Heater current
-    int _heater_current_consecutive_failed_readings = 0;
-
     // Battery averager
     Time_Averaging_Filter<float> *_batt_averager;
+    
+    // Heater current
+    int _heater_current_consecutive_failed_readings = 0;
+    // Current averager
+    Time_Averaging_Filter<float> *_heater_current_averager;
 
     void position_calculation(Log &log, Config &config);
     void read_ranging(Log &log, Config &config);
@@ -91,6 +92,7 @@ private:
     void read_time();
     void update_heater(Log &log, Config &config);
     void read_batt_voltage(Log &log, Config &config);
+    void read_heater_current(Log &log, Config &config);
 
 public:
     // Temp manager
@@ -130,6 +132,9 @@ public:
 
         float batt_voltage = 0;         // V
         float average_batt_voltage = 0; // v
+
+        float heater_current = 0;
+        float average_heater_current = 0;
 
         unsigned long time = 0;                           // ms
         unsigned long time_since_last_gps = 0;            // ms
