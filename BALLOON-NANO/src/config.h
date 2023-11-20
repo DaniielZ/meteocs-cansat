@@ -98,6 +98,9 @@ public:
     const unsigned int ASCENT_STATE_SAVE_UPDATE_INTERVAL = 5000;
     const unsigned int DESCENT_STATE_SAVE_UPDATE_INTERVAL = 5000;
 
+    // Watchdog
+    const int WATCHDOG_TIMER = 2000;
+
     // logging
     const unsigned long PC_BAUDRATE = 115200;
     FS *FILE_SYSTEM = &SDFS; // if change to LittleFS need to change some code

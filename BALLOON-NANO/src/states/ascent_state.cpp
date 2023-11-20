@@ -31,6 +31,9 @@ bool ascent_state_loop(Cansat &cansat)
 
     String incoming_msg = cansat.receive_command(cansat);
 
+    // Reset watchdog timer
+    watchdog_update();
+
     // Check if message is a command
     // Check if should reset to PREP state
     if (incoming_msg == cansat.config.RESET_STATE_MSG)
@@ -48,8 +51,14 @@ bool ascent_state_loop(Cansat &cansat)
     // Read data from sensors
     cansat.sensors.read_data(cansat.log, cansat.config);
 
+    // Reset watchdog timer
+    watchdog_update();
+
     // Log/Send data
     send_data_ascent(cansat);
+    
+    // Reset watchdog timer
+    watchdog_update();
 
     // Save data to last state
     if (millis() - last_state_save_time_ascent >= cansat.config.ASCENT_STATE_SAVE_UPDATE_INTERVAL)
@@ -95,12 +104,20 @@ void ascent_state(Cansat &cansat)
     // If payload has recovered to ascent state
     if (cansat._has_recovered_to_state && cansat.config.last_state_variables.last_state == 1)
     {
+        // Reset watchdog timer
+        watchdog_update();
+
         // Init sensors
         String status = String("Sensor status: ") + cansat.sensors.init(cansat.log, cansat.config);
-        cansat.log.send_info(status, cansat.config);
+        // Reset watchdog timer
+        watchdog_update();
 
+        cansat.log.send_info(status, cansat.config);
         cansat.log.send_info("Reset done", cansat.config);
     }
+
+    // Reset watchdog timer
+    watchdog_update();
 
     // Run prepare loop while waiting for arming signal
     while (!ascent_state_loop(cansat))

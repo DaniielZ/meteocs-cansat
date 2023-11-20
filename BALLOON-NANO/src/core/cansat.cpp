@@ -216,6 +216,12 @@ void Cansat::start_states(Cansat &cansat)
     // Open/create telemetry/info/error files
     cansat.log.init_flash_files(cansat.config);
 
+    // Check if Watchdog restart has happened
+    if (watchdog_caused_reboot())
+    {
+        cansat.log.send_info("Watchdog caused a reboot", cansat.config);
+    }
+
     // Save the current file index to last state
     cansat.config.last_state_variables.last_log_file_index = cansat.log._log_file_name_nr;
     cansat.save_last_state(cansat);
@@ -223,6 +229,10 @@ void Cansat::start_states(Cansat &cansat)
     // Check in which state should payload start in
     int last_state = cansat.config.last_state_variables.last_state;
     cansat.log.send_info("Last state: " + String(last_state), cansat.config);
+
+    // Enable Watchdog
+    watchdog_enable(cansat.config.WATCHDOG_TIMER, 1);
+    cansat.log.send_info("Watchdog is enabled with time: " + String(cansat.config.WATCHDOG_TIMER), cansat.config);
 
     // If ascent/descent state is not set, start in prepare state
     if (last_state == 0)

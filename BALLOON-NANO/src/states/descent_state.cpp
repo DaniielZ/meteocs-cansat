@@ -1,7 +1,12 @@
 #include "states/descent_state.h"
 
+unsigned long state_start_time = 0;
 unsigned long int last_data_transmit_time_descent = 0;
 unsigned long int last_state_save_time_descent = 0;
+
+unsigned long parachute_ejection_time;
+bool mosfet_on_triggered = false;
+unsigned long mosfet_turnoff_time;
 
 // HELPER FUNCTIONS
 void send_data_descent(Cansat &cansat)
@@ -25,12 +30,10 @@ void send_data_descent(Cansat &cansat)
 // Descent state loop
 bool descent_state_loop(Cansat &cansat)
 {
-    unsigned long state_start_time = millis();
-    unsigned long parachute_ejection_time = state_start_time + cansat.config.TIME_FROM_LAUNCH_TO_EJECT;
-    bool mosfet_on_triggered = false;
-    unsigned long mosfet_turnoff_time = parachute_ejection_time + cansat.config.MOSFET_ON_TIME;
-
     unsigned long loop_start = millis();
+
+    // Reset watchdog timer
+    watchdog_update();
 
     // Check if parachute should be deployed
     if (millis() >= parachute_ejection_time && !mosfet_on_triggered)
@@ -53,13 +56,22 @@ bool descent_state_loop(Cansat &cansat)
         cansat.config.last_state_variables.last_state = 0;
         cansat.save_last_state(cansat);
     }
-
+    
+    // Reset watchdog timer
+    watchdog_update();
+    
     // Read sensor data
     cansat.sensors.read_data(cansat.log, cansat.config);
+    
+    // Reset watchdog timer
+    watchdog_update();
     
     // Send sensor data
     send_data_descent(cansat);
 
+    // Reset watchdog timer
+    watchdog_update();
+    
     // Save last state variables
     if (millis() - last_state_save_time_descent >= cansat.config.DESCENT_STATE_SAVE_UPDATE_INTERVAL)
     {
@@ -81,15 +93,28 @@ bool descent_state_loop(Cansat &cansat)
 // Descent state setup
 void descent_state(Cansat &cansat)
 {
+    state_start_time = millis();
+ 
     // If payload has recovered to descent state
     if (cansat._has_recovered_to_state && cansat.config.last_state_variables.last_state == 2)
     {
+        // Reset watchdog timer
+        watchdog_update();
+
         // Init sensors
         String status = String("Sensor status: ") + cansat.sensors.init(cansat.log, cansat.config);
-        cansat.log.send_info(status, cansat.config);
+        // Reset watchdog timer
+        watchdog_update();
 
+        cansat.log.send_info(status, cansat.config);
         cansat.log.send_info("Reset done", cansat.config);
     }
+
+    parachute_ejection_time = state_start_time + cansat.config.TIME_FROM_LAUNCH_TO_EJECT;
+    mosfet_turnoff_time = parachute_ejection_time + cansat.config.MOSFET_ON_TIME;
+
+    // Reset watchdog timer
+    watchdog_update();
 
     // CURRENTLY IT WILL NOT EXIT THIS LOOP AUTOMATICALY
     // COMMAND FROM BASE STATION HAS TO BE SENT TO RESET THE STATE

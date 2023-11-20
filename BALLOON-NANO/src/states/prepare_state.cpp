@@ -1,5 +1,6 @@
 #include "states/prepare_state.h"
 #include <SDFS.h>
+#include "hardware/watchdog.h"
 
 unsigned long int last_state_save_time_prepare = 0;
 
@@ -41,12 +42,23 @@ bool prepare_state_loop(Cansat &cansat)
     
     String incoming_msg = cansat.receive_command(cansat);
 
+    // Reset watchdog timer
+    watchdog_update();
+
+    Serial.println("Watchdog updated: " + String(millis()));
+
     // Read sensor data
     cansat.sensors.read_data(cansat.log, cansat.config);
 
+    // Reset watchdog timer
+    watchdog_update();
+    
     // Save data to telemetry file
     cansat.log.log_telemetry_data();
 
+    // Reset watchdog timer
+    watchdog_update();
+    
     // Save last state variables
     if (millis() - last_state_save_time_prepare >= cansat.config.PREPARE_STATE_SAVE_UPDATE_INTERVAL)
     {
@@ -64,6 +76,10 @@ bool prepare_state_loop(Cansat &cansat)
             unsigned long data_send_loop_start = millis();
             // Check for any commands from PC or LoRa
             incoming_msg = cansat.receive_command(cansat);
+            
+            // Reset watchdog timer
+            watchdog_update();
+    
             if (incoming_msg == cansat.config.DATA_SEND_STOP_MSG)
             {
                 break;
@@ -71,13 +87,20 @@ bool prepare_state_loop(Cansat &cansat)
 
             // Get sensor data
             cansat.sensors.read_data(cansat.log, cansat.config);
+            
+            // Reset watchdog timer
+            watchdog_update();
+    
             // Print data to serial
             cansat.log.log_telemetry_data_to_pc();
             // Save data to telemetry file
             cansat.log.log_telemetry_data();
             // Send data by LoRa
             cansat.log.transmit_data(cansat.config);
-
+            
+            // Reset watchdog timer
+            watchdog_update();
+    
             // Check if should wait before next loop
             unsigned long data_send_loop_time = millis() - data_send_loop_start;
             if (data_send_loop_time < cansat.config.MAX_LOOP_TIME)
@@ -126,7 +149,10 @@ bool prepare_state_loop(Cansat &cansat)
         String noise_msg = "NOISE received: " + incoming_msg;
         cansat.log.send_info(noise_msg, cansat.config);
     }
-
+    
+    // Reset watchdog timer
+    watchdog_update();
+    
     // Check if should wait before next loop
     unsigned long loop_time = millis() - loop_start;
     if (loop_time < cansat.config.MAX_LOOP_TIME)
@@ -140,8 +166,15 @@ bool prepare_state_loop(Cansat &cansat)
 // Prepare state setup
 void prepare_state(Cansat &cansat)
 {    
+    // Reset watchdog timer
+    watchdog_update();
+
     // Init sensors
     String status = String("Sensor status: ") + cansat.sensors.init(cansat.log, cansat.config);
+
+    // Reset watchdog timer
+    watchdog_update();
+
     cansat.log.send_info(status, cansat.config);
 
     cansat.log.send_info("Init done, waiting for arm", cansat.config);
