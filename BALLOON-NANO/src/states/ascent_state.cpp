@@ -98,6 +98,9 @@ bool ascent_state_loop(Cansat &cansat)
 // Ascent state setup
 void ascent_state(Cansat &cansat)
 {
+    pinMode(cansat.config.PARACHUTE_MOSFET_1, OUTPUT_12MA);
+    pinMode(cansat.config.PARACHUTE_MOSFET_2, OUTPUT_12MA);
+
     // If payload has recovered to ascent state
     if (cansat._has_recovered_to_state && cansat.config.last_state_variables.last_state == 1)
     {

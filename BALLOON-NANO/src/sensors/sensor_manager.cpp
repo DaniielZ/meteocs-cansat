@@ -598,11 +598,11 @@ String Sensor_manager::init(Log &log, Config &config)
     }
 
     // Port extender
-    _port_extender = PCF8575(config.PORT_EXTENDER_ADDRESS_I2C);
-    _port_extender.pinMode(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN, INPUT);
-	_port_extender.pinMode(config.PORT_EXTENDER_BUZZER_PIN, OUTPUT);
-	_port_extender.pinMode(config.PORT_EXTENDER_LED_2_PIN, OUTPUT);
-	_port_extender.pinMode(config.PORT_EXTENDER_LED_1_PIN, OUTPUT);
+    _port_extender = new PCF8575(config.PORT_EXTENDER_ADDRESS_I2C);
+    _port_extender->pinMode(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN, INPUT);
+	_port_extender->pinMode(config.PORT_EXTENDER_BUZZER_PIN, OUTPUT);
+	_port_extender->pinMode(config.PORT_EXTENDER_LED_2_PIN, OUTPUT);
+	_port_extender->pinMode(config.PORT_EXTENDER_LED_1_PIN, OUTPUT);
 
     // Outer baro
     if (!config.last_state_variables.outer_baro_failed)
@@ -730,22 +730,23 @@ String Sensor_manager::init(Log &log, Config &config)
 
 bool Sensor_manager::read_switch_state(Config &config)
 {
-    _port_extender.digitalRead(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN);
+    bool switch_state = _port_extender->digitalRead(config.PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN);
+    return switch_state;
 }
 
 void Sensor_manager::set_buzzer(Config &config, bool state)
 {
-    _port_extender.digitalWrite(config.PORT_EXTENDER_BUZZER_PIN, state);
+    _port_extender->digitalWrite(config.PORT_EXTENDER_BUZZER_PIN, state);
 }
 
 void Sensor_manager::set_status_led_1(Config &config, bool state)
 {
-    _port_extender.digitalWrite(config.PORT_EXTENDER_LED_1_PIN, state);
+    _port_extender->digitalWrite(config.PORT_EXTENDER_LED_1_PIN, state);
 }
 
 void Sensor_manager::set_status_led_2(Config &config, bool state)
 {
-    _port_extender.digitalWrite(config.PORT_EXTENDER_LED_2_PIN, state);
+    _port_extender->digitalWrite(config.PORT_EXTENDER_LED_2_PIN, state);
 }
 
 void Sensor_manager::read_data(Log &log, Config &config)

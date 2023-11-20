@@ -103,10 +103,10 @@ public:
 
     // Port extender
     const int PORT_EXTENDER_ADDRESS_I2C = 0x20;
-    const int PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN = P0;  // Switch
-    const int PORT_EXTENDER_BUZZER_PIN = P1;  // Buzzer
-    const int PORT_EXTENDER_LED_2_PIN = P2;  // Status LED 2
-    const int PORT_EXTENDER_LED_1_PIN = P3;  // Status LED
+    const int PORT_EXTENDER_LAUNCH_RAIL_SWITCH_PIN = 0;  // Switch
+    const int PORT_EXTENDER_BUZZER_PIN = 1;  // Buzzer
+    const int PORT_EXTENDER_LED_2_PIN = 2;  // Status LED 2
+    const int PORT_EXTENDER_LED_1_PIN = 3;  // Status LED
 
     // logging
     const unsigned long PC_BAUDRATE = 115200;
@@ -164,8 +164,6 @@ public:
     // Parachute
     const int PARACHUTE_MOSFET_1 = 25;
     const int PARACHUTE_MOSFET_2 = 24;   // mosfet 2
-    pinMode(cansat.config.PARACHUTE_MOSFET_1, OUTPUT_12MA);
-    pinMode(cansat.config.PARACHUTE_MOSFET_2, OUTPUT_12MA);
 
     // Buzzer
     const int BUZZER_INTERVAL = 300;

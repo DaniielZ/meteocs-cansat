@@ -17,6 +17,7 @@
 #include "config.h"
 #include <core/log.h>
 #include <PCF8575.h>
+
 /**
  * @brief A class responsible for initializing, managing and reading data from all the different sensors and controllers. All the data is stored in the data struct
  *
@@ -30,8 +31,6 @@ private:
     SerialUART *_gps_serial;
     bool _gps_initialized = false;
     unsigned long _last_gps_packet_time = 0;
-    
-    PCF8575 _port_extender;
 
     // BARO WIRE0
     MS5611 _outer_baro;
@@ -100,6 +99,9 @@ private:
 public:
     // Temp manager
     Temperature_Manager *_temp_manager;
+
+    // Port extender
+    PCF8575 *_port_extender;
     
     // TODO make a different struct for sendable data and raw data
     struct Sensor_data
