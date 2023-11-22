@@ -8,7 +8,7 @@ void Temperature_Manager::update_heater_power(float inner_temp)
     set_heater_power(_heater_power);
 }
 
-// Safety check incase the pid loop did an opise
+// Safety check incase the pid loop did an opsie
 void Temperature_Manager::check_heater_power()
 {
     if (_inner_temp > (_safe_temp + 0.05))
@@ -16,6 +16,7 @@ void Temperature_Manager::check_heater_power()
         _heater_power = 0;
     }
 }
+
 void Temperature_Manager::calculate_heater_power()
 {
     // Time since last pid update
@@ -93,11 +94,21 @@ void Temperature_Manager::set_heater_power(float heater_power_pwm)
     pinMode(_heater_pin, OUTPUT_12MA);
     analogWrite(_heater_pin, heater_power_pwm);
 }
+
 // reset the last calculation times and set the mosfet to 0. Call this if ending the update loop or restarting it if there has been a long pause
 void Temperature_Manager::reset()
 {
     _last_pid_calculation_time = millis();
     _heater_turn_on_time = millis();
+    _heater_power = 0;
+    set_heater_power(_heater_power);
+}
+
+// reset the last calculation times and set the mosfet to 0. Call this if ending the update loop or restarting it if there has been a long pause
+void Temperature_Manager::reset_from_state(float integral_term, float safe_temp)
+{
+    _integral_term = integral_term;
+    _safe_temp = safe_temp;
     _heater_power = 0;
     set_heater_power(_heater_power);
 }
@@ -116,6 +127,7 @@ Temperature_Manager::Temperature_Manager(int heater_pin, float desired_temp)
     _desired_temp = desired_temp;
     _safe_temp = _desired_temp - 5;
 }
+
 Temperature_Manager::~Temperature_Manager()
 {
     reset();

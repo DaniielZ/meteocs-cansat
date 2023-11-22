@@ -143,39 +143,42 @@ void loop()
         if (Serial.available() > 0)
         {
             String incoming_msg = Serial.readString();
-
-            if (incoming_msg == "D")
+            if (incoming_msg != "")
             {
-                send_main_lora(DATA_MSG);
-                Serial.println("Switching to recieving mode");
-                transmiting_mode = false;
-            }
-            else if (incoming_msg == "S")
-            {
-                send_main_lora(DATA_STOP_MSG);
-                Serial.println("Switching to recieving mode");
-                transmiting_mode = false;
-            }
-            else if (incoming_msg == "H")
-            {
-                send_main_lora(HEATER_ENABLE);
-                Serial.println("Switching to recieving mode");
-                transmiting_mode = false;
-            }
-            else if (incoming_msg == "A")
-            {
-                send_main_lora(ARM_MSG);
-                Serial.println("Switching to recieving mode");
-                transmiting_mode = false;
-            }
-            else if (incoming_msg == "R")
-            {
-                Serial.println("Switching to recieving mode");
-                transmiting_mode = false;
-            }
-            else
-            {
-                Serial.println("Unexpected input : " + incoming_msg);
+                incoming_msg.trim();
+                if (incoming_msg == "D")
+                {
+                    send_main_lora(DATA_MSG);
+                    Serial.println("Switching to recieving mode");
+                    transmiting_mode = false;
+                }
+                else if (incoming_msg == "S")
+                {
+                    send_main_lora(DATA_STOP_MSG);
+                    Serial.println("Switching to recieving mode");
+                    transmiting_mode = false;
+                }
+                else if (incoming_msg == "H")
+                {
+                    send_main_lora(HEATER_ENABLE);
+                    Serial.println("Switching to recieving mode");
+                    transmiting_mode = false;
+                }
+                else if (incoming_msg == "A")
+                {
+                    send_main_lora(ARM_MSG);
+                    Serial.println("Switching to recieving mode");
+                    transmiting_mode = false;
+                }
+                else if (incoming_msg == "R")
+                {
+                    Serial.println("Switching to recieving mode");
+                    transmiting_mode = false;
+                }
+                else
+                {
+                    Serial.println("Unexpected input : " + incoming_msg);
+                }
             }
         }
     }
@@ -185,14 +188,18 @@ void loop()
         if (Serial.available() > 0)
         {
             String incoming_msg = Serial.readString();
-            if (incoming_msg == "T")
+            if (incoming_msg != "")
             {
-                Serial.println("Switching to transmiting mode");
-                transmiting_mode = true;
-            }
-            else
-            {
-                Serial.println("Unexpected input : " + incoming_msg);
+                incoming_msg.trim();
+                if (incoming_msg == "T")
+                {
+                    Serial.println("Switching to transmiting mode");
+                    transmiting_mode = true;
+                }
+                else
+                {
+                    Serial.println("Unexpected input : " + incoming_msg);
+                }
             }
         }
     }
