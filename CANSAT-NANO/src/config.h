@@ -31,7 +31,7 @@ public:
     // logging
     unsigned long PC_BAUDRATE = 115200;
     bool WAIT_PC = false;
-    bool LOG_TO_STORAGE = true;
+    bool LOG_TO_STORAGE = false;
     //
     bool START_RANGING_FIRST = false;
     // GPS UART0
@@ -50,7 +50,7 @@ public:
         .DIO1 = 8,
         .RESET = 6,
         .SYNC_WORD = 0xF4,
-        .TXPOWER = 14,
+        .TXPOWER = 10,
         .SPREADING = 9,
         .CODING_RATE = 6,
         .SIGNAL_BW = 125,
@@ -67,7 +67,7 @@ public:
         .DIO1 = 15, // only use thsi
         .RESET = 10,
         .SYNC_WORD = 0xF5,
-        .TXPOWER = 14,
+        .TXPOWER = 10,
         .SPREADING = 9,
         .CODING_RATE = 7,
         .SIGNAL_BW = 1600,

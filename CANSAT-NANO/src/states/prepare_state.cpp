@@ -31,7 +31,7 @@ void prepare_state(Cansat &cansat)
         // check send data check
         if (incoming_msg == cansat.config.DATA_SEND_MSG)
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 cansat.sensors.read_data(cansat.config);
                 cansat.log.data(cansat.sensors.data, true);

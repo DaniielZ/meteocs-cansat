@@ -223,6 +223,6 @@ void Sensor_manager::read_data(Config &config)
     read_baro(config);
     read_humidity();
     read_imu();
-    enable_ranging(config);
+    //enable_ranging(config);
     read_time();
 }
