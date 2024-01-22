@@ -44,7 +44,7 @@ Main advantages for this custom system would be
 Main disatvantages for the custom system would be:
 - If GPS is avialable it will be more precise and accurate
 - Typicaly the signal strength / reliability will worse than GPS
-- A relatively large amount of base stations are needed to cover a large area
+- A relatively large amount of base stations are needed to cover an area that can be covered with a few satelites
 
 
 # SensorTests
